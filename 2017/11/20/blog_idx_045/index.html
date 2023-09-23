@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    无     Libcurl篇（curl-7.55.1.tar.gz）    移植Libcurl   我首先看了一下其目录结构，里面存在两套编译结构，一个是依赖于CMake，一个是依赖于Autoconf。   这里使用的是Autoconf。 1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Libcurl &amp; Log4cplus 移植和使用 以及 Jsoncpp 简单使用">
+<meta property="og:url" content="https://e-x.top/2017/11/20/blog_idx_045/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    无     Libcurl篇（curl-7.55.1.tar.gz）    移植Libcurl   我首先看了一下其目录结构，里面存在两套编译结构，一个是依赖于CMake，一个是依赖于Autoconf。   这里使用的是Autoconf。 1">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2017-11-20T08:55:24.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.742Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://e-x.top/2017/11/20/blog_idx_045/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>Libcurl & Log4cplus 移植和使用 以及 Jsoncpp 简单使用 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2017/11/20/blog_idx_045/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Libcurl & Log4cplus 移植和使用 以及 Jsoncpp 简单使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-11-20 16:55:24" itemprop="dateCreated datePublished" datetime="2017-11-20T16:55:24+08:00">2017-11-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-16 18:27:52
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=045） 
+&emsp;&emsp;本文发布于 2017-11-20 16:55:24，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=045） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Libcurl篇（curl-7-55-1-tar-gz）">Libcurl篇（curl-7.55.1.tar.gz）</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="移植Libcurl">移植Libcurl</h5>
+<p>  我首先看了一下其目录结构，里面存在两套编译结构，一个是依赖于CMake，一个是依赖于Autoconf。</p>
+<p>  这里使用的是Autoconf。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=你的安装绝对路径 --host=arm-linux-gnueabi --target=arm-linux-gnueabi CXX=arm-linux-gnueabi-g++ CC=arm-linux-gnueabi-gcc</span><br><span class="line">make -j16</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+<p>  说明：–prefix 指定安装路径， --host以及–target指定目标架构， CC和CXX变量指定了工具链</p>
+<br/>
+<br/>
+<h5 id="使用Libcurl">使用Libcurl</h5>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">curl_global_init</span><br><span class="line">curl_easy_init</span><br><span class="line">curl_easy_setopt</span><br><span class="line"><span class="comment">//CURLOPT_HTTPHEADER 设置头信息</span></span><br><span class="line"><span class="comment">//CURLOPT_URL 设置url信息</span></span><br><span class="line"><span class="comment">//CURLOPT_POST 设置本次http请求方式是否为post</span></span><br><span class="line"><span class="comment">//CURLOPT_POSTFIELDS 设置post 数据域</span></span><br><span class="line"><span class="comment">//CURLOPT_WRITEFUNCTION 设置http返回信息的回调函数</span></span><br><span class="line"><span class="comment">//CURLOPT_WRITEDATA 设置回调函数中，userdata的数据内存</span></span><br><span class="line">curl_easy_perform</span><br><span class="line">curl_easy_cleanup</span><br><span class="line">curl_global_cleanup</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">yUpgrade::ReportUpgradeStatus</span><span class="params">(<span class="type">const</span> std::string &amp; str)</span></span>&#123;</span><br><span class="line">    </span><br><span class="line">   <span class="comment">// InitLibCurl(ycurl);</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ( CURLE_OK != (res = <span class="built_in">curl_global_init</span>(CURL_GLOBAL_ALL)) )&#123;</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;curl_global_init call  failed &quot;</span>&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">if</span> ( !( ycurl = <span class="built_in">curl_easy_init</span>() ) )&#123;</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;curl_easy_init call  failed &quot;</span>&lt;&lt;std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">curl_slist</span> *headers = <span class="literal">NULL</span>;</span><br><span class="line">    headers=<span class="built_in">curl_slist_append</span>(headers, <span class="string">&quot;Content-Type:application/json&quot;</span>);</span><br><span class="line">    headers=<span class="built_in">curl_slist_append</span>(headers, <span class="string">&quot;Accept:application/json&quot;</span>);</span><br><span class="line">    headers = <span class="built_in">curl_slist_append</span>(headers, <span class="string">&quot;charset:utf-8&quot;</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">curl_easy_setopt</span>(ycurl, CURLOPT_HTTPHEADER, headers);</span><br><span class="line">    <span class="comment">//headers = curl_slist_append(headers, &quot;Accept: Agent-007&quot;);</span></span><br><span class="line">    <span class="comment">//curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">curl_easy_setopt</span>(ycurl, CURLOPT_URL, REPORTUPGRADESTATUS_URL);</span><br><span class="line">     <span class="comment">//curl_easy_setopt(curl,  CURLOPT_CUSTOMREQUEST, &quot;POST&quot;);//自定义请求方式</span></span><br><span class="line">    <span class="built_in">curl_easy_setopt</span>(ycurl, CURLOPT_POST, <span class="number">1</span>);<span class="comment">//设置为非0表示本次操作为POS</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//curl_easy_setopt(ycurl, CURLOPT_POSTFIELDSIZE, str.size());//设置上传json串长度,这个设置可以忽略</span></span><br><span class="line">    <span class="built_in">curl_easy_setopt</span>(ycurl, CURLOPT_POSTFIELDS, str.<span class="built_in">c_str</span>()); </span><br><span class="line"></span><br><span class="line">    <span class="built_in">curl_easy_setopt</span>(ycurl, CURLOPT_WRITEFUNCTION, write_callback);<span class="comment">//设置回调函数</span></span><br><span class="line">    <span class="built_in">curl_easy_setopt</span>(ycurl, CURLOPT_WRITEDATA, RecCharBuf);<span class="comment">//设置写数据</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ( CURLE_OK !=  (res = <span class="built_in">curl_easy_perform</span>(ycurl)) )&#123;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">CleanUpLibCurl</span>(ycurl);</span><br><span class="line">        <span class="built_in">curl_slist_free_all</span>(headers);</span><br><span class="line">        std::cout&lt;&lt;<span class="string">&quot;curl_easy_perform call  failed,Res= &quot;</span>&lt;&lt;res&lt;&lt;std::endl;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="built_in">CleanUpLibCurl</span>(ycurl);</span><br><span class="line">    <span class="built_in">curl_slist_free_all</span>(headers);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Log4cplus篇（log4cplus-1-2-1-rc2-7z）">Log4cplus篇（log4cplus-1.2.1-rc2.7z）</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="移植Log4cplus">移植Log4cplus</h5>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./configure --host=arm-linux-gnueabi --target=arm-linux-gnueabi CC=arm-hisiv400-linux-gcc CXX=arm-hisiv400-linux-g++</span><br><span class="line">make -j8</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="Log4cplus的使用（网上去找教程就可以了，一大堆，推荐使用加载配置文件的方式，不要在程序中配置）">Log4cplus的使用（网上去找教程就可以了，一大堆，推荐使用加载配置文件的方式，不要在程序中配置）</h5>
+<ol>
+<li>PropertyConfigurator 类来加载配置文件</li>
+<li>然后正常使用就可以了</li>
+</ol>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Jsoncpp篇（1-8-3）">Jsoncpp篇（1.8.3）</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="Jsoncpp的简单使用（注意，Jsoncpp更新了，有些接口不推荐了，但是可以用，网上大部分的教程都是旧版的，这里我会给出新的和旧的的使用）-这里只有读的。写的类似。">Jsoncpp的简单使用（注意，Jsoncpp更新了，有些接口不推荐了，但是可以用，网上大部分的教程都是旧版的，这里我会给出新的和旧的的使用）.这里只有读的。写的类似。</h5>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">	std::string G4FileUrl;</span><br><span class="line">	<span class="comment">// Json::CharReader *tmp ;</span></span><br><span class="line">    <span class="comment">// Json::CharReaderBuilder * ptmp =  new Json::CharReaderBuilder();</span></span><br><span class="line">    <span class="comment">// tmp = ptmp-&gt;newCharReader();</span></span><br><span class="line">    <span class="comment">//tmp-&gt;parse(upgrade.RecStr,root1)</span></span><br><span class="line">    Json::Reader UpGradeInfo;</span><br><span class="line">    Json::Value root1;</span><br><span class="line">    UpGradeInfo.<span class="built_in">parse</span>(upgrade.RecStr,root1)</span><br><span class="line">    G4FileUrl = root1[<span class="string">&quot;fileInfo&quot;</span>][<span class="string">&quot;fileUrl&quot;</span>].<span class="built_in">asString</span>();</span><br><span class="line">    <span class="comment">/*例子json结构</span></span><br><span class="line"><span class="comment">&#123;</span></span><br><span class="line"><span class="comment">&quot;fileInfo&quot;:&#123;</span></span><br><span class="line"><span class="comment">&quot;id&quot;:&#123;&quot;timestamp&quot;:1508143624,&quot;machineIdentifier&quot;:439847,&quot;processIdentifier&quot;:524,</span></span><br><span class="line"><span class="comment">&quot;counter&quot;:15004360&#125;,</span></span><br><span class="line"><span class="comment">&quot;fileUrl&quot;:&quot;http://xxxxxxxxx/group1/M00/00/35/wKgfdVnkcgiAVnsqAAHEhu0PItU720.jpg&quot;,</span></span><br><span class="line"><span class="comment">&quot;fileName&quot;:&quot;TX.jpg&quot;,</span></span><br><span class="line"><span class="comment">&quot;fileType&quot;:4,</span></span><br><span class="line"><span class="comment">&quot;cameraId&quot;:0,</span></span><br><span class="line"><span class="comment">&quot;addedDate&quot;:&quot;Oct 16, 2017 4:47:04 PM&quot;&#125;</span></span><br><span class="line"><span class="comment">	&#125;</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>  说明，如果使用旧版接口，gcc会报warning: ‘Reader’ is deprecated: Use CharReader and CharReaderBuilder instead [-Wdeprecated-declarations]，msvc (//  MSVC 2008 以上 )会报error。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/11/17/blog_idx_044/" rel="prev" title="Linux Daemon & 单例模式 设计与实现">
+      <i class="fa fa-chevron-left"></i> Linux Daemon & 单例模式 设计与实现
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/11/21/blog_idx_046/" rel="next" title="移远EC20 4G模块Linux驱动移植和测试">
+      移远EC20 4G模块Linux驱动移植和测试 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Libcurl%E7%AF%87%EF%BC%88curl-7-55-1-tar-gz%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">Libcurl篇（curl-7.55.1.tar.gz）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%A7%BB%E6%A4%8DLibcurl"><span class="nav-number"></span> <span class="nav-text">移植Libcurl</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Libcurl"><span class="nav-number"></span> <span class="nav-text">使用Libcurl</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Log4cplus%E7%AF%87%EF%BC%88log4cplus-1-2-1-rc2-7z%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">Log4cplus篇（log4cplus-1.2.1-rc2.7z）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%A7%BB%E6%A4%8DLog4cplus"><span class="nav-number"></span> <span class="nav-text">移植Log4cplus</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Log4cplus%E7%9A%84%E4%BD%BF%E7%94%A8%EF%BC%88%E7%BD%91%E4%B8%8A%E5%8E%BB%E6%89%BE%E6%95%99%E7%A8%8B%E5%B0%B1%E5%8F%AF%E4%BB%A5%E4%BA%86%EF%BC%8C%E4%B8%80%E5%A4%A7%E5%A0%86%EF%BC%8C%E6%8E%A8%E8%8D%90%E4%BD%BF%E7%94%A8%E5%8A%A0%E8%BD%BD%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%9A%84%E6%96%B9%E5%BC%8F%EF%BC%8C%E4%B8%8D%E8%A6%81%E5%9C%A8%E7%A8%8B%E5%BA%8F%E4%B8%AD%E9%85%8D%E7%BD%AE%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">Log4cplus的使用（网上去找教程就可以了，一大堆，推荐使用加载配置文件的方式，不要在程序中配置）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Jsoncpp%E7%AF%87%EF%BC%881-8-3%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">Jsoncpp篇（1.8.3）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Jsoncpp%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8%EF%BC%88%E6%B3%A8%E6%84%8F%EF%BC%8CJsoncpp%E6%9B%B4%E6%96%B0%E4%BA%86%EF%BC%8C%E6%9C%89%E4%BA%9B%E6%8E%A5%E5%8F%A3%E4%B8%8D%E6%8E%A8%E8%8D%90%E4%BA%86%EF%BC%8C%E4%BD%86%E6%98%AF%E5%8F%AF%E4%BB%A5%E7%94%A8%EF%BC%8C%E7%BD%91%E4%B8%8A%E5%A4%A7%E9%83%A8%E5%88%86%E7%9A%84%E6%95%99%E7%A8%8B%E9%83%BD%E6%98%AF%E6%97%A7%E7%89%88%E7%9A%84%EF%BC%8C%E8%BF%99%E9%87%8C%E6%88%91%E4%BC%9A%E7%BB%99%E5%87%BA%E6%96%B0%E7%9A%84%E5%92%8C%E6%97%A7%E7%9A%84%E7%9A%84%E4%BD%BF%E7%94%A8%EF%BC%89-%E8%BF%99%E9%87%8C%E5%8F%AA%E6%9C%89%E8%AF%BB%E7%9A%84%E3%80%82%E5%86%99%E7%9A%84%E7%B1%BB%E4%BC%BC%E3%80%82"><span class="nav-number"></span> <span class="nav-text">Jsoncpp的简单使用（注意，Jsoncpp更新了，有些接口不推荐了，但是可以用，网上大部分的教程都是旧版的，这里我会给出新的和旧的的使用）.这里只有读的。写的类似。</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

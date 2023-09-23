@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在我开发的一个实验和学习库中，在很久以前全面启用了编译器的sanitize功能。   这次报错的程序，是我这个库中某个模块的单元测试模块。但是前面说的都不是重点。诡异的是本次出现的单元测试模块是很久未动的一个模块，而且在本地的单元测试过程中，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记一次有趣的 buffer overflow detected 问题分析">
+<meta property="og:url" content="https://e-x.top/2023/10/22/blog_idx_124/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在我开发的一个实验和学习库中，在很久以前全面启用了编译器的sanitize功能。   这次报错的程序，是我这个库中某个模块的单元测试模块。但是前面说的都不是重点。诡异的是本次出现的单元测试模块是很久未动的一个模块，而且在本地的单元测试过程中，">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2023-10-22T11:22:00.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.932Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://e-x.top/2023/10/22/blog_idx_124/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>记一次有趣的 buffer overflow detected 问题分析 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2023/10/22/blog_idx_124/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          记一次有趣的 buffer overflow detected 问题分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-10-22 19:22:00" itemprop="dateCreated datePublished" datetime="2023-10-22T19:22:00+08:00">2023-10-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>8.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>7 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=124） 
+&emsp;&emsp;本文发布于  2023-10-22 19:22             （BlogID=124） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  在我开发的一个实验和学习库中，在很久以前全面启用了编译器的sanitize功能。</p>
+<p>  这次报错的程序，是我这个库中某个模块的单元测试模块。但是前面说的都不是重点。诡异的是本次出现的单元测试模块是很久未动的一个模块，而且在本地的单元测试过程中，是能够运行通过的，但是在github的ci上面出问题了。</p>
+<p>  首先，报这个错误的原因肯定是我们的程序有问题，但是以前结合调试模式+sanitize功能基本能够把问题排除了，结合了github的ci出现问题，初步判断是由于GCC版本升级后，对于栈溢出的检查更加准确了。</p>
+<p>  此外由于此报错是存在在一个release版本的模块，因此我们不能够采取通用的通过代码行来定位问题的方法。</p>
+<h3 id="问题初步定位">问题初步定位</h3>
+<hr>
+<p>  首先gdb 初步分析定位，定位到如下地址：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#<span class="number">4</span>  <span class="number">0x00007ffff6a4db81</span> in __GI___fortify_fail (msg=msg@entry=<span class="number">0x7ffff6acf7e6</span> <span class="string">&quot;buffer overflow detected&quot;</span>) at fortify_fail.c:<span class="number">44</span></span><br><span class="line">#<span class="number">5</span>  <span class="number">0x00007ffff6a4b870</span> in __GI___chk_fail () at chk_fail.c:<span class="number">28</span></span><br><span class="line">#<span class="number">6</span>  <span class="number">0x00007ffff79c06fc</span> in ?? () from ../lib/libylib.so<span class="number">.0</span></span><br></pre></td></tr></table></figure>
+<p>从这里可以知道，我们在执行0x00007ffff79c06fc前面的一个指令的时候出现了&quot;buffer overflow detected&quot;。然后我们通过layout asm查看汇编指令，找到前面一行指令如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0x7ffff79c06f2</span>:	b9 <span class="number">00</span> <span class="number">10</span> <span class="number">00</span> <span class="number">00</span>       	mov    $<span class="number">0x1000</span>,%ecx</span><br><span class="line"><span class="number">0x7ffff79c06f7</span>:	e8 <span class="number">44</span> <span class="number">1</span>e fe ff       	callq  <span class="number">58540</span> &lt;__memset_chk@plt&gt;</span><br><span class="line"><span class="number">0x7ffff79c06fc</span>:	<span class="number">4</span>c <span class="number">89</span> e2             	mov    %r12,%rdx</span><br></pre></td></tr></table></figure>
+<p>  其实到了这里，我们可以根据一些手段，可以查到是memset导致了我们的原因，如果要是可以进行源码调试的话，我们甚至马上就能够定位是哪一行导致的。</p>
+<p>  但是今天这里提供一种方法，可以复杂定位（兼容一个库里面多个memset调用，兼容release版本调试等等）我们出错这行汇编在我们源码中的大概位置。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="问题初步定位-2">问题初步定位</h3>
+<hr>
+<p>  首先，我们查看一下当前我们这个so文件在内存中的映射位置：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">    Start Addr           End Addr       Size     Offset objfile</span><br><span class="line"><span class="number">0x7ffff794a000</span>     <span class="number">0x7ffff7bc2000</span>   <span class="number">0x278000</span>        <span class="number">0x0</span> /xxx/libylib.so<span class="number">.0</span><span class="number">.1</span><span class="number">.0</span></span><br><span class="line"><span class="number">0x7ffff7bc2000</span>     <span class="number">0x7ffff7dc2000</span>   <span class="number">0x200000</span>   <span class="number">0x278000</span> /xxx/libylib.so<span class="number">.0</span><span class="number">.1</span><span class="number">.0</span></span><br><span class="line"><span class="number">0x7ffff7dc2000</span>     <span class="number">0x7ffff7dcc000</span>     <span class="number">0xa000</span>   <span class="number">0x278000</span> /xxx/libylib.so<span class="number">.0</span><span class="number">.1</span><span class="number">.0</span></span><br><span class="line"><span class="number">0x7ffff7dcc000</span>     <span class="number">0x7ffff7dd1000</span>     <span class="number">0x5000</span>   <span class="number">0x282000</span> /xxx/libylib.so<span class="number">.0</span><span class="number">.1</span><span class="number">.0</span></span><br></pre></td></tr></table></figure>
+<p>  首先我们可以分析出0x7ffff79c06f7是存在在内存映射0x7ffff794a000~0x7ffff7bc2000区段中的。此外，我们还知道了一个重要的消息是，当前我们关注的0x7ffff79c06f7在so中的偏移地址是0x7ffff79c06f7-0x7ffff794a000=0x766F7。</p>
+<p>  这个时候，我们可以通过objdump -d对libylib.so.0.1.0进行反编译分析。注意，这里要往我们关注的0x766F7偏移前面去寻找，而且还要反复去寻找，直到找到类似函数的边界（这里我建议新手直接上ida，快速解决问题），一般来说就是找函数帧，如果对这个不熟悉，建议使用ida等工具进行分析，可能更加方便。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br></pre></td><td class="code"><pre><span class="line">libylib.so<span class="number">.0</span><span class="number">.1</span><span class="number">.0</span>:     file format elf64-x86<span class="number">-64</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Disassembly of section .text:</span><br><span class="line"></span><br><span class="line"><span class="number">00000000000764</span>d0 &lt;_ZNSt6vectorIhSaIhEE17_M_default_appendEm@@Base+<span class="number">0x2b0</span>&gt;:</span><br><span class="line">   <span class="number">764</span>d0:	<span class="built_in">fe</span>                   	(bad)  </span><br><span class="line">   <span class="number">764</span>d1:	fd                   	std    </span><br><span class="line">   <span class="number">764</span>d2:	ff <span class="number">90</span> <span class="number">66</span> <span class="number">90</span> <span class="number">66</span> <span class="number">2</span>e    	callq  *<span class="number">0x2e669066</span>(%rax)</span><br><span class="line">   <span class="number">764</span>d8:	<span class="number">0f</span> <span class="number">1f</span> <span class="number">84</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> 	nopl   <span class="number">0x0</span>(%rax,%rax,<span class="number">1</span>)</span><br><span class="line">   <span class="number">764</span>df:	<span class="number">00</span> </span><br><span class="line"></span><br><span class="line"><span class="number">00000000000764e0</span> &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base&gt;:</span><br><span class="line">   <span class="number">764e0</span>:	<span class="number">48</span> <span class="number">8b</span> <span class="number">05</span> <span class="number">81</span> b4 <span class="number">40</span> <span class="number">00</span> 	mov    <span class="number">0x40b481</span>(%rip),%rax        # <span class="number">481968</span> &lt;_ZN4yLib6yShell10class_infoE@@Base<span class="number">-0x5058</span>&gt;</span><br><span class="line">   <span class="number">764e7</span>:	c3                   	retq   </span><br><span class="line">   <span class="number">764e8</span>:	<span class="number">0f</span> <span class="number">1f</span> <span class="number">84</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> 	nopl   <span class="number">0x0</span>(%rax,%rax,<span class="number">1</span>)</span><br><span class="line">   <span class="number">764</span>ef:	<span class="number">00</span> </span><br><span class="line">   <span class="comment">//注意这里开始</span></span><br><span class="line">   <span class="number">764f</span>0:	<span class="number">41</span> <span class="number">57</span>                	push   %r15</span><br><span class="line">   <span class="number">764f</span>2:	<span class="number">41</span> <span class="number">56</span>                	push   %r14</span><br><span class="line">   <span class="number">764f</span>4:	<span class="number">49</span> <span class="number">89</span> fe             	mov    %rdi,%r14</span><br><span class="line">   <span class="number">764f</span>7:	<span class="number">41</span> <span class="number">55</span>                	push   %r13</span><br><span class="line">   <span class="number">764f</span>9:	<span class="number">41</span> <span class="number">54</span>                	push   %r12</span><br><span class="line">   <span class="number">764f</span>b:	<span class="number">55</span>                   	push   %rbp</span><br><span class="line">   <span class="number">764f</span>c:	<span class="number">48</span> <span class="number">89</span> d5             	mov    %rdx,%rbp</span><br><span class="line">   <span class="number">764f</span>f:	<span class="number">53</span>                   	push   %rbx</span><br><span class="line">   <span class="number">76500</span>:	<span class="number">48</span> <span class="number">81</span> ec a8 <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> 	sub    $<span class="number">0xa8</span>,%rsp</span><br><span class="line">   <span class="number">76507</span>:	<span class="number">48</span> <span class="number">8b</span> <span class="number">56</span> <span class="number">08</span>          	mov    <span class="number">0x8</span>(%rsi),%rdx</span><br><span class="line">   <span class="number">7650b</span>:	<span class="number">48</span> <span class="number">2b</span> <span class="number">16</span>             	<span class="built_in">sub</span>    (%rsi),%rdx</span><br><span class="line">   <span class="number">7650</span>e:	<span class="number">64</span> <span class="number">48</span> <span class="number">8b</span> <span class="number">04</span> <span class="number">25</span> <span class="number">28</span> <span class="number">00</span> 	mov    %fs:<span class="number">0x28</span>,%rax</span><br><span class="line">   <span class="number">76515</span>:	<span class="number">00</span> <span class="number">00</span> </span><br><span class="line">   <span class="number">76517</span>:	<span class="number">48</span> <span class="number">89</span> <span class="number">84</span> <span class="number">24</span> <span class="number">98</span> <span class="number">00</span> <span class="number">00</span> 	mov    %rax,<span class="number">0x98</span>(%rsp)</span><br><span class="line">   <span class="number">7651</span>e:	<span class="number">00</span> </span><br><span class="line">   <span class="number">7651f</span>:	<span class="number">31</span> c0                	<span class="keyword">xor</span>    %eax,%eax</span><br><span class="line">   <span class="number">76521</span>:	<span class="number">48</span> <span class="number">8b</span> <span class="number">47</span> <span class="number">08</span>          	mov    <span class="number">0x8</span>(%rdi),%rax</span><br><span class="line">   <span class="number">76525</span>:	<span class="number">48</span> <span class="number">2b</span> <span class="number">07</span>             	<span class="built_in">sub</span>    (%rdi),%rax</span><br><span class="line">   <span class="number">76528</span>:	<span class="number">48</span> c1 fa <span class="number">05</span>          	sar    $<span class="number">0x5</span>,%rdx</span><br><span class="line">   <span class="number">7652</span>c:	<span class="number">48</span> c1 f8 <span class="number">05</span>          	sar    $<span class="number">0x5</span>,%rax</span><br><span class="line">   <span class="number">76530</span>:	<span class="number">48</span> <span class="number">8</span>d <span class="number">7</span>c <span class="number">02</span> <span class="number">01</span>       	lea    <span class="number">0x1</span>(%rdx,%rax,<span class="number">1</span>),%rdi</span><br><span class="line">   <span class="number">76535</span>:	<span class="number">48</span> <span class="number">89</span> f8             	mov    %rdi,%rax</span><br><span class="line">   <span class="number">76538</span>:	<span class="number">48</span> c1 e8 <span class="number">3</span>c          	shr    $<span class="number">0x3c</span>,%rax</span><br><span class="line">   <span class="number">7653</span>c:	<span class="number">0f</span> <span class="number">85</span> <span class="number">67</span> <span class="number">54</span> fe ff    	jne    <span class="number">5b</span>9a9 &lt;fwrite@plt+<span class="number">0x1221</span>&gt;</span><br><span class="line">   <span class="number">76542</span>:	<span class="number">48</span> c1 e7 <span class="number">03</span>          	shl    $<span class="number">0x3</span>,%rdi</span><br><span class="line">   <span class="number">76546</span>:	<span class="number">49</span> <span class="number">89</span> f4             	mov    %rsi,%r12</span><br><span class="line">   <span class="number">76549</span>:	<span class="number">48</span> <span class="number">89</span> cb             	mov    %rcx,%rbx</span><br><span class="line">   <span class="number">7654</span>c:	e8 <span class="number">2f</span> dc fd ff       	callq  <span class="number">54180</span> &lt;_Znam@plt&gt;</span><br><span class="line">   <span class="number">76551</span>:	<span class="number">49</span> <span class="number">8b</span> <span class="number">7</span>e <span class="number">08</span>          	mov    <span class="number">0x8</span>(%r14),%rdi</span><br><span class="line">   <span class="number">76555</span>:	<span class="number">49</span> <span class="number">8b</span> <span class="number">14</span> <span class="number">24</span>          	<span class="built_in">mov</span>    (%r12),%rdx</span><br><span class="line">   <span class="number">76559</span>:	<span class="number">49</span> <span class="number">89</span> c5             	mov    %rax,%r13</span><br><span class="line">   <span class="number">7655</span>c:	<span class="number">49</span> <span class="number">8b</span> <span class="number">74</span> <span class="number">24</span> <span class="number">08</span>       	mov    <span class="number">0x8</span>(%r12),%rsi</span><br><span class="line">   <span class="number">76561</span>:	<span class="number">49</span> <span class="number">8b</span> <span class="number">06</span>             	<span class="built_in">mov</span>    (%r14),%rax</span><br><span class="line">   <span class="number">76564</span>:	<span class="number">48</span> <span class="number">29</span> d6             	sub    %rdx,%rsi</span><br><span class="line">   <span class="number">76567</span>:	<span class="number">48</span> <span class="number">29</span> c7             	sub    %rax,%rdi</span><br><span class="line">   <span class="number">7656</span>a:	<span class="number">49</span> <span class="number">89</span> f9             	mov    %rdi,%r9</span><br><span class="line">   <span class="number">7656</span>d:	<span class="number">49</span> <span class="number">89</span> f2             	mov    %rsi,%r10</span><br><span class="line">   <span class="number">76570</span>:	<span class="number">49</span> <span class="number">89</span> f0             	mov    %rsi,%r8</span><br><span class="line">   <span class="number">76573</span>:	<span class="number">48</span> <span class="number">01</span> c7             	add    %rax,%rdi</span><br><span class="line">   <span class="number">76576</span>:	<span class="number">49</span> c1 f9 <span class="number">05</span>          	sar    $<span class="number">0x5</span>,%r9</span><br><span class="line">   <span class="number">7657</span>a:	<span class="number">49</span> c1 fa <span class="number">05</span>          	sar    $<span class="number">0x5</span>,%r10</span><br><span class="line">   <span class="number">7657</span>e:	<span class="number">4b</span> <span class="number">8</span>d <span class="number">0</span>c <span class="number">11</span>          	<span class="built_in">lea</span>    (%r9,%r10,<span class="number">1</span>),%rcx</span><br><span class="line">   <span class="number">76582</span>:	<span class="number">49</span> c7 <span class="number">44</span> cd <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> 	movq   $<span class="number">0x0</span>,<span class="number">0x0</span>(%r13,%rcx,<span class="number">8</span>)</span><br><span class="line">   <span class="number">76589</span>:	<span class="number">00</span> <span class="number">00</span> </span><br><span class="line">   <span class="number">7658b</span>:	<span class="number">4</span>c <span class="number">89</span> e9             	mov    %r13,%rcx</span><br><span class="line">   <span class="number">7658</span>e:	<span class="number">4</span>d <span class="number">85</span> c9             	test   %r9,%r9</span><br><span class="line">   <span class="number">76591</span>:	<span class="number">74</span> <span class="number">19</span>                	je     <span class="number">765</span>ac &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0xcc</span>&gt;</span><br><span class="line">   <span class="number">76593</span>:	<span class="number">0f</span> <span class="number">1f</span> <span class="number">44</span> <span class="number">00</span> <span class="number">00</span>       	nopl   <span class="number">0x0</span>(%rax,%rax,<span class="number">1</span>)</span><br><span class="line">   <span class="number">76598</span>:	<span class="number">48</span> <span class="number">8b</span> <span class="number">30</span>             	<span class="built_in">mov</span>    (%rax),%rsi</span><br><span class="line">   <span class="number">7659b</span>:	<span class="number">48</span> <span class="number">83</span> c0 <span class="number">20</span>          	add    $<span class="number">0x20</span>,%rax</span><br><span class="line">   <span class="number">7659f</span>:	<span class="number">48</span> <span class="number">83</span> c1 <span class="number">08</span>          	add    $<span class="number">0x8</span>,%rcx</span><br><span class="line">   <span class="number">765</span>a3:	<span class="number">48</span> <span class="number">89</span> <span class="number">71</span> f8          	mov    %rsi,<span class="number">-0x8</span>(%rcx)</span><br><span class="line">   <span class="number">765</span>a7:	<span class="number">48</span> <span class="number">39</span> c7             	cmp    %rax,%rdi</span><br><span class="line">   <span class="number">765</span>aa:	<span class="number">75</span> ec                	jne    <span class="number">76598</span> &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0xb8</span>&gt;</span><br><span class="line">   <span class="number">765</span>ac:	<span class="number">4</span>d <span class="number">85</span> d2             	test   %r10,%r10</span><br><span class="line">   <span class="number">765</span>af:	<span class="number">74</span> <span class="number">23</span>                	je     <span class="number">765</span>d4 &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0xf4</span>&gt;</span><br><span class="line">   <span class="number">765b</span>1:	<span class="number">48</span> <span class="number">89</span> d0             	mov    %rdx,%rax</span><br><span class="line">   <span class="number">765b</span>4:	<span class="number">4b</span> <span class="number">8</span>d <span class="number">54</span> cd <span class="number">00</span>       	lea    <span class="number">0x0</span>(%r13,%r9,<span class="number">8</span>),%rdx</span><br><span class="line">   <span class="number">765b</span>9:	<span class="number">4</span>a <span class="number">8</span>d <span class="number">34</span> <span class="number">00</span>          	<span class="built_in">lea</span>    (%rax,%r8,<span class="number">1</span>),%rsi</span><br><span class="line">   <span class="number">765b</span>d:	<span class="number">0f</span> <span class="number">1f</span> <span class="number">00</span>             	<span class="built_in">nopl</span>   (%rax)</span><br><span class="line">   <span class="number">765</span>c0:	<span class="number">48</span> <span class="number">8b</span> <span class="number">08</span>             	<span class="built_in">mov</span>    (%rax),%rcx</span><br><span class="line">   <span class="number">765</span>c3:	<span class="number">48</span> <span class="number">83</span> c0 <span class="number">20</span>          	add    $<span class="number">0x20</span>,%rax</span><br><span class="line">   <span class="number">765</span>c7:	<span class="number">48</span> <span class="number">83</span> c2 <span class="number">08</span>          	add    $<span class="number">0x8</span>,%rdx</span><br><span class="line">   <span class="number">765</span>cb:	<span class="number">48</span> <span class="number">89</span> <span class="number">4</span>a f8          	mov    %rcx,<span class="number">-0x8</span>(%rdx)</span><br><span class="line">   <span class="number">765</span>cf:	<span class="number">48</span> <span class="number">39</span> f0             	cmp    %rsi,%rax</span><br><span class="line">   <span class="number">765</span>d2:	<span class="number">75</span> ec                	jne    <span class="number">765</span>c0 &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0xe0</span>&gt;</span><br><span class="line">   <span class="number">765</span>d4:	<span class="number">48</span> <span class="number">8b</span> <span class="number">7</span>d <span class="number">08</span>          	mov    <span class="number">0x8</span>(%rbp),%rdi</span><br><span class="line">   <span class="number">765</span>d8:	<span class="number">48</span> <span class="number">2b</span> <span class="number">7</span>d <span class="number">00</span>          	sub    <span class="number">0x0</span>(%rbp),%rdi</span><br><span class="line">   <span class="number">765</span>dc:	<span class="number">48</span> c1 ff <span class="number">05</span>          	sar    $<span class="number">0x5</span>,%rdi</span><br><span class="line">   <span class="number">765e0</span>:	<span class="number">48</span> <span class="number">83</span> c7 <span class="number">01</span>          	add    $<span class="number">0x1</span>,%rdi</span><br><span class="line">   <span class="number">765e4</span>:	<span class="number">48</span> <span class="number">89</span> f8             	mov    %rdi,%rax</span><br><span class="line">   <span class="number">765e7</span>:	<span class="number">48</span> c1 e8 <span class="number">3</span>c          	shr    $<span class="number">0x3c</span>,%rax</span><br><span class="line">   <span class="number">765</span>eb:	<span class="number">0f</span> <span class="number">85</span> <span class="number">93</span> <span class="number">0</span>a <span class="number">00</span> <span class="number">00</span>    	jne    <span class="number">77084</span> &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0xba4</span>&gt;</span><br><span class="line">   <span class="number">765f</span>1:	<span class="number">48</span> c1 e7 <span class="number">03</span>          	shl    $<span class="number">0x3</span>,%rdi</span><br><span class="line">   <span class="number">765f</span>5:	e8 <span class="number">86</span> db fd ff       	callq  <span class="number">54180</span> &lt;_Znam@plt&gt;</span><br><span class="line">   <span class="number">765f</span>a:	<span class="number">48</span> <span class="number">8b</span> <span class="number">75</span> <span class="number">08</span>          	mov    <span class="number">0x8</span>(%rbp),%rsi</span><br><span class="line">   <span class="number">765f</span>e:	<span class="number">48</span> <span class="number">89</span> c2             	mov    %rax,%rdx</span><br><span class="line">   <span class="number">76601</span>:	<span class="number">48</span> <span class="number">89</span> <span class="number">44</span> <span class="number">24</span> <span class="number">08</span>       	mov    %rax,<span class="number">0x8</span>(%rsp)</span><br><span class="line">   <span class="number">76606</span>:	<span class="number">48</span> <span class="number">8b</span> <span class="number">45</span> <span class="number">00</span>          	mov    <span class="number">0x0</span>(%rbp),%rax</span><br><span class="line">   <span class="number">7660</span>a:	<span class="number">48</span> <span class="number">29</span> c6             	sub    %rax,%rsi</span><br><span class="line">   <span class="number">7660</span>d:	<span class="number">48</span> <span class="number">89</span> f1             	mov    %rsi,%rcx</span><br><span class="line">   <span class="number">76610</span>:	<span class="number">48</span> <span class="number">01</span> c6             	add    %rax,%rsi</span><br><span class="line">   <span class="number">76613</span>:	<span class="number">48</span> c1 f9 <span class="number">05</span>          	sar    $<span class="number">0x5</span>,%rcx</span><br><span class="line">   <span class="number">76617</span>:	<span class="number">48</span> <span class="number">8</span>d <span class="number">3</span><span class="function">c ca          	<span class="title">lea</span>    <span class="params">(%rdx,%rcx,<span class="number">8</span>)</span>,%rdi</span></span><br><span class="line"><span class="function">   7661b:	<span class="number">48</span> c7 <span class="number">07</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> 	movq   $<span class="number">0x0</span>,(%rdi)</span></span><br><span class="line"><span class="function">   <span class="number">76622</span>:	<span class="number">48</span> <span class="number">85</span> c9             	test   %rcx,%rcx</span></span><br><span class="line"><span class="function">   <span class="number">76625</span>:	<span class="number">74</span> <span class="number">1</span>d                	je     <span class="number">76644</span> &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0x164</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">76627</span>:	<span class="number">66</span> <span class="number">0f</span> <span class="number">1f</span> <span class="number">84</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> 	nopw   <span class="number">0x0</span>(%rax,%rax,<span class="number">1</span>)</span></span><br><span class="line"><span class="function">   <span class="number">7662</span>e:	<span class="number">00</span> <span class="number">00</span> </span></span><br><span class="line"><span class="function">   <span class="number">76630</span>:	<span class="number">48</span> <span class="number">8b</span> <span class="number">08</span>             	mov    (%rax),%rcx</span></span><br><span class="line"><span class="function">   <span class="number">76633</span>:	<span class="number">48</span> <span class="number">83</span> c0 <span class="number">20</span>          	add    $<span class="number">0x20</span>,%rax</span></span><br><span class="line"><span class="function">   <span class="number">76637</span>:	<span class="number">48</span> <span class="number">83</span> c2 <span class="number">08</span>          	add    $<span class="number">0x8</span>,%rdx</span></span><br><span class="line"><span class="function">   <span class="number">7663b</span>:	<span class="number">48</span> <span class="number">89</span> <span class="number">4</span>a f8          	mov    %rcx,<span class="number">-0x8</span>(%rdx)</span></span><br><span class="line"><span class="function">   <span class="number">7663f</span>:	<span class="number">48</span> <span class="number">39</span> c6             	cmp    %rax,%rsi</span></span><br><span class="line"><span class="function">   <span class="number">76642</span>:	<span class="number">75</span> ec                	jne    <span class="number">76630</span> &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0x150</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">76644</span>:	<span class="number">48</span> c7 <span class="number">07</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> 	movq   $<span class="number">0x0</span>,(%rdi)</span></span><br><span class="line"><span class="function">   <span class="number">7664b</span>:	<span class="number">48</span> <span class="number">8b</span> <span class="number">35</span> <span class="number">06</span> b2 <span class="number">40</span> <span class="number">00</span> 	mov    <span class="number">0x40b206</span>(%rip),%rsi        # <span class="number">481858</span> &lt;_ZSt7nothrow@GLIBCXX_3<span class="number">.4</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">76652</span>:	bf <span class="number">00</span> <span class="number">10</span> <span class="number">00</span> <span class="number">00</span>       	mov    $<span class="number">0x1000</span>,%edi</span></span><br><span class="line"><span class="function">   <span class="number">76657</span>:	e8 b4 <span class="number">2</span>d fe ff       	callq  <span class="number">59410</span> &lt;_ZnamRKSt9nothrow_t@plt&gt;</span></span><br><span class="line"><span class="function">   <span class="number">7665</span>c:	<span class="number">48</span> <span class="number">8</span>d <span class="number">7</span>c <span class="number">24</span> <span class="number">28</span>       	lea    <span class="number">0x28</span>(%rsp),%rdi</span></span><br><span class="line"><span class="function">   <span class="number">76661</span>:	<span class="number">48</span> <span class="number">89</span> c5             	mov    %rax,%rbp</span></span><br><span class="line"><span class="function">   <span class="number">76664</span>:	<span class="number">48</span> <span class="number">8b</span> <span class="number">05</span> <span class="number">5</span>d <span class="number">1</span>c <span class="number">1</span>a <span class="number">00</span> 	mov    <span class="number">0x1a1c5d</span>(%rip),%rax        # <span class="number">2182</span>c8 &lt;_ZTSNSt6thread11_State_implINS_8_InvokerISt5tupleIJMN4yLib11yThreadPoolEFvvEPS4_EEEEEE@@Base+<span class="number">0x4e8</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">7666b</span>:	<span class="number">48</span> <span class="number">89</span> <span class="number">44</span> <span class="number">24</span> <span class="number">28</span>       	mov    %rax,<span class="number">0x28</span>(%rsp)</span></span><br><span class="line"><span class="function">   <span class="number">76670</span>:	e8 fb <span class="number">1</span>c fe ff       	callq  <span class="number">58370</span> &lt;pipe@plt&gt;</span></span><br><span class="line"><span class="function">   <span class="number">76675</span>:	<span class="number">85</span> c0                	test   %eax,%eax</span></span><br><span class="line"><span class="function">   <span class="number">76677</span>:	<span class="number">0f</span> <span class="number">88</span> <span class="number">69</span> <span class="number">03</span> <span class="number">00</span> <span class="number">00</span>    	js     <span class="number">769e6</span> &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0x506</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">7667</span>d:	e8 <span class="number">4</span>e e5 fd ff       	callq  <span class="number">54b</span>d0 &lt;fork@plt&gt;</span></span><br><span class="line"><span class="function">   <span class="number">76682</span>:	<span class="number">41</span> <span class="number">89</span> c4             	mov    %eax,%r12d</span></span><br><span class="line"><span class="function">   <span class="number">76685</span>:	<span class="number">85</span> c0                	test   %eax,%eax</span></span><br><span class="line"><span class="function">   <span class="number">76687</span>:	<span class="number">0f</span> <span class="number">88</span> <span class="number">08</span> <span class="number">07</span> <span class="number">00</span> <span class="number">00</span>    	js     <span class="number">76</span>d95 &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0x8b5</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">7668</span>d:	<span class="number">0f</span> <span class="number">84</span> <span class="number">1</span>d <span class="number">01</span> <span class="number">00</span> <span class="number">00</span>    	je     <span class="number">767b</span>0 &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0x2d0</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">76693</span>:	<span class="number">8b</span> <span class="number">7</span>c <span class="number">24</span> <span class="number">2</span>c          	mov    <span class="number">0x2c</span>(%rsp),%edi</span></span><br><span class="line"><span class="function">   <span class="number">76697</span>:	e8 <span class="number">24</span> <span class="number">3</span>e fe ff       	callq  <span class="number">5</span>a4c0 &lt;close@plt&gt;</span></span><br><span class="line"><span class="function">   <span class="number">7669</span>c:	<span class="number">48</span> <span class="number">8</span>d <span class="number">74</span> <span class="number">24</span> <span class="number">1</span>c       	lea    <span class="number">0x1c</span>(%rsp),%rsi</span></span><br><span class="line"><span class="function">   <span class="number">766</span>a1:	<span class="number">31</span> d2                	xor    %edx,%edx</span></span><br><span class="line"><span class="function">   <span class="number">766</span>a3:	<span class="number">44</span> <span class="number">89</span> e7             	mov    %r12d,%edi</span></span><br><span class="line"><span class="function">   <span class="number">766</span>a6:	e8 <span class="number">55</span> <span class="number">00</span> fe ff       	callq  <span class="number">56700</span> &lt;waitpid@plt&gt;</span></span><br><span class="line"><span class="function">   <span class="number">766</span>ab:	<span class="number">8b</span> <span class="number">44</span> <span class="number">24</span> <span class="number">1</span>c          	mov    <span class="number">0x1c</span>(%rsp),%eax</span></span><br><span class="line"><span class="function">   <span class="number">766</span>af:	a8 <span class="number">7f</span>                	test   $<span class="number">0x7f</span>,%al</span></span><br><span class="line"><span class="function">   <span class="number">766b</span>1:	<span class="number">0f</span> <span class="number">85</span> <span class="number">8</span>a <span class="number">07</span> <span class="number">00</span> <span class="number">00</span>    	jne    <span class="number">76e41</span> &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0x961</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">766b</span>7:	<span class="number">0f</span> b6 cc             	movzbl %ah,%ecx</span></span><br><span class="line"><span class="function">   <span class="number">766b</span>a:	f6 c4 ff             	test   $<span class="number">0xff</span>,%ah</span></span><br><span class="line"><span class="function">   <span class="number">766b</span>d:	<span class="number">0f</span> <span class="number">85</span> cd <span class="number">03</span> <span class="number">00</span> <span class="number">00</span>    	jne    <span class="number">76</span>a90 &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0x5b0</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">766</span>c3:	<span class="number">8b</span> <span class="number">7</span>c <span class="number">24</span> <span class="number">28</span>          	mov    <span class="number">0x28</span>(%rsp),%edi</span></span><br><span class="line"><span class="function">   <span class="number">766</span>c7:	<span class="number">48</span> <span class="number">8</span>d <span class="number">35</span> <span class="number">52</span> cb <span class="number">1</span>c <span class="number">00</span> 	lea    <span class="number">0x1ccb52</span>(%rip),%rsi        # <span class="number">243220</span> &lt;_ZTSN4Json12RuntimeErrorE@@Base+<span class="number">0x60</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">766</span>ce:	e8 cd <span class="number">0</span>d fe ff       	callq  <span class="number">574</span>a0 &lt;fdopen@plt&gt;</span></span><br><span class="line"><span class="function">   <span class="number">766</span>d3:	<span class="number">49</span> <span class="number">89</span> c4             	mov    %rax,%r12</span></span><br><span class="line"><span class="function">   <span class="number">766</span>d6:	<span class="number">48</span> <span class="number">85</span> ed             	test   %rbp,%rbp</span></span><br><span class="line"><span class="function">   <span class="number">766</span>d9:	<span class="number">0f</span> <span class="number">84</span> f1 <span class="number">02</span> <span class="number">00</span> <span class="number">00</span>    	je     <span class="number">769</span>d0 &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0x4f0</span>&gt;</span></span><br><span class="line"><span class="function">   <span class="number">766</span>df:	<span class="number">4</span>c <span class="number">8</span>d <span class="number">74</span> <span class="number">24</span> <span class="number">70</span>       	lea    <span class="number">0x70</span>(%rsp),%r14</span></span><br><span class="line"><span class="function">   <span class="number">766e4</span>:	<span class="number">0f</span> <span class="number">1f</span> <span class="number">40</span> <span class="number">00</span>          	nopl   <span class="number">0x0</span>(%rax)</span></span><br><span class="line"><span class="function">   <span class="number">766e8</span>:	<span class="number">31</span> f6                	xor    %esi,%esi</span></span><br><span class="line"><span class="function">   <span class="number">766</span>ea:	ba <span class="number">01</span> <span class="number">10</span> <span class="number">00</span> <span class="number">00</span>       	mov    $<span class="number">0x1001</span>,%edx</span></span><br><span class="line"><span class="function">   <span class="number">766</span>ef:	<span class="number">48</span> <span class="number">89</span> ef             	mov    %rbp,%rdi</span></span><br><span class="line"><span class="function">   <span class="number">766f</span>2:	b9 <span class="number">00</span> <span class="number">10</span> <span class="number">00</span> <span class="number">00</span>       	mov    $<span class="number">0x1000</span>,%ecx</span></span><br><span class="line"><span class="function">   <span class="number">766f</span>7:	e8 <span class="number">44</span> <span class="number">1</span>e fe ff       	callq  <span class="number">58540</span> &lt;__memset_chk@plt&gt;</span></span><br><span class="line"><span class="function">   <span class="number">766f</span>c:	<span class="number">4</span>c <span class="number">89</span> e2             	mov    %r12,%rdx</span></span><br><span class="line"><span class="function"></span></span><br></pre></td></tr></table></figure>
+<p>  我们往此偏移往上查找，找到了764f0偏移的特殊指令，这里一看就是一个函数的开始位置（这里为啥是函数开始，主要是操作备份rbp，申请栈，操作rsp等等）。</p>
+<p>  这里其实又有两个选择，我们在分析函数头的过程中，其实已经找到了足够多的我们想要找的函数特征：例如这里调用了fork/pipe/fdopen等等，如果情况是这样的，那么其实我们可以综合分析，找到我们源码对应出错的位置了。</p>
+<p>  那如果我们的函数平平无奇，没有什么明显特征怎么搞呢？还是只有利用我们的函数头来判断，到底是我们写的哪个函数出问题了。</p>
+<p>  于是我们拿着764f0偏移，通过readelf -s来查找符号，发现不是任何一个我们已知的符号，这尼玛就坑了啊。到了这里，其实现在不好搞啊。我们用gdb record / ida / objdump + grep 来综合分析，发现了跳转到当前地址的一个地方。下面是用readelf+objdump+grep来得到的一段片段：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">764f</span>0:	<span class="number">41</span> <span class="number">57</span>                	push   %r15</span><br><span class="line"><span class="number">77090</span>:	e9 <span class="number">5b</span> f4 ff ff       	jmpq   <span class="number">764f</span>0 &lt;_ZN4yLib6yShell16yLibGetClassInfoEv@@Base+<span class="number">0x10</span>&gt;</span><br></pre></td></tr></table></figure>
+<p>  我们再次用objdump和readelf查找77090这个偏移，终于在符号表查到了我们关心的这个偏移，如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">559</span>: <span class="number">0000000000077090</span>     <span class="number">5</span> FUNC    GLOBAL DEFAULT   <span class="number">12</span> _ZN4yLib6yShell7ExecuteERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS7_EESB_SB_RS9_</span><br></pre></td></tr></table></figure>
+<p>  到此，通过复原cxx函数名字，我们就知道了我们在哪个函数里面崩溃的，而且是在这个函数的memset的地方导致溢出崩溃的。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  此问题的分析加深了我们对计算机的理解，使用了较多的二进制分析工具。</p>
+<p>  结合我以前的调试和反调试经验，新手我还是建议直接上刑具ida进行分析，这样更棒哦。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/07/02/blog_idx_122/" rel="prev" title="LinuxDNS分析从入门到放弃（记一次有趣的dns问题排查记录，ping 源码分析，getaddrinfo源码分析）">
+      <i class="fa fa-chevron-left"></i> LinuxDNS分析从入门到放弃（记一次有趣的dns问题排查记录，ping 源码分析，getaddrinfo源码分析）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/11/19/blog_idx_125/" rel="next" title="记一次有趣的hwclock写RTC的PermissionDenied错误">
+      记一次有趣的hwclock写RTC的PermissionDenied错误 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E5%88%9D%E6%AD%A5%E5%AE%9A%E4%BD%8D"><span class="nav-number"></span> <span class="nav-text">问题初步定位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E5%88%9D%E6%AD%A5%E5%AE%9A%E4%BD%8D-2"><span class="nav-number"></span> <span class="nav-text">问题初步定位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

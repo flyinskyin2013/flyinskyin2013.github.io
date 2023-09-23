@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Windows 10 VSCode Python 3.8.10 Pytorch 1.8.1 Cuda 10.2  前言    在《DL基础补全计划(一)—线性回归及示例（Pytorch，平方损失）》（https:&#x2F;&#x2F;blog.csdn.net&#x2F;u0117284">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DL基础补全计划(二)---Softmax回归及示例（Pytorch，交叉熵损失）">
+<meta property="og:url" content="https://e-x.top/2021/07/11/blog_idx_106/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Windows 10 VSCode Python 3.8.10 Pytorch 1.8.1 Cuda 10.2  前言    在《DL基础补全计划(一)—线性回归及示例（Pytorch，平方损失）》（https:&#x2F;&#x2F;blog.csdn.net&#x2F;u0117284">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_106/show_datasets.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_106/train_log.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_106/predict_log.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-07-11T14:23:46.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.890Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_106/show_datasets.png">
+
+<link rel="canonical" href="https://e-x.top/2021/07/11/blog_idx_106/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>DL基础补全计划(二)---Softmax回归及示例（Pytorch，交叉熵损失） | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/07/11/blog_idx_106/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DL基础补全计划(二)---Softmax回归及示例（Pytorch，交叉熵损失）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-11 22:23:46" itemprop="dateCreated datePublished" datetime="2021-07-11T22:23:46+08:00">2021-07-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>9 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-07-01 17:32:12
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=106） 
+&emsp;&emsp;本文发布于 2021-07-11 22:23:46     （BlogID=106） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<ul>
+<li>Windows 10</li>
+<li>VSCode</li>
+<li>Python 3.8.10</li>
+<li>Pytorch 1.8.1</li>
+<li>Cuda 10.2</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  在《DL基础补全计划(一)—线性回归及示例（Pytorch，平方损失）》（<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/118463588">https://blog.csdn.net/u011728480/article/details/118463588</a> ）一文中我们对深度学习中的非常基础的知识进行了简单介绍，按照常见深度学习中的基本流程设计了一个简单的线性模型。同时，基于基本的语法，展示了数据收集，数据小批量随机获取，网络forward, loss设计，基于loss的bp，随机小批量梯度下降，模型训练，模型预测等基本的流程。 记录这篇文章的原因也很简单，为了将自己从学校里面带出来的知识和深度学习中的基础知识关联起来，不要出现大的断层和空洞。</p>
+<p>  在上文我们提到，我们已经能够设计一类模型能够求解特定函数的数值，但是在实际应用场景中，我们还有一些问题主要还是关注他们的分类。比如我们有一堆数据，怎么把他们分为N类。这里就要介绍深度学习中一类常见的模型，softmax回归模型。本文的主要目的就是基于FashionMNIST数据集（60000 * 28 * 28 训练集，10000 * 28 * 28 测试集），从基础的语法开始设计一个softmax分类模型，并介绍一些softmax相关的重点，在本文之后，其实我们就可以做一些深度学习的简单分类任务了。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Softmax介绍及实例">Softmax介绍及实例</h3>
+<hr>
+<p>  我们可以知道，Softmax这个函数其实就是对N个类别进行打分，输出N个类别的概率，那么它的实际底层工作原理到底是什么呢？</p>
+<p>  假如我们定义输出类别为N，输入特征为X, 输出类别分数为Y，参数为W，偏置为b，那么我们可以设计一个函数为：$Y=WX+b$，W.shape是(N, len(X)), X.shape是(len(X), 1)， b.shape 是(N, len(X))，Y.shape是(N , 1)，通过这样的一个线性运算后，我们就可以将len(X)个输入变换为N个输出，其实这个时候的N个输出就是我们不同类别的分数，理论上来说，我们就可以用这个当做每个类别的分数或者说概率。由于这里的Y是实数范围，有正有负，有大有小，存在数据不稳定性，而且我们需要把输出的类别当做概率使用，这里如果存在负数的话，不满足概率的一些定义。因此我们在经过一个线性变换后，再通过softmax运算，才能够将这些分数转换为相应的概率。</p>
+<p>  Y.shape是(N , 1)，Softmax定义为：$Softmax(Yi)=exp(Yi)/\sum\limits_{j=0}^{N-1}Yj$ ，因此我们可以通过Softmax得到每个类别的分数。$Y’=Softmax(Y)$，通过这样的运算后，就把Y归一化到0~1，而且满足概率的一些定义和保持了和Y同样的性质。</p>
+<p>  下面我们基于FashionMNIST数据集（此数据集有10个类别，60000个训练集，10000个测试集，图片为单通道28*28），设计一个简单的分类模型。下面是python需要导入的依赖</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> numpy.core.numeric <span class="keyword">import</span> cross</span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">from</span> torch.utils.data <span class="keyword">import</span> Dataset</span><br><span class="line"><span class="keyword">from</span> torchvision <span class="keyword">import</span> datasets</span><br><span class="line"><span class="keyword">from</span> torchvision.transforms <span class="keyword">import</span> ToTensor</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> torch.utils.data <span class="keyword">import</span> DataLoader</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="获取并处理FashionMNIST数据集">获取并处理FashionMNIST数据集</h5>
+<p>  通过Pytorch的设计好的api直接获取数据集，并得到解析后的数据</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">LoadFashionMNISTByTorchApi</span>():</span><br><span class="line">    <span class="comment"># 60000*28*28</span></span><br><span class="line">    training_data = datasets.FashionMNIST(</span><br><span class="line">        root=<span class="string">&quot;data&quot;</span>,</span><br><span class="line">        train=<span class="literal">True</span>,</span><br><span class="line">        download=<span class="literal">True</span>,</span><br><span class="line">        transform=ToTensor()</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 10000*28*28</span></span><br><span class="line">    test_data = datasets.FashionMNIST(</span><br><span class="line">        root=<span class="string">&quot;data&quot;</span>,</span><br><span class="line">        train=<span class="literal">False</span>,</span><br><span class="line">        download=<span class="literal">True</span>,</span><br><span class="line">        transform=ToTensor()</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    labels_map = &#123;</span><br><span class="line">        <span class="number">0</span>: <span class="string">&quot;T-Shirt&quot;</span>,</span><br><span class="line">        <span class="number">1</span>: <span class="string">&quot;Trouser&quot;</span>,</span><br><span class="line">        <span class="number">2</span>: <span class="string">&quot;Pullover&quot;</span>,</span><br><span class="line">        <span class="number">3</span>: <span class="string">&quot;Dress&quot;</span>,</span><br><span class="line">        <span class="number">4</span>: <span class="string">&quot;Coat&quot;</span>,</span><br><span class="line">        <span class="number">5</span>: <span class="string">&quot;Sandal&quot;</span>,</span><br><span class="line">        <span class="number">6</span>: <span class="string">&quot;Shirt&quot;</span>,</span><br><span class="line">        <span class="number">7</span>: <span class="string">&quot;Sneaker&quot;</span>,</span><br><span class="line">        <span class="number">8</span>: <span class="string">&quot;Bag&quot;</span>,</span><br><span class="line">        <span class="number">9</span>: <span class="string">&quot;Ankle Boot&quot;</span>,</span><br><span class="line">    &#125;</span><br><span class="line">    figure = plt.figure(figsize=(<span class="number">8</span>, <span class="number">8</span>))</span><br><span class="line">    cols, rows = <span class="number">3</span>, <span class="number">3</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, cols * rows + <span class="number">1</span>):</span><br><span class="line">        sample_idx = torch.randint(<span class="built_in">len</span>(training_data), size=(<span class="number">1</span>,)).item()</span><br><span class="line">        img, label = training_data[sample_idx]</span><br><span class="line">        figure.add_subplot(rows, cols, i)</span><br><span class="line">        plt.title(labels_map[label])</span><br><span class="line">        plt.axis(<span class="string">&quot;off&quot;</span>)</span><br><span class="line">        plt.imshow(img.squeeze(), cmap=<span class="string">&quot;gray&quot;</span>)</span><br><span class="line">    plt.show()</span><br><span class="line">    <span class="keyword">return</span> training_data, test_data</span><br></pre></td></tr></table></figure>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_106/show_datasets.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  通过面的代码可以知道，datasets.FashionMNIST()返回的是集合，集合里面存的是每个图的数据以及其标签。这里其实Pytorch帮我们做了解析工作，实际FashionMNIST的二进制存储格式如下，我们也可以自己写代码按照此规则解析数据集，这里就不关注这个问题了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">Image:</span></span><br><span class="line"><span class="string">[offset] [type]          [value]          [description]</span></span><br><span class="line"><span class="string">0000     32 bit integer  0x00000803(2051) magic number</span></span><br><span class="line"><span class="string">0004     32 bit integer  60000            number of images</span></span><br><span class="line"><span class="string">0008     32 bit integer  28               number of rows</span></span><br><span class="line"><span class="string">0012     32 bit integer  28               number of columns</span></span><br><span class="line"><span class="string">0016     unsigned byte   ??               pixel</span></span><br><span class="line"><span class="string">0017     unsigned byte   ??               pixel</span></span><br><span class="line"><span class="string">........</span></span><br><span class="line"><span class="string">xxxx     unsigned byte   ??               pixel</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">Label：</span></span><br><span class="line"><span class="string">[offset] [type]          [value]          [description]</span></span><br><span class="line"><span class="string">0000     32 bit integer  0x00000801(2049) magic number (MSB first)</span></span><br><span class="line"><span class="string">0004     32 bit integer  60000            number of items</span></span><br><span class="line"><span class="string">0008     unsigned byte   ??               label</span></span><br><span class="line"><span class="string">0009     unsigned byte   ??               label</span></span><br><span class="line"><span class="string">........</span></span><br><span class="line"><span class="string">xxxx     unsigned byte   ??               label</span></span><br><span class="line"><span class="string">The labels values are 0 to 9.</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>  还记得我们前文的随机小批量怎么实现的吗？首先随机打乱数据集中的每个数据（图片和标签为一个数据）的顺序，然后根据batch_size参数构造一个可迭代的对象返回出来，最后训练的时候我们通过for xx in data_iter 来访问这一批的数据。这里我们也不需要自己来写这个了，直接调用Pytorch的函数来生成这样的一个data_iter，我们应该把更多注意力放到其他地方去。代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">training_data, test_data = LoadFashionMNISTByTorchApi()</span><br><span class="line">batch_size = <span class="number">200</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 返回训练集和测试集的可迭代对象</span></span><br><span class="line">train_dataloader = DataLoader(training_data, batch_size, shuffle=<span class="literal">True</span>)</span><br><span class="line">test_dataloader = DataLoader(test_data, batch_size, shuffle=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="设计网络">设计网络</h5>
+<p>  我们的网络由两个部分构成，一个是从28*28到10的一个映射函数，一个是softmax函数。我们定义一个$Y=WX+b, Y’=Softmax(Y)$，因此我们可以看到，我们所需要学习的参数有W和b。</p>
+<p>  根据前文介绍，我们可以知道Y’/Y.shape是(10, 1), X.shape是(784, 1), W.shape是(10, 784), b.shape(10, 1)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">softmax</span>(<span class="params">out</span>):</span><br><span class="line">    <span class="comment"># example:</span></span><br><span class="line">    <span class="comment"># out = (p1, p2, p3)</span></span><br><span class="line">    <span class="comment"># set Sum=p1+p2+p3</span></span><br><span class="line">    <span class="comment"># softmax(out) = (p1/Sum, p2/Sum, p3/Sum)</span></span><br><span class="line">    exp_out = torch.exp(out)</span><br><span class="line">    partition = exp_out.<span class="built_in">sum</span>(dim=<span class="number">1</span>, keepdim=<span class="literal">True</span>)</span><br><span class="line">    <span class="keyword">return</span> exp_out/partition</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_net</span>(<span class="params">w, b, X</span>):</span><br><span class="line">    <span class="comment"># print(X.shape)</span></span><br><span class="line">    <span class="comment"># print(w.shape)</span></span><br><span class="line">    <span class="comment"># print(b.shape)</span></span><br><span class="line">    liear_out = torch.matmul(X, w) + b</span><br><span class="line">    <span class="comment"># print(liear_out.shape)</span></span><br><span class="line">    <span class="keyword">return</span> softmax(liear_out)</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="设计Loss函数及优化函数">设计Loss函数及优化函数</h5>
+<p>  在前文的线性回归中，我们使用了平方误差来作为Loss函数，在分类这一问题里面，我们需要引入交叉熵来作为Loss函数。交叉熵作为信息论中的概念，我们简单的通过几个前置知识来引入：</p>
+<ul>
+<li>
+<p>信息论研究的是一个随机事件携带的信息量，基本思想是事件发生概率越大，所携带的信息量越小。因此这里可以引入一个自信息定义：$I(x)=-\log_{2}(P(x))$。通过这个定义我们可以得到同样的趋势，一个事件发生的概率越小，携带的信息量越大。</p>
+</li>
+<li>
+<p>熵(Entropy)，自信息是对单个随机事件的信息量大小描述，我们需要定义来描述整个随机分布的信息量大小的描述。假设随机分布是离散的，熵的定义为：$H(X)=-\sum\limits_{i=0}^{n-1}P(Xi)\log_{2}(P(Xi))$</p>
+</li>
+<li>
+<p>KL差异（Kullback-Leibler (KL) divergence），主要就是用来描述两个分布的差异。因为在有些时候，一个概率分布很复杂，我们可以用一个简单的概率分布来替代，但是我们需要知道这两个分布的差异。定义原概率分布为P(X),近似概率分布为Q(X)，假如X是离散随机变量，KL差异定义为：$D_{KL}(P(X)||Q(X))=\sum\limits_{i=0}^{n-1}P(Xi)\log_{2}(P(Xi)/Q(Xi))=\sum\limits_{i=0}^{n-1}P(Xi)[\log_{2}(P(Xi)) - \log_{2}(Q(Xi))]$</p>
+</li>
+<li>
+<p>交叉熵（cross-entropy），交叉熵定义为：$H(P,Q)=-\sum\limits_{i=0}^{n-1}P(Xi)\log_{2}(Q(Xi))$，我们可以看到$H(P,Q)=H(P)+D_{KL}(P||Q)$。</p>
+</li>
+<li>
+<p>在上文中，我们一步一步引出了交叉熵，这个时候，我们来看为什么在深度学习中可以引入交叉熵作为Loss函数，对于特定的一组Feature，我们可以通过标签得到这组feature代表什么，相当于其概率为1，因此在原概率分布上面，$P(Xi)=1, H(Xi)=0$，我们可以看到这个时候交叉熵和KL差异是相等的，那么交叉熵其实就是描述我们训练时得到的概率分布和原分布的差异。因此，在分类问题中我们得到的是当前的每个分类的概率，那么我们分别求每个分类当前概率分布相对于原分布的KL差异，那么我们就知道我们的训练参数和真实参数的差异。我们求交叉熵的最小值，也就代表我们参数越接近真实值。</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 信息论，熵，kl熵（相对），交叉熵</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">cross_entropy</span>(<span class="params">y_train, y_label</span>):</span><br><span class="line">    <span class="comment"># l = -y*log(y&#x27;)</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># print(y_train.shape)</span></span><br><span class="line">    <span class="comment"># print(y_label.shape)</span></span><br><span class="line">    <span class="comment"># print(y_train)</span></span><br><span class="line">    <span class="comment"># print(y_label)</span></span><br><span class="line">    <span class="comment"># print(y_train[0][:].sum())</span></span><br><span class="line">    <span class="comment"># call pick</span></span><br><span class="line">    my_loss = -torch.log(y_train[<span class="built_in">range</span>(<span class="built_in">len</span>(y_train)), y_label])</span><br><span class="line">    <span class="comment"># nll_loss = torch.nn.NLLLoss()</span></span><br><span class="line">    <span class="comment"># th_loss = nll_loss(torch.log(y_train), y_label)</span></span><br><span class="line">    <span class="comment"># print(my_loss.sum()/len(y_label))</span></span><br><span class="line">    <span class="comment"># print(th_loss)</span></span><br><span class="line">    <span class="keyword">return</span> my_loss</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="设计准确率统计函数以及评估准确率函数">设计准确率统计函数以及评估准确率函数</h5>
+<p>  在前一小节，我们已经设计了损失函数，我们在训练的过程中，除了要关注损失函数的值外，还需要关注我们模型的准确率。</p>
+<p>  模型的准确率代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">accuracy</span>(<span class="params">y_train, y_label</span>): <span class="comment">#@save</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算预测正确的数量。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># y_train = n*num_class</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(y_train.shape) &gt; <span class="number">1</span> <span class="keyword">and</span> y_train.shape[<span class="number">1</span>] &gt; <span class="number">1</span>:</span><br><span class="line">        <span class="comment"># argmax get the max-element-index</span></span><br><span class="line">        y_train = y_train.argmax(axis=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># cmp = n*1 , eg: [0 0 0 1 1 1 0 0 0]</span></span><br><span class="line">    <span class="comment"># print(y_train.dtype)</span></span><br><span class="line">    <span class="comment"># print(y_label.dtype)</span></span><br><span class="line">    cmp = y_train == y_label</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">float</span>(cmp.<span class="built_in">sum</span>()/<span class="built_in">len</span>(y_label))</span><br></pre></td></tr></table></figure>
+<p>  从上面的代码可以知道，我们的网络输出是当前feature在每个类别上的概率，因此我们求出网络输出中，概率最大的索引，和真实label进行对比，相等就代表预测成功一个，反之。我们对最终数据求和后除以batch_size，就可以得到在batch_size个特征中，我们的预测正确的个数占比是多少。</p>
+<p>  我们还需要在指定的数据集上评估我们的准确率，其代码如下（就是分批调用获得准确率后求平均）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">evaluate_accuracy</span>(<span class="params">net, w, b, data_iter</span>): <span class="comment">#@save</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;计算在指定数据集上模型的精度。&quot;&quot;&quot;</span></span><br><span class="line">    test_acc_sum = <span class="number">0.0</span></span><br><span class="line">    times = <span class="number">1</span></span><br><span class="line">    <span class="keyword">for</span> img, label <span class="keyword">in</span> data_iter:</span><br><span class="line">        test_acc_sum += accuracy(net(w, b, img.reshape(-<span class="number">1</span>, w.shape[<span class="number">0</span>])), label)</span><br><span class="line">        times += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> test_acc_sum/times</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="设计预测函数">设计预测函数</h5>
+<p>  预测函数就是在特定数据上面，通过我们训练的网络，求出类别，并与真实label进行对比，其代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">predict</span>(<span class="params">net, w, b, test_iter, n=<span class="number">6</span></span>): <span class="comment">#@save</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;预测标签（定义⻅第3章）。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">for</span> X, y <span class="keyword">in</span> test_iter:</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    labels_map = &#123;</span><br><span class="line">        <span class="number">0</span>: <span class="string">&quot;T-Shirt&quot;</span>,</span><br><span class="line">        <span class="number">1</span>: <span class="string">&quot;Trouser&quot;</span>,</span><br><span class="line">        <span class="number">2</span>: <span class="string">&quot;Pullover&quot;</span>,</span><br><span class="line">        <span class="number">3</span>: <span class="string">&quot;Dress&quot;</span>,</span><br><span class="line">        <span class="number">4</span>: <span class="string">&quot;Coat&quot;</span>,</span><br><span class="line">        <span class="number">5</span>: <span class="string">&quot;Sandal&quot;</span>,</span><br><span class="line">        <span class="number">6</span>: <span class="string">&quot;Shirt&quot;</span>,</span><br><span class="line">        <span class="number">7</span>: <span class="string">&quot;Sneaker&quot;</span>,</span><br><span class="line">        <span class="number">8</span>: <span class="string">&quot;Bag&quot;</span>,</span><br><span class="line">        <span class="number">9</span>: <span class="string">&quot;Ankle Boot&quot;</span>,</span><br><span class="line">    &#125;</span><br><span class="line">    trues = [labels_map[i] <span class="keyword">for</span> i <span class="keyword">in</span> y.numpy()]</span><br><span class="line">    preds = [labels_map[i] <span class="keyword">for</span> i <span class="keyword">in</span> net(w, b, X.reshape(-<span class="number">1</span>, w.shape[<span class="number">0</span>])).argmax(axis=<span class="number">1</span>).numpy()]</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> np.arange(n):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;pre-idx <span class="subst">&#123;i&#125;</span> \n true_label/pred_label: <span class="subst">&#123;trues[i]&#125;</span>/<span class="subst">&#123;preds[i]&#125;</span>&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="训练模型">训练模型</h5>
+<p>  训练模型的话，其实就是将上面的代码缝合起来。代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    training_data, test_data = LoadFashionMNISTByTorchApi()</span><br><span class="line">    </span><br><span class="line">    batch_size = <span class="number">200</span></span><br><span class="line">    train_dataloader = DataLoader(training_data, batch_size, shuffle=<span class="literal">True</span>)</span><br><span class="line">    test_dataloader = DataLoader(test_data, batch_size, shuffle=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># train_features, train_labels = next(iter(train_dataloader))</span></span><br><span class="line">    <span class="comment"># print(f&quot;Feature batch shape: &#123;train_features.size()&#125;&quot;)</span></span><br><span class="line">    <span class="comment"># print(f&quot;Labels batch shape: &#123;train_labels.size()&#125;&quot;)</span></span><br><span class="line">    <span class="comment"># img = train_features[1].squeeze()</span></span><br><span class="line">    <span class="comment"># label = train_labels[1]</span></span><br><span class="line">    <span class="comment"># plt.imshow(img, cmap=&quot;gray&quot;)</span></span><br><span class="line">    <span class="comment"># plt.show()</span></span><br><span class="line">    <span class="comment"># print(f&quot;Label: &#123;label&#125;&quot;)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 28*28</span></span><br><span class="line">    num_inputs = <span class="number">784</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># num of class</span></span><br><span class="line">    num_outputs = <span class="number">10</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># (748, 10)</span></span><br><span class="line">    w = torch.from_numpy(np.random.normal(<span class="number">0</span>, <span class="number">0.01</span>, (num_inputs, num_outputs)))</span><br><span class="line">    w = w.to(torch.float32)</span><br><span class="line">    w.requires_grad = <span class="literal">True</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;w = &#x27;</span>, w.shape)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># (10, 1)</span></span><br><span class="line">    b = torch.from_numpy(np.zeros(num_outputs))</span><br><span class="line">    b = b.to(torch.float32)</span><br><span class="line">    b.requires_grad = <span class="literal">True</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;b = &#x27;</span>, b.shape)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    num_epochs = <span class="number">10</span></span><br><span class="line">    lr = <span class="number">0.1</span></span><br><span class="line"></span><br><span class="line">    net = my_net</span><br><span class="line"></span><br><span class="line">    loss = cross_entropy</span><br><span class="line"></span><br><span class="line">    <span class="comment"># if torch.cuda.is_available():</span></span><br><span class="line">    <span class="comment">#     w = w.to(&#x27;cuda&#x27;)</span></span><br><span class="line">    <span class="comment">#     b = b.to(&#x27;cuda&#x27;)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(num_epochs):</span><br><span class="line">        times = <span class="number">1</span></span><br><span class="line">        train_acc_sum = <span class="number">0.0</span></span><br><span class="line">        train_loss_sum = <span class="number">0.0</span></span><br><span class="line">        <span class="keyword">for</span> img, label <span class="keyword">in</span> train_dataloader:</span><br><span class="line">            <span class="comment"># if torch.cuda.is_available():</span></span><br><span class="line">            <span class="comment">#     img = img.to(&#x27;cuda&#x27;)</span></span><br><span class="line">            <span class="comment">#     label = label.to(&#x27;cuda&#x27;)            </span></span><br><span class="line">            <span class="comment"># print(img.shape, label.shape)</span></span><br><span class="line">            l = loss(net(w, b, img.reshape(-<span class="number">1</span>, w.shape[<span class="number">0</span>])), label)</span><br><span class="line">            <span class="comment"># print(l.shape)</span></span><br><span class="line">            <span class="comment"># print(l)</span></span><br><span class="line"></span><br><span class="line">            <span class="comment"># clean grad of w,b</span></span><br><span class="line">            w.grad = <span class="literal">None</span></span><br><span class="line">            b.grad = <span class="literal">None</span> </span><br><span class="line"></span><br><span class="line">            <span class="comment"># bp</span></span><br><span class="line">            l.backward(torch.ones_like(l))</span><br><span class="line"></span><br><span class="line">            <span class="comment"># update param</span></span><br><span class="line">            sgd([w, b], lr, batch_size)</span><br><span class="line"></span><br><span class="line">            train_acc_sum += accuracy(net(w, b, img.reshape(-<span class="number">1</span>, w.shape[<span class="number">0</span>])), label)</span><br><span class="line">            train_loss_sum += (l.<span class="built_in">sum</span>()/batch_size)</span><br><span class="line">            times += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">            <span class="comment"># break</span></span><br><span class="line">        </span><br><span class="line">        test_acc = evaluate_accuracy(net, w, b, test_dataloader)</span><br><span class="line"></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;epoch = &#x27;</span>, epoch)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;train_loss = &#x27;</span>, train_loss_sum.detach().numpy()/times)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;train_acc = &#x27;</span>, train_acc_sum/times)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;test_acc = &#x27;</span>, test_acc)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># break</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># predict</span></span><br><span class="line">    predict(net, w, b, test_dataloader, n = <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>  从如上的代码可知，首先从数据集中得到小批量数据迭代器，然后随机生成初始化参数，最后在小批量数据上推理，求loss之，bp，更新参数，记录loss和acc，最终训练次数完了后，去预测。</p>
+<p>  训练截图如下：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_106/train_log.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  预测截图如下：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_106/predict_log.png" alt="rep_img"/></center>
+    </div>
+</div> 
+&emsp;&emsp;从预测的截图来看，预测成功的准确率大于1/10。说明我们的模型的有效的。此图中看起来准确率较高，这是偶然现象，但是真实不应该这样的，因为在测试集上，准确率只有81%左右。
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  此外，我们这里仅仅是按照数学定义来做计算，在计算机中，我们现在设计的一些函数可能不合理，比如softmax会产生溢出，我们会用到LogExpSum技巧，把softmax和交叉熵一起计算，通过冥函数和对数函数的一些性质，我们可以化简后抵消一些exp的计算，保证数值的稳定性，我们只需要知道有这么一个事情即可。但是这一切都不需要我们来弄，我们只需要调用别人设计的好的函数即可，比如pythorch中的torch.nn.CrossEntropyLoss()。如果真的有需要，可以根据LogExpSum的定义来直接编写就行，在这里，本文就不关注这个。</p>
+<p>  从线性回归到softmax回归，我们算是基本了解清楚了深度学习的一些基本的概念，这为我们去看和改一些比较好的、公开的模型打下了基础。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/d2l-ai/d2l-zh/releases">https://github.com/d2l-ai/d2l-zh/releases</a> (V1.0.0)</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/d2l-ai/d2l-zh/releases">https://github.com/d2l-ai/d2l-zh/releases</a> (V2.0.0 alpha1)</li>
+<li><a target="_blank" rel="noopener" href="https://d2l.ai/chapter_appendix-mathematics-for-deep-learning/information-theory.html">https://d2l.ai/chapter_appendix-mathematics-for-deep-learning/information-theory.html</a></li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/04/blog_idx_105/" rel="prev" title="DL基础补全计划(一)---线性回归及示例（Pytorch，平方损失）">
+      <i class="fa fa-chevron-left"></i> DL基础补全计划(一)---线性回归及示例（Pytorch，平方损失）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/18/blog_idx_107/" rel="next" title="DL基础补全计划(三)---模型选择、欠拟合、过拟合">
+      DL基础补全计划(三)---模型选择、欠拟合、过拟合 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Softmax%E4%BB%8B%E7%BB%8D%E5%8F%8A%E5%AE%9E%E4%BE%8B"><span class="nav-number"></span> <span class="nav-text">Softmax介绍及实例</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%B9%B6%E5%A4%84%E7%90%86FashionMNIST%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number"></span> <span class="nav-text">获取并处理FashionMNIST数据集</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E7%BD%91%E7%BB%9C"><span class="nav-number"></span> <span class="nav-text">设计网络</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1Loss%E5%87%BD%E6%95%B0%E5%8F%8A%E4%BC%98%E5%8C%96%E5%87%BD%E6%95%B0"><span class="nav-number"></span> <span class="nav-text">设计Loss函数及优化函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E5%87%86%E7%A1%AE%E7%8E%87%E7%BB%9F%E8%AE%A1%E5%87%BD%E6%95%B0%E4%BB%A5%E5%8F%8A%E8%AF%84%E4%BC%B0%E5%87%86%E7%A1%AE%E7%8E%87%E5%87%BD%E6%95%B0"><span class="nav-number"></span> <span class="nav-text">设计准确率统计函数以及评估准确率函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E9%A2%84%E6%B5%8B%E5%87%BD%E6%95%B0"><span class="nav-number"></span> <span class="nav-text">设计预测函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B"><span class="nav-number"></span> <span class="nav-text">训练模型</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

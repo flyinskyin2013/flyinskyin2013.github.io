@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    近一段时间来，自己的主要工作都在是在做数据源端（设备端）音视频传输、编解码相关的事情，于是逐渐又和FFmpeg打上了交到，用到了其中的一些常见的内容，同时也解决了一些不常见的事情。 同时这里表达对“”“”雷神“”“”的敬意（一路走好，雷神），">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FFmpeg 基本操作摘要(一) （转流、解码、编码）">
+<meta property="og:url" content="https://e-x.top/2018/05/11/blog_idx_061/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    近一段时间来，自己的主要工作都在是在做数据源端（设备端）音视频传输、编解码相关的事情，于是逐渐又和FFmpeg打上了交到，用到了其中的一些常见的内容，同时也解决了一些不常见的事情。 同时这里表达对“”“”雷神“”“”的敬意（一路走好，雷神），">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2018-05-11T07:47:25.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.784Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://e-x.top/2018/05/11/blog_idx_061/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>FFmpeg 基本操作摘要(一) （转流、解码、编码） | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/05/11/blog_idx_061/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          FFmpeg 基本操作摘要(一) （转流、解码、编码）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-05-11 15:47:25" itemprop="dateCreated datePublished" datetime="2018-05-11T15:47:25+08:00">2018-05-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>6.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>6 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-23 16:37:45
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=061） 
+&emsp;&emsp;本文发布于 2018-05-11 15:47:25，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=061） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  近一段时间来，自己的主要工作都在是在做数据源端（设备端）音视频传输、编解码相关的事情，于是逐渐又和FFmpeg打上了交到，用到了其中的一些常见的内容，同时也解决了一些不常见的事情。</p>
+<p><font color = red >同时这里表达对“”“”雷神“”“”的敬意（一路走好，雷神），其blog上相关的FFmpeg教程是我学习FFmpeg的启蒙教程，其的blog可以不夸张的说，是国内非常非常非常好非常非常非常好非常非常非常好的音视频相关入门教程了，建议搞音视频的人可以多参考。这里提供一个链接指向雷神的博客地址，供大家参考（需从零学习FFmpeg，请参考其FFmpeg专栏）：<a target="_blank" rel="noopener" href="https://blog.csdn.net/leixiaohua1020">https://blog.csdn.net/leixiaohua1020</a> </font></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="FFmpeg-相关内容简介">FFmpeg 相关内容简介</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="FFmpeg常用结构体">FFmpeg常用结构体</h5>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">AVFormatContext   </span><br><span class="line"><span class="comment">//Format I/O context.（FFmpeg中的IO流的格式容器，具体来说就是用来记录打开的流的格式相关信息，列如：记录打开的rtsp流中的音视频流格式信息、MP4</span></span><br><span class="line">文件的流格式信息等等）</span><br><span class="line">AVCodecContext    <span class="comment">//FFmpeg中记录编码器相关信息的容器</span></span><br><span class="line"></span><br><span class="line">AVCodec  <span class="comment">//FFmpeg 中编码器容器</span></span><br><span class="line"></span><br><span class="line">AVFrame <span class="comment">//This structure describes decoded (raw) audio or video data.（FFmpeg中用于描述裸音视频数据的容器，列如：视频中的YUV数据，音频中的PCM数据）</span></span><br><span class="line"></span><br><span class="line">AVPacket  <span class="comment">// This structure stores compressed data. It is typically exported by demuxers</span></span><br><span class="line"> <span class="comment">//and then passed as input to decoders, or received as output from encoders and</span></span><br><span class="line"> <span class="comment">//then passed to muxers.(此结构体用于描述音视频编码后的数据，主要用在把编码后的数据送入解码器或者接收编码器输出的数据，列如：视频中的H264数据, 音频中的：G711A数据)</span></span><br><span class="line"></span><br><span class="line">SwsContext <span class="comment">//图像缩放和变换的关键容器</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="FFmpeg中常见调用">FFmpeg中常见调用</h5>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">av_register_all</span><span class="params">(<span class="type">void</span>)</span>; <span class="comment">// Initialize libavformat and register all the muxers, demuxers and</span></span><br><span class="line"> <span class="comment">// protocols. If you do not call this function, then you can select</span></span><br><span class="line"> <span class="comment">// exactly which formats you want to support.</span></span><br><span class="line"> <span class="comment">//FFmpeg 中用于初始化libavformat 库，注册音视频复用器，各种协议等等。 这里需要注意的是，许多没有用到了内容都注册了，可能造成浪费，若需要指定注册哪些内容，可参考av_register_output_format（）、av_register_input_format（）</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">avformat_network_init</span><span class="params">(<span class="type">void</span>)</span>; <span class="comment">//此函数用于初始化网络相关的组件，列如：你要解析RTSP流，需要先调用此函数</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Do global initialization of network components. This is optional,</span></span><br><span class="line"><span class="comment"> * but recommended, since it avoids the overhead of implicitly</span></span><br><span class="line"><span class="comment"> * doing the setup for each session.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Calling this function will become mandatory if using network</span></span><br><span class="line"><span class="comment"> * protocols at some major version bump.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line">AVFormatContext *<span class="title function_">avformat_alloc_context</span><span class="params">(<span class="type">void</span>)</span>; <span class="comment">//为AVFormatContext分配空间</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">avformat_free_context</span><span class="params">(AVFormatContext *s)</span>; <span class="comment">//释放AVFormatContext空间</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">avformat_open_input</span><span class="params">(AVFormatContext **ps, <span class="type">const</span> <span class="type">char</span> *filename, AVInputFormat *fmt, AVDictionary **options)</span>;<span class="comment">//Open an input stream and read the header.</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">avio_open</span><span class="params">(AVIOContext **s, <span class="type">const</span> <span class="type">char</span> *url, <span class="type">int</span> flags)</span>; <span class="comment">// 用于初始化AVIOContext，此结构体用于文件的读写操作</span></span><br><span class="line"> <span class="comment">//* Create and initialize a AVIOContext for accessing the</span></span><br><span class="line"> <span class="comment">//* resource indicated by url.</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">avio_close</span><span class="params">(AVIOContext *s)</span>; <span class="comment">//释放一个AVIOContext对象</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">avformat_find_stream_info</span><span class="params">(AVFormatContext *ic, AVDictionary **options)</span>; <span class="comment">//读取流数据，分析流信息</span></span><br><span class="line"><span class="comment">//Read packets of a media file to get stream information. </span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">av_dump_format</span><span class="params">(AVFormatContext *ic,</span></span><br><span class="line"><span class="params">                    <span class="type">int</span> index,</span></span><br><span class="line"><span class="params">                    <span class="type">const</span> <span class="type">char</span> *url,</span></span><br><span class="line"><span class="params">                    <span class="type">int</span> is_output)</span>;<span class="comment">//就是打印一下AVFormatContext 里面存放的一些我们关心的信息</span></span><br><span class="line"> <span class="comment">/*</span></span><br><span class="line"><span class="comment">  * Print detailed information about the input or output format, such as</span></span><br><span class="line"><span class="comment"> * duration, bitrate, streams, container, programs, metadata, side data,</span></span><br><span class="line"><span class="comment"> * codec and time base.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">AVCodec *<span class="title function_">avcodec_find_decoder</span><span class="params">(<span class="keyword">enum</span> AVCodecID id)</span>;查找一个解码器</span><br><span class="line"><span class="comment">//Find a registered decoder with a matching codec ID.</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">avcodec_open2</span><span class="params">(AVCodecContext *avctx, <span class="type">const</span> AVCodec *codec, AVDictionary **options)</span>;<span class="comment">//初始化一个编码器，初始化此结构体AVCodecContext </span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Initialize the AVCodecContext to use the given AVCodec. Prior to using this</span></span><br><span class="line"><span class="comment"> * function the context has to be allocated with avcodec_alloc_context3().</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">avcodec_close</span><span class="params">(AVCodecContext *avctx)</span>;<span class="comment">//释放AVCodecContext 空间</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">av_read_frame</span><span class="params">(AVFormatContext *s, AVPacket *pkt)</span>;<span class="comment">//返回下一帧，数据（编码后的数据）存放到pkt里面，这里会给AVPacket 分配空间，此处一定要释放，否则将会发生内存泄漏</span></span><br><span class="line"><span class="comment">//Return the next frame of a stream.</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">av_new_packet</span><span class="params">(AVPacket *pkt, <span class="type">int</span> size)</span>;<span class="comment">//给AVPacket buf成员分配空间，同理上文</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Allocate the payload of a packet and initialize its fields with</span></span><br><span class="line"><span class="comment"> * default values.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">av_free_packet</span><span class="params">(AVPacket *pkt)</span>;<span class="comment">//释放AVPacket </span></span><br><span class="line"></span><br><span class="line">AVFrame *<span class="title function_">av_frame_alloc</span><span class="params">(<span class="type">void</span>)</span>;<span class="comment">//申请AVFrame空间 </span></span><br><span class="line"><span class="type">void</span> <span class="title function_">av_frame_free</span><span class="params">(AVFrame **frame)</span>;<span class="comment">//释放AVFrame空间 </span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">av_malloc</span><span class="params">(<span class="type">size_t</span> size)</span>;<span class="comment">//ffmpeg中申请一定大小的内存空间</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">av_free</span><span class="params">(<span class="type">void</span> *ptr)</span>;<span class="comment">//释放空间</span></span><br><span class="line"><span class="comment">//av_malloc  av_free是对malloc和free的封装，本质就是基础内存操作</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> SwsContext *<span class="title function_">sws_getContext</span><span class="params">(<span class="type">int</span> srcW, <span class="type">int</span> srcH, <span class="keyword">enum</span> AVPixelFormat srcFormat,</span></span><br><span class="line"><span class="params">                                  <span class="type">int</span> dstW, <span class="type">int</span> dstH, <span class="keyword">enum</span> AVPixelFormat dstFormat,</span></span><br><span class="line"><span class="params">                                  <span class="type">int</span> flags, SwsFilter *srcFilter,</span></span><br><span class="line"><span class="params">                                  SwsFilter *dstFilter, <span class="type">const</span> <span class="type">double</span> *param)</span>;<span class="comment">//创建一个指定大小和颜色空间的SwsContext </span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Allocate and return an SwsContext. You need it to perform</span></span><br><span class="line"><span class="comment"> * scaling/conversion operations using sws_scale().</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sws_scale</span><span class="params">(<span class="keyword">struct</span> SwsContext *c, <span class="type">const</span> <span class="type">uint8_t</span> *<span class="type">const</span> srcSlice[],</span></span><br><span class="line"><span class="params">              <span class="type">const</span> <span class="type">int</span> srcStride[], <span class="type">int</span> srcSliceY, <span class="type">int</span> srcSliceH,</span></span><br><span class="line"><span class="params">              <span class="type">uint8_t</span> *<span class="type">const</span> dst[], <span class="type">const</span> <span class="type">int</span> dstStride[])</span>;<span class="comment">//根据指定SwsContext ，来对原始图像进行变换</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Scale the image slice in srcSlice and put the resulting scaled</span></span><br><span class="line"><span class="comment"> * slice in the image in dst. A slice is a sequence of consecutive</span></span><br><span class="line"><span class="comment"> * rows in an image.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">avcodec_decode_video2</span><span class="params">(AVCodecContext *avctx, AVFrame *picture,</span></span><br><span class="line"><span class="params">                         <span class="type">int</span> *got_picture_ptr,</span></span><br><span class="line"><span class="params">                         <span class="type">const</span> AVPacket *avpkt)</span>;<span class="comment">//对一帧数据进行解码</span></span><br><span class="line">/ * Decode the video frame of size avpkt-&gt;size from avpkt-&gt;data into picture.</span><br><span class="line"> * Some decoders may support multiple frames in a single AVPacket, such</span><br><span class="line"> * decoders would then just decode the first frame.</span><br><span class="line"> * /</span><br><span class="line"><span class="type">int</span> <span class="title function_">avcodec_encode_video2</span><span class="params">(AVCodecContext *avctx, AVPacket *avpkt,</span></span><br><span class="line"><span class="params">                          <span class="type">const</span> AVFrame *frame, <span class="type">int</span> *got_packet_ptr)</span>;<span class="comment">//对一帧数据进行编码</span></span><br><span class="line">                          </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="FFmpeg中需要注意的事项">FFmpeg中需要注意的事项</h5>
+<p>  FFmpeg中除了正常使用外，需要我们注意的就是内存泄漏的问题了。</p>
+<p>  这里我们需要关注几个问题：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">对于以下的结构体，一定要重点关注，申请了内存，一定要释放，否则在循环调用一些内容时，一定会发生内存泄漏。</span></span><br><span class="line"><span class="comment">AVFormatContext   </span></span><br><span class="line"><span class="comment">AVCodecContext    </span></span><br><span class="line"><span class="comment">AVCodec  </span></span><br><span class="line"><span class="comment">AVFrame </span></span><br><span class="line"><span class="comment">AVPacket  </span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">其中我们需要核心关注AVPacket这个结构体，这个结构体很容易让我们懵逼，出现内存泄漏。</span></span><br><span class="line"><span class="comment">av_read_frame</span></span><br><span class="line"><span class="comment">av_new_packet</span></span><br><span class="line"><span class="comment">上面两个都会申请内存，需要我们释放内存</span></span><br><span class="line"><span class="comment">av_free_packet</span></span><br><span class="line"><span class="comment">av_packet_unref</span></span><br><span class="line"><span class="comment">由于AVPacket 设计为缓冲区计数的方式，实现了一定的数据共享，方便FFmpeg管理内存，但是这里也给我们埋下了地雷：那就是AVPacket的生命周期就不好确定了，因为你调用了以上的函数，而内存不一定释放了。关于AVPacket还有许多函数，比如av_copy_packet、av_packet_ref、av_init_packet等，使用它们一定要小心，如果需要深入研究，建议查看它们的源码，这样就能够对这些调用有了更深刻的理解。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>  这里我再多说一句：由于FFmpeg2 和FFmpeg3有巨大的区别，很多东西也发生了变化，网上的教程很多是FFmpeg3以后的，使用的时候需要注意。同时，FFmpeg真的一不留神就发生内存泄漏了，需要我们注意。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="FFmpeg-使用的一般流程">FFmpeg 使用的一般流程</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="解码过程">解码过程</h5>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">av_register_all  </span><br><span class="line">avformat_network_init</span><br><span class="line">avformat_alloc_context<span class="comment">//初始化AVFormatContext</span></span><br><span class="line">avformat_open_input <span class="comment">//打开流</span></span><br><span class="line">avformat_find_stream_info <span class="comment">//读取流信息</span></span><br><span class="line">avcodec_find_decoder <span class="comment">//根据上调用来确定编码器id，然后来查找相关编码器</span></span><br><span class="line">avcodec_open2 <span class="comment">//打开编码器，初始化AVCodecContext    </span></span><br><span class="line">av_read_frame <span class="comment">//读取一帧压缩数据</span></span><br><span class="line">avcodec_decode_video2 <span class="comment">//解压一帧数据</span></span><br><span class="line">sws_scale <span class="comment">//数据转换</span></span><br><span class="line"><span class="comment">//后续对原始音视频数据进行相关处理</span></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="编码过程">编码过程</h5>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">av_register_all  </span><br><span class="line">avformat_network_init</span><br><span class="line">avformat_alloc_context</span><br><span class="line">avio_open</span><br><span class="line">avformat_new_stream</span><br><span class="line"><span class="comment">//这里通过相关方法把原始音视频数据准备好</span></span><br><span class="line">avcodec_find_decoder <span class="comment">//根据上调用来确定编码器id，然后来查找相关编码器</span></span><br><span class="line">avcodec_open2 <span class="comment">//打开编码器，初始化AVCodecContext   </span></span><br><span class="line">avcodec_encode_video2 <span class="comment">//编码</span></span><br><span class="line"><span class="comment">//后续处理编码后的事情 </span></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="转流过程">转流过程</h5>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">av_register_all  </span><br><span class="line">avformat_network_init</span><br><span class="line">avformat_alloc_context<span class="comment">//初始化AVFormatContext</span></span><br><span class="line">avformat_open_input <span class="comment">//打开流</span></span><br><span class="line">avformat_find_stream_info <span class="comment">//读取流信息</span></span><br><span class="line">avcodec_find_decoder <span class="comment">//根据上调用来确定编码器id，然后来查找相关编码器</span></span><br><span class="line">avcodec_open2 <span class="comment">//打开编码器，初始化AVCodecContext    </span></span><br><span class="line">av_read_frame <span class="comment">//读取一帧压缩数据</span></span><br><span class="line"><span class="comment">//这里对av_read_frame 中的pkt data数据域和size数据域进行处理即可</span></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/05/10/blog_idx_060/" rel="prev" title="《基础数据结构-排序》之交换排序">
+      <i class="fa fa-chevron-left"></i> 《基础数据结构-排序》之交换排序
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/05/15/blog_idx_062/" rel="next" title="NVIDIA Jestson TX2 配置cuda以及cudnn的坑 ( JetPack-L4T 、Error: downloading update lock、TX2,TX1,TK1相关资源信息)">
+      NVIDIA Jestson TX2 配置cuda以及cudnn的坑 ( JetPack-L4T 、Error: downloading update lock、TX2,TX1,TK1相关资源信息) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FFmpeg-%E7%9B%B8%E5%85%B3%E5%86%85%E5%AE%B9%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">FFmpeg 相关内容简介</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#FFmpeg%E5%B8%B8%E7%94%A8%E7%BB%93%E6%9E%84%E4%BD%93"><span class="nav-number"></span> <span class="nav-text">FFmpeg常用结构体</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#FFmpeg%E4%B8%AD%E5%B8%B8%E8%A7%81%E8%B0%83%E7%94%A8"><span class="nav-number"></span> <span class="nav-text">FFmpeg中常见调用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#FFmpeg%E4%B8%AD%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F%E7%9A%84%E4%BA%8B%E9%A1%B9"><span class="nav-number"></span> <span class="nav-text">FFmpeg中需要注意的事项</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FFmpeg-%E4%BD%BF%E7%94%A8%E7%9A%84%E4%B8%80%E8%88%AC%E6%B5%81%E7%A8%8B"><span class="nav-number"></span> <span class="nav-text">FFmpeg 使用的一般流程</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%A7%A3%E7%A0%81%E8%BF%87%E7%A8%8B"><span class="nav-number"></span> <span class="nav-text">解码过程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BC%96%E7%A0%81%E8%BF%87%E7%A8%8B"><span class="nav-number"></span> <span class="nav-text">编码过程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%BD%AC%E6%B5%81%E8%BF%87%E7%A8%8B"><span class="nav-number"></span> <span class="nav-text">转流过程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

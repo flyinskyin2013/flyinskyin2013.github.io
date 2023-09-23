@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Ubuntu 18.04 gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04) Bochs 2.6 As86 version: 0.16.17  前言    自从我近段时间开始温习一些基础知识以来，其中觉得以前学的很浅">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)">
+<meta property="og:url" content="https://e-x.top/2021/03/07/blog_idx_102/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Ubuntu 18.04 gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04) Bochs 2.6 As86 version: 0.16.17  前言    自从我近段时间开始温习一些基础知识以来，其中觉得以前学的很浅">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/result.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/poweron.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/7c00.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/bootsect_log.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/90200.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/setup_log.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/head_start.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/head_log.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/init_main.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/main_log0.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/main_log1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-03-07T09:39:44.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.879Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/result.png">
+
+<link rel="canonical" href="https://e-x.top/2021/03/07/blog_idx_102/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/03/07/blog_idx_102/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-07 17:39:44" itemprop="dateCreated datePublished" datetime="2021-03-07T17:39:44+08:00">2021-03-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>12 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:04:42
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=102）
+&emsp;&emsp;本文发布于 2021-03-07 17:39:44     （BlogID=102） -->
+<h6 id="环境说明">环境说明</h6>
+<ul>
+<li>Ubuntu 18.04</li>
+<li>gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04)</li>
+<li>Bochs 2.6</li>
+<li>As86 version: 0.16.17</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  自从我近段时间开始温习一些基础知识以来，其中觉得以前学的很浅的就是OS原理。为啥这样说呢？因为就是浅，知道一些琐碎的知识。以前我自负的认为OS就是硬件的抽象，然后把这些硬件资源合理的分配给用户使用就完了，因为我觉得合理的整合这些硬件资源是非常‘简单’的。</p>
+<p>  由于我本身对底层是非常着迷的。带着觉得OS很简单的想法，想着去看看LinuxKernel的源码。在以前，我对LinuxKernel的认知很肤浅，就知道一些驱动移植的事情。如果硬要说一件我在LinuxKernel中玩的很深的事情，那就是自己理解并实现了一个类似Anonymous Shared Memory的Linux驱动，详见以下两篇文章。</p>
+<ul>
+<li>《Android匿名共享内存(Anonymous Shared Memory) — 瞎折腾记录 (驱动程序篇)》 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/88420467">https://blog.csdn.net/u011728480/article/details/88420467</a></li>
+<li>《linux kernel 中进程间描述符的传递方法及原理》 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/88553602">https://blog.csdn.net/u011728480/article/details/88553602</a></li>
+</ul>
+<p>  带着这样的想法其实已经很久了，由于现在的LinuxKernel太大了，对新手不友好。我就想着去找一个老一点的版本内核看看。结果去网上一找，就发现了前人已经做了许多许多了，比如这个之前就有了解的《linux 0.11内核完全注释》，还比如其他许许多多前人种的‘树’，看到了许多，最终我决定跟着国内现在比较好和新的资料从‘远古’开始学习它。它就是《Linux内核完全注释(PDF) v5.0 by 赵炯.pdf》。它是基于LinuxKernel0.12 讲述的，它是我在ubuntu1804上编译通过LinuxKernel0.12的主要参考和学习资料，同时也是我在Bochs上运行成功的主要参考和学习资料。</p>
+<p>  好的多说无益，直接看运行效果。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/result.png" alt="result_img"/></center>
+    </div>
+</div>    
+<p>  说来也惭愧，利用断断续续的时间，我花了约2月，把LinuxKernel0.12在Ubuntu1804上编译通过，并在1804上通过Bochs运行成功。而且要命的事情是我其实只加了一些打印调试函数，和根据实际的调试情况修改了一些代码，却花了那么久的时间，搞得我很不自信了QAQ。</p>
+<p>  我修改好的源码已经开源，立即想要源码的请直接去文末两个rep clone即可。</p>
+<p>  本文主要还是简单介绍LinuxKernel从上电到进入sh的中间的简要流程。这些流程网上已经有很多了，可能我会挑选一些我觉得比较重要的来说。</p>
+<p>  本文适用于：</p>
+<ul>
+<li>会编译和使用bochs的人。不会可以去网上找找，很多这方面的资料。</li>
+<li>对Intel AT&amp;T 汇编有点了解的人。</li>
+<li>会GDB调试的人。</li>
+<li>知道C语言常识的人。</li>
+<li>对LinuxKernel感兴趣的人。</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="搭环境">搭环境</h3>
+<hr>
+<p>  工欲善其事必先利其器。本文主要是在Ubuntu1804上编译生成LinuxKernel，然后用Bochs运行我们的内核。</p>
+<br/>
+<br/>
+<h5 id="Ubuntu18-04环境安装">Ubuntu18.04环境安装</h5>
+<p>我们应该首先安装make,gcc,gcc-multilib,bin86。</p>
+<ul>
+<li>sudo apt install build-essential cmake make gcc-multilib g+±multilib module-assistant bin86</li>
+</ul>
+<p>然后进入源码目录。</p>
+<ul>
+<li>cd my_src</li>
+<li>make disk</li>
+</ul>
+<p>更多的详情信息查看开源的rep。</p>
+<br/>
+<br/>
+<h5 id="编译两个bochs版本备用">编译两个bochs版本备用</h5>
+<p>  我们首先就得把Linux0.12的运行环境搭建起来，方便我们调试。我们使用的是Bochs2.6 和 GDB远程调试。并编译出两个bochs版本，一个是带本身调试功能（命名为：bochs），一个是和gdb联调（命名为：bochsdbg）。bochs 主要是调试在init/main()函数之前的内容以及查看更多的x86寄存器。 bochsdbg主要是调试进入init/main()函数之后到sh成功执行的事情。</p>
+<ul>
+<li>通过 ./configure  --enable-debugger 生成bochs。</li>
+<li>通过 ./configure  --enable-gdb-stub 生成bochsdbg。</li>
+</ul>
+<br/>
+<br/>
+<h5 id="运行我们编译的内核">运行我们编译的内核</h5>
+<p>  通过本文介绍生成的文件是Linux内核镜像，稍微懂点行的人都知道还差一个RootFS。这个文件系统我们在网上下载的例如： <a target="_blank" rel="noopener" href="http://oldlinux.org/Linux.old/bochs/linux-0.12-080324.zip">http://oldlinux.org/Linux.old/bochs/linux-0.12-080324.zip</a> 。本文生成的Linux内核镜像使用的是rootimage-0.12-hd这个文件系统。</p>
+<p>  我建议这里自己配置两个.bxrc文件，一个对应bochs，一个对应bochsdbg远程调试。这样在遇到问题的时候我们可以很方便的调试。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="LinuxKernel启动简介">LinuxKernel启动简介</h3>
+<hr>
+<p>  本节简述LinuxKernel的启动流程。根据我近段时间的学习来看，这里包含了许多的历史性的东西，大家不要去细究为啥是这样，很多都是为了兼容。</p>
+<p>  此外在整个学习期间，由于涉及到许多的x86 硬件体系知识，除了参考上文我说的文档以外，还必须参考以下Intel官方文档：</p>
+<ul>
+<li>Intel® 64 and IA-32 architectures software developer’s manual combined volumes 2A, 2B, 2C, and 2D:Instruction set reference, A-Z</li>
+<li>Intel® 64 and IA-32 architectures software developer’s manual combined volumes 3A,<br>
+3B, 3C, and 3D: System programming guide</li>
+<li>《Linux内核完全注释(PDF) v5.0 by 赵炯.pdf》 第4章，全篇精华。</li>
+</ul>
+<br/>
+<br/>
+<h5 id="boot-bootsect-S-阶段">boot/bootsect.S 阶段</h5>
+<p>  当我们的计算机上电以后，IntelCPU进入实模式，并且PC指向了0xfff0整个地址，如下图。什么意思呢？就是开机的时候执行的第一句指令放在0xffff0这个地方，通常这里有一个很重要的东西叫做BIOS。我们可以看到下图，cs=0xf000,base=0xffff0000,在实模式下面，cs:pc 就是真实的指向地址0xffff0。到了这里不知道大家发现没有，这里还差一个东西，那就是bios本来是放在rom里面的，怎么被指向了内存地址0xffff0的地方呢？是谁在之前自动搬运的吗？经过查询后发现，大部分人说开机的时候，对特殊地址的访问会被仲裁器件指向BIOS-ROM器件。仲裁器还可以把地址翻译并指向我们熟悉的MEM和IO。所以这里我理解对0xffff0的访问就是对BIOS-ROM器件的直接访问和执行。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/poweron.png" alt="poweron_img"/></center>
+    </div>
+</div>    
+<p>  BIOS主要是做自检，并且在物理地址0x0开始初始化BIOS的中断向量，同时通过BIOS访问存储设备的中断，将可启动设备的第一个扇区512字节给搬运到绝对地址0x7c00(31k)处。然后跳转到0x7c00继续执行，这里被搬运的512字节就是bootsect.S生成的指令。这一段没啥营养，都是一些约定好的，到了CPU执行到绝对地址0x7c00的时候，才是真正的我们能控制的地方。其实这里也能够看到，我们的bootsect.S生成的指令最大只能够512字节，超过了就会出问题。下图为我们的0x7c00处的开始几句指令和bootsect.S的几句指令,同时也能够看到BIOS初始化和自检打印的一些内容：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/7c00.png" alt="7c00_img"/></center>
+    </div>
+</div>   
+&emsp;&emsp;在上图的图中，我打印了0x7c00开始的一部分反汇编代码。可以看到和下面的bootsect.S的代码是一致的。
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">entry start</span><br><span class="line">start:</span><br><span class="line">! start at 0x07c0:0</span><br><span class="line">! add by sky</span><br><span class="line">	mov ax,#BOOTSEG</span><br><span class="line">	mov es,ax</span><br><span class="line">	mov	bp,#msg2	  ! sky-notes: src-str is es:bp</span><br><span class="line">	mov	si,#15        ! sky-notes: src-str-len is cx</span><br><span class="line">	call pirnt_str</span><br><span class="line">! add by sky</span><br><span class="line"></span><br><span class="line">	mov	ax,#BOOTSEG</span><br><span class="line">	mov	ds,ax</span><br><span class="line">	mov	ax,#INITSEG</span><br><span class="line">	mov	es,ax</span><br><span class="line">	mov	cx,#256</span><br><span class="line">	sub	si,si</span><br><span class="line">	sub	di,di</span><br><span class="line">	rep</span><br><span class="line">	movw</span><br><span class="line">	jmpi	go,INITSEG</span><br></pre></td></tr></table></figure>
+<p>  从0x7c00开始，就是我们自己的可以编程的领域了，也开始有了一些我自己特有的内容。主要是各种方法实现的print语句。这种调试方法简直不要太好。</p>
+<p>  下面简要说明一下bootsect.S的功能：</p>
+<ul>
+<li>首先用rep movw把自己从0x7c00搬运到0x90000，并跳转cs=0x9000, pc=go 标号的地址。继续执行剩下的内容。</li>
+<li>通过读取0x1E号中断向量位置的软驱参数（由BIOS初始化时候通过BIOS中断读取的）到内存，然后修改其中的最大扇区数，并重新写回到0x1E中断向量位置绝对地址0x78去。最后重置软驱，使其加载最新的参数。</li>
+<li>使用BIOS INT 0x13的2号功能，将第一个软盘第2，3，4，5扇区读取到0x90200开始的位置。这里读取的就是setup.S的指令内容，最大共2k（4*512）。0x90000-0x90200存放的是bootsect.S， 0x90200-0x90A00 为setup.S。</li>
+<li>使用BIOS INT 0x13的8号功能，读取磁盘参数：每磁道扇区数。并保存到变量sectors中。</li>
+<li>使用BIOS INT 0x13的2号功能，使用刚刚的参数，读取system模块到0x10000，我们的bootsect.S放在0x90000,所以我们system模块最大只能够占用0x10000~0x8ffff。这里的system模块就是除了bootsect和setup模块之外的所有内核代码。</li>
+<li>判断bootsect模块第508，509字节是否为0，来判断我们是否指定根文件系统的设备号。我们的内核定义为0x0301，代表第一个磁盘第一个分区为我们的根文件系统。</li>
+<li>然后通过jmpi 0:9020跳转到cs=0x9020，pc=0的地方去执行setup.S的代码。</li>
+</ul>
+<p>  在我的bootsect模块，我定义了一个打印字符串的函数，主要是通过使用BIOS INT 0x10的0x13号功能实现。主要还是为了调试，注意，这里不能够随意添加代码，因为生成的代码超过512byte后，链接器会报错。只能够少量的添加我们的调试代码。</p>
+<p>  至此，我们就执行完了bootsect模块。本模块的主要内容还是加载setup和system到指定位置。bootsect执行的一些调试日志如下图（在0x90200下断点）：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/bootsect_log.png" alt="bootsect_log_img"/></center>
+    </div>
+</div>   
+注意：图中话框的部分就是我们上文贴出的call pirnt_str打印的。
+<br/>
+<br/>
+<h5 id="boot-setup-S-阶段">boot/setup.S 阶段</h5>
+<p>  首先我们还是来看一下0x90200的位置是否是setup.S，换句话来说是否加载好了setup模块。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/90200.png" alt="90200_img"/></center>
+    </div>
+</div>   
+&emsp;&emsp;这里和bootsect一样，我也弄了一个prtstr函数，这个prtstr和bootsect里面的是一样的，原理也是一致的。
+<p>  刚刚我们提到，setup是从0x90200开始存放的。那么0x90000~0x901ff中的bootsect已经无用了，于是我们setup中，用这里的内存存放一些参数。下面简要说明一下setup.S的功能：</p>
+<ul>
+<li>用BIOS INT 0x15功能号0x88取系统所含扩展内存大小并保存在内存0x90002~0x90003处。共两个字节。</li>
+<li>用BIOS INT 0x10功能号0x12读取显卡参数，0x9000A 显存大小，0x9000B 显卡类型（单色/彩色）,0x9000C显卡特性参数。</li>
+<li>用BIOS中断读取屏幕的行列存放到0x9000E 0x9000F</li>
+<li>用BIOS INT 0x10功能号0x03读取当前光标位置存放到0x90000 0x90001</li>
+<li>用BIOS INT 0x10功能号0x0f读取当前显示页，显示模式，字符列数。 0x90004~0x90005 存放当前显示页。 0x90006 显示模式， 0x90007 字符列数。</li>
+<li>读取第一个硬盘参数表和第二个硬盘参数表，并放到0x90080 0x90090。每个表共16byte。注意，这里和之前的软盘参数一样，在BIOS自检过程中，就被放到了中断向量0x41 0x46 的位置。</li>
+<li>用BIOS INT 0x13功能号0x15读取当前硬盘设备情况，如果硬盘2不存在，则把0x90090之后的16byte清零。</li>
+</ul>
+<p>  下面我们将使CPU从实模式变更为保护模式，下面继续说明一下setup.S的功能：</p>
+<ul>
+<li>禁用中断。</li>
+<li>然后我们把system模块0x10000~0x8ffff整体下移到0x0开始的位置。就是把最大0x80000(512k)的system模块向下移动0x10000(64k)。</li>
+<li>首先加载LDT和GDT。</li>
+<li>开启A20地址线，支持1M以上的内存。</li>
+<li>初始化两个8259A中断控制器。</li>
+<li>通过lmsw 设置cr0最低位位1，进入保护模式。</li>
+<li>通过jmpi 0:0x8跳转到绝对地址0x0开始执行system的代码。system是从boot/head.s开始的。</li>
+</ul>
+<p>  这里需要说明几个事情：</p>
+<ul>
+<li>我们在下移system模块的时候，覆盖了BIOS中断向量表。所以通过BIOS中断打印字符串是行不通的。</li>
+<li>在实模式中，cs:pc就是真实执行的地址。但是在保护模式中，cs是一个选择符号，根据选择符号值不同，分表在GDT或者LDT中查找对应的CS段描述符，其中最重要的就是base地址，当未开启分页的时候，这里的base+pc就是我们真实的执行地址。上面我们加载了LDT和GDT。这里的LDT是空，GDT有3项，第零项是空，第一项是代码段描述符，第二项是数据段描述符，他们的基地址都是0x0。当cs=0x08,ds=0x10时，分别指向这里的第一项和第二项。</li>
+</ul>
+<p>  刚刚说了，system下移导致BIOS中断向量表被冲掉了，于是我们不能够通过BIOS打印字符串，于是这里我们使用的是直接操作显存内存地址显示字符，这个原理和LinuxKernel tty显示原理差别不是很大。</p>
+<p>  这里我们设计了print_str函数，通过直接操控显存然后写入字符进行显示，这里还使用到了刚刚我们保存的当前光标位置（0x90000 0x90001）。写这个主要还是为了调试。</p>
+<p>  到此，我们已经开始去执行system的内容，其中head.s是入口。下图是在0x0下断点得到的setup模块的一些打印日志。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/setup_log.png" alt="setup_log_img"/></center>
+    </div>
+</div>   
+&emsp;&emsp;这里我们可以看到，红框还是BIOS中断打印的，黄框是通过直接操纵显存显示的。注意，我这里设计的直接操作显存的函数，是通过循环在当前显存页显示的，并不是我们常见的整页上移的方式。
+<br/>
+<br/>
+<h5 id="boot-head-s-阶段">boot/head.s 阶段</h5>
+<p>  首先我们还是来看一下0x0的位置是否是head.s，换句话来说是否加载好了system模块。并且，从这里开始，我们就是进入了真正的LinuxKernel的世界，前面都是做一些环境初始化，都是一些固定的内容。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/head_start.png" alt="head_start_img"/></center>
+    </div>
+</div>   
+<p>  这里我们需要说明的是，bootsect.S和setup.S用的是intel汇编，而从head.s开始，我们用的都是AT&amp;T汇编。同理，这里我也弄了一个safe_mode_print_str_no_page，打印字符串，为了调试，还是用的直接操作显存的方式。</p>
+<p>  从这里开始，CPU开始工作于保护模式，下面简要介绍一下工作流程：</p>
+<ul>
+<li>刚刚我们通过jmpi切换到0x0开始执行，这时cs=0x8,根据setup设置好的GDT，base为0x0，同理我们设置其他段寄存器。</li>
+<li>设置堆栈为stack_start，这个就是内核堆栈。此符号定义于kernel/sched.c中，如下文。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">long</span> user_stack [ PAGE_SIZE&gt;&gt;<span class="number">2</span> ] ;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">	<span class="type">long</span> * a;</span><br><span class="line">	<span class="type">short</span> b;</span><br><span class="line">	<span class="comment">// &#125; stack_start = &#123; &amp; user_stack [PAGE_SIZE&gt;&gt;2] , 0x10 &#125;;</span></span><br><span class="line">	&#125; stack_start = &#123; &amp; user_stack , <span class="number">0x10</span> &#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置IDT，所有的中断向量指向ignore_int，一个预定义的中断服务程序。共256项，每项8byte。</li>
+<li>重新设置GDT。共256项，每项8byte。重新设置GDT的原因是setup的GDT可能会被冲掉，于是把GDT设置到合理的内存位置。这里设置好的GDT有4个。和setup中类似。第0，3个为0.第1，2项为cs和ds的段描述符。</li>
+<li>检查A20是否开通，主要是通过判断0x100000 和 0x0值是否相等。</li>
+<li>检查数学协处理器是否存在。</li>
+</ul>
+<p>  到这里，我们就开始准备正式进入到init/main.c中的main函数了，但是还差最后一个重要的事情，那就是启用分页机制，下面继续介绍其工作流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">after_page_tables:</span><br><span class="line">	# sky print</span><br><span class="line">	push %ebp</span><br><span class="line">	lea msg5, %ebp</span><br><span class="line">	call safe_mode_print_str_no_page</span><br><span class="line">	pop %ebp	</span><br><span class="line">	#</span><br><span class="line">	pushl $0		# These are the parameters to main :-)</span><br><span class="line">	pushl $0</span><br><span class="line">	pushl $0</span><br><span class="line">	pushl $L6		# return address for main, if it decides to.</span><br><span class="line">	pushl $main</span><br><span class="line">	jmp setup_paging</span><br></pre></td></tr></table></figure>
+<ul>
+<li>从上面的代码我们可只，我们在启用分页前，把init/main.c中的main函数地址设置到了堆栈中。</li>
+<li>首先我们把从0x0开始的5页内存清零。每页4096字节。其中第一页为页表目录，第2-5页为页表。</li>
+<li>设置页表目录的前4项为第2-5页页表地址。注意页表目录为1024项，每项4字节。</li>
+<li>倒序设置每一个页表的每一项内容，第5页最后一项为0xfff000。映射之后，2-5页分别映射好了16MB内存的空间。</li>
+<li>操作cr0，开启分页</li>
+<li>通过ret指令，从堆栈中把main地址弹出去执行。</li>
+</ul>
+<p>  到这里，我们正式进入到init/main.c中的main函数中，进入c语言相关代码的地界。下面是进入main之前的一些日志输出。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/head_log.png" alt="head_log_img"/></center>
+    </div>
+</div>   
+<br/>
+<br/>
+<h5 id="init-main-c-到进入shell">init/main.c 到进入shell</h5>
+<p>  这里我们进入了init/main.c中的main函数，可从下图看到。从这里开始，也是我们大家都熟知的Linux内核部分。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/init_main.png" alt="init_main_img"/></center>
+    </div>
+</div>   
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span>		<span class="comment">/* This really IS void, no error here. */</span></span><br><span class="line">&#123;			<span class="comment">/* The startup routine assumes (well, ...) this */</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Interrupts are still disabled. Do necessary setups, then</span></span><br><span class="line"><span class="comment"> * enable them</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">	<span class="type">char</span> _my_msg_buf[<span class="number">100</span>];</span><br><span class="line">	<span class="built_in">sprintf</span>(_my_msg_buf, <span class="string">&quot;kernel main() start, root_dev=%x, swap_dev=%x ... ...\0&quot;</span>, ORIG_ROOT_DEV, ORIG_SWAP_DEV);</span><br><span class="line">	__asm__ (</span><br><span class="line">	<span class="string">&quot;push %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;mov %0, %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;call safe_mode_print_str_after_page\n\t&quot;</span> </span><br><span class="line">	<span class="string">&quot;pop %%ebp\n\t&quot;</span></span><br><span class="line">	:</span><br><span class="line">	:<span class="string">&quot;p&quot;</span>((<span class="type">char</span> *)&amp;_my_msg_buf)</span><br><span class="line">	:);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> 	ROOT_DEV = ORIG_ROOT_DEV;</span><br><span class="line"> 	SWAP_DEV = ORIG_SWAP_DEV;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">sprintf</span>(term, <span class="string">&quot;TERM=con%dx%d&quot;</span>, CON_COLS, CON_ROWS);</span><br><span class="line"></span><br><span class="line">	envp[<span class="number">1</span>] = term;	</span><br><span class="line">	envp_rc[<span class="number">1</span>] = term;</span><br><span class="line"> 	drive_info = DRIVE_INFO;</span><br><span class="line"></span><br><span class="line">	memory_end = (<span class="number">1</span>&lt;&lt;<span class="number">20</span>) + (EXT_MEM_K&lt;&lt;<span class="number">10</span>);</span><br><span class="line">	memory_end &amp;= <span class="number">0xfffff000</span>;<span class="comment">//align 4k</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (memory_end &gt; <span class="number">16</span>*<span class="number">1024</span>*<span class="number">1024</span>)<span class="comment">//if memory_end &gt; 16MB, set it to be 16 MB</span></span><br><span class="line">		memory_end = <span class="number">16</span>*<span class="number">1024</span>*<span class="number">1024</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (memory_end &gt; <span class="number">12</span>*<span class="number">1024</span>*<span class="number">1024</span>) </span><br><span class="line">		buffer_memory_end = <span class="number">4</span>*<span class="number">1024</span>*<span class="number">1024</span>;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (memory_end &gt; <span class="number">6</span>*<span class="number">1024</span>*<span class="number">1024</span>)</span><br><span class="line">		buffer_memory_end = <span class="number">2</span>*<span class="number">1024</span>*<span class="number">1024</span>;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		buffer_memory_end = <span class="number">1</span>*<span class="number">1024</span>*<span class="number">1024</span>;</span><br><span class="line"></span><br><span class="line">	main_memory_start = buffer_memory_end;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">sprintf</span>(_my_msg_buf, <span class="string">&quot;Mem size is %x, buf-mem size is %x, main-mem start %x ... ...\0&quot;</span>, memory_end, main_memory_start, buffer_memory_end);</span><br><span class="line">	__asm__ (</span><br><span class="line">	<span class="string">&quot;push %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;mov %0, %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;call safe_mode_print_str_after_page\n\t&quot;</span> </span><br><span class="line">	<span class="string">&quot;pop %%ebp\n\t&quot;</span></span><br><span class="line">	:</span><br><span class="line">	:<span class="string">&quot;p&quot;</span>((<span class="type">char</span> *)&amp;_my_msg_buf)</span><br><span class="line">	:);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> RAMDISK</span></span><br><span class="line">	<span class="built_in">sprintf</span>(_my_msg_buf, <span class="string">&quot;ramdisk init ... ...\0&quot;</span>);</span><br><span class="line">	__asm__ (</span><br><span class="line">	<span class="string">&quot;push %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;mov %0, %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;call safe_mode_print_str_after_page\n\t&quot;</span> </span><br><span class="line">	<span class="string">&quot;pop %%ebp\n\t&quot;</span></span><br><span class="line">	:</span><br><span class="line">	:<span class="string">&quot;p&quot;</span>((<span class="type">char</span> *)&amp;_my_msg_buf)</span><br><span class="line">	:);</span><br><span class="line">	main_memory_start += rd_init(main_memory_start, RAMDISK*<span class="number">1024</span>);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">	<span class="built_in">sprintf</span>(_my_msg_buf, <span class="string">&quot;memory init ... ...\0&quot;</span>);</span><br><span class="line">	__asm__ (</span><br><span class="line">	<span class="string">&quot;push %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;mov %0, %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;call safe_mode_print_str_after_page\n\t&quot;</span> </span><br><span class="line">	<span class="string">&quot;pop %%ebp\n\t&quot;</span></span><br><span class="line">	:</span><br><span class="line">	:<span class="string">&quot;p&quot;</span>((<span class="type">char</span> *)&amp;_my_msg_buf)</span><br><span class="line">	:);</span><br><span class="line">	mem_init(main_memory_start,memory_end);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">sprintf</span>(_my_msg_buf, <span class="string">&quot;trap init ... ...\0&quot;</span>);</span><br><span class="line">	__asm__ (</span><br><span class="line">	<span class="string">&quot;push %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;mov %0, %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;call safe_mode_print_str_after_page\n\t&quot;</span> </span><br><span class="line">	<span class="string">&quot;pop %%ebp\n\t&quot;</span></span><br><span class="line">	:</span><br><span class="line">	:<span class="string">&quot;p&quot;</span>((<span class="type">char</span> *)&amp;_my_msg_buf)</span><br><span class="line">	:);</span><br><span class="line">	trap_init();</span><br><span class="line"></span><br><span class="line">	<span class="built_in">sprintf</span>(_my_msg_buf, <span class="string">&quot;blk init ... ...\0&quot;</span>);</span><br><span class="line">	__asm__ (</span><br><span class="line">	<span class="string">&quot;push %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;mov %0, %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;call safe_mode_print_str_after_page\n\t&quot;</span> </span><br><span class="line">	<span class="string">&quot;pop %%ebp\n\t&quot;</span></span><br><span class="line">	:</span><br><span class="line">	:<span class="string">&quot;p&quot;</span>((<span class="type">char</span> *)&amp;_my_msg_buf)</span><br><span class="line">	:);</span><br><span class="line">	blk_dev_init();</span><br><span class="line"></span><br><span class="line">	<span class="built_in">sprintf</span>(_my_msg_buf, <span class="string">&quot;chr init ... ...\0&quot;</span>);</span><br><span class="line">	__asm__ (</span><br><span class="line">	<span class="string">&quot;push %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;mov %0, %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;call safe_mode_print_str_after_page\n\t&quot;</span> </span><br><span class="line">	<span class="string">&quot;pop %%ebp\n\t&quot;</span></span><br><span class="line">	:</span><br><span class="line">	:<span class="string">&quot;p&quot;</span>((<span class="type">char</span> *)&amp;_my_msg_buf)</span><br><span class="line">	:);</span><br><span class="line">	chr_dev_init();</span><br><span class="line"></span><br><span class="line">	<span class="built_in">sprintf</span>(_my_msg_buf, <span class="string">&quot;tty init ... ...\0&quot;</span>);</span><br><span class="line">	__asm__ (</span><br><span class="line">	<span class="string">&quot;push %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;mov %0, %%ebp\n\t&quot;</span></span><br><span class="line">	<span class="string">&quot;call safe_mode_print_str_after_page\n\t&quot;</span> </span><br><span class="line">	<span class="string">&quot;pop %%ebp\n\t&quot;</span></span><br><span class="line">	:</span><br><span class="line">	:<span class="string">&quot;p&quot;</span>((<span class="type">char</span> *)&amp;_my_msg_buf)</span><br><span class="line">	:);</span><br><span class="line">	tty_init();</span><br><span class="line"></span><br><span class="line">	printk(<span class="string">&quot;time init ... ...\n\r&quot;</span>);</span><br><span class="line">	time_init();</span><br><span class="line"></span><br><span class="line">	printk(<span class="string">&quot;sched init ... ...\n\r&quot;</span>);</span><br><span class="line">	sched_init();</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	After sched_init()</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">	gdt[0] = NULL</span></span><br><span class="line"><span class="comment">	gdt[1] = kernel cs</span></span><br><span class="line"><span class="comment">	gdt[2] = kernel ds</span></span><br><span class="line"><span class="comment">	gdt[3] = NULL</span></span><br><span class="line"><span class="comment">	</span></span><br><span class="line"><span class="comment">	gdt[4] = task0.tss</span></span><br><span class="line"><span class="comment">	gdt[5] = task0.ldt</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">	tr=task0.tss</span></span><br><span class="line"><span class="comment">	ldtr=task0.ldt</span></span><br><span class="line"><span class="comment">	*/</span></span><br><span class="line"></span><br><span class="line">	printk(<span class="string">&quot;buffer init ... ...\n\r&quot;</span>);</span><br><span class="line">	buffer_init(buffer_memory_end);</span><br><span class="line"></span><br><span class="line">	printk(<span class="string">&quot;hd init ... ...\n\r&quot;</span>);</span><br><span class="line">	hd_init();</span><br><span class="line"></span><br><span class="line">	printk(<span class="string">&quot;floppy init ... ...\n\r&quot;</span>);</span><br><span class="line">	floppy_init();</span><br><span class="line"></span><br><span class="line">	printk(<span class="string">&quot;enable interrupts ... ...\n\r&quot;</span>);</span><br><span class="line">	sti();</span><br><span class="line"></span><br><span class="line">	printk(<span class="string">&quot;go to user mode ... ...\n\r&quot;</span>);</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	movl %%esp,%%eax</span></span><br><span class="line"><span class="comment">	pushl $0x17</span></span><br><span class="line"><span class="comment">	pushl %%eax</span></span><br><span class="line"><span class="comment">	pushfl</span></span><br><span class="line"><span class="comment">	pushl $0x0f</span></span><br><span class="line"><span class="comment">	pushl $1f</span></span><br><span class="line"><span class="comment">	iret</span></span><br><span class="line"><span class="comment">	1:</span></span><br><span class="line"><span class="comment">	movl $0x17,%%eax</span></span><br><span class="line"><span class="comment">	mov %%ax,%%ds</span></span><br><span class="line"><span class="comment">	mov %%ax,%%es</span></span><br><span class="line"><span class="comment">	mov %%ax,%%fs</span></span><br><span class="line"><span class="comment">	mov %%ax,%%gs</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">	iret instruction will do follow op:</span></span><br><span class="line"><span class="comment">	popl eip</span></span><br><span class="line"><span class="comment">	popl cs</span></span><br><span class="line"><span class="comment">	popl eflag</span></span><br><span class="line"><span class="comment">	popl esp</span></span><br><span class="line"><span class="comment">	popl ss</span></span><br><span class="line"><span class="comment">	*/</span></span><br><span class="line">	move_to_user_mode();</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;user_mode: fork() task0 ... ...&quot;</span>);</span><br><span class="line">	<span class="keyword">if</span> (!fork()) &#123;		<span class="comment">/* we count on this going ok */</span></span><br><span class="line"></span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;user_mode: task1 call init ... ...&quot;</span>);</span><br><span class="line">		init();</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> *   NOTE!!   For any other task &#x27;pause()&#x27; would mean we have to get a</span></span><br><span class="line"><span class="comment"> * signal to awaken, but task0 is the sole exception (see &#x27;schedule()&#x27;)</span></span><br><span class="line"><span class="comment"> * as task 0 gets activated at every idle moment (when no other tasks</span></span><br><span class="line"><span class="comment"> * can run). For task0 &#x27;pause()&#x27; just means we go check if some other</span></span><br><span class="line"><span class="comment"> * task can run, and if not we return here.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;user_mode: task0 call sys_pause() in while ... ...&quot;</span>);</span><br><span class="line">	<span class="keyword">for</span>(;;)</span><br><span class="line">		__asm__(<span class="string">&quot;int $0x80&quot;</span>::<span class="string">&quot;a&quot;</span> (__NR_pause):);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  注意，这里我们仍然设计了一个函数为safe_mode_print_str_after_page，通过直接操作显存进行显示字符串，知道tty_init之后，我们才能够调用printk类似的函数进行打印。</p>
+<p>  下面简要介绍一下main函数主要做的事情：</p>
+<ul>
+<li>根据我们在setup中保存到内存中的内存参数初始化高速缓冲区和主存的位置。</li>
+<li>然后就是我们常见的初始化mm模块。</li>
+<li>初始化中断向量。</li>
+<li>初始化块设备。</li>
+<li>初始化字符串设备。</li>
+<li>初始化tty设备。</li>
+<li>初始化时间。</li>
+<li>初始化调度模块。</li>
+<li>初始化缓冲区。</li>
+<li>初始化硬盘。</li>
+<li>初始化软盘。</li>
+<li>开启中断。</li>
+<li>把当前任务切换到用户态。</li>
+</ul>
+<p>  当我们切换到用户态之后，并且当前我们的进程是0号进程，我们内核的一些重要初始化基本设置完毕。然后就像我们常见的linux编程那样，通过fork，创建我们的1号进程。然后我们继续进行下面的事情：</p>
+<ul>
+<li>task0在fork出task1之后，就循环调用sys_pause, 这里主要还是执行schedule()开始执行进程调度。</li>
+<li>task1成功创建后，调用setup，开始加载根文件系统。然后task1 通过fork创建了task2。</li>
+<li>task2通过execve开始运行/bin/sh，进入shell。后续就是一些其他的事情。</li>
+</ul>
+<p>  到这里，我们已经把kernel跑起来了。在我调试的过程中，主要还是mm模块和schedule模块有些问题，可能和编译器版本有关系，反正我生成的代码，总会报错。哪怕到现在，我开源出来的我修改的内核，也非常的不稳定，经常崩溃。但是好在正常工作了。</p>
+<p>  下面给出两种不同打印的日志：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/main_log0.png" alt="main_log0_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/main_log1.png" alt="main_log1_img"/></center>
+    </div>
+</div>   
+<br/>
+<br/>
+<h5 id="tool-build-c">tool/build.c</h5>
+<p>  此工具是生成LinuxKernel镜像的手段。但是我们在Ubuntu上生成的内核，由于gcc版本变更的原因，需要做一些变更。主要还是把生成的elf格式system模块通过objcopy 生成二进制内存镜像。主要原因就是elf格式需要一个elf加载器进行各个段的重定位，但是由于我们是内核，所以没有。详情，请查看tool/build.c 及 Makefile。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="开源">开源</h3>
+<hr>
+<p>  <a target="_blank" rel="noopener" href="https://github.com/flyinskyin2013/LinuxKernel-src0.12">https://github.com/flyinskyin2013/LinuxKernel-src0.12</a></p>
+<p>  <a target="_blank" rel="noopener" href="https://gitee.com/sky-X/LinuxKernel-src0.12">https://gitee.com/sky-X/LinuxKernel-src0.12</a> （镜像）</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  为啥想要在ubuntu1804环境下弄这个东西呢？一方面是想学习一下，通过踩坑的方式加深自己的理解。另一方面还是太懒了，我只想在我的ubuntu1804上编译内核，不想安装其他虚拟机了，我的电脑太卡了（毕竟8年的电脑了QAQ）。</p>
+<p>  经过了这一波调试，我对LinuxKernel有了更深的认知，我觉得很不错，如果以后有必要，我还可以分别对这些模块进行详细的查看，在这里，我只是简单的说明了init/main中的内容，其实，还有许多其他的内容是运行在背后的。比如system_call,sys_table等等内容。还有do_fork do_execve等等内容都是我在调试过程中踩过的坑。</p>
+<p>  这里还是要说明，深入调试学习这个的原因还是想看看OS是怎么运行起来，虽然不能说已经100%的熟知，但是也可管中窥豹。</p>
+<p>  注意，这个版本的内核和现代的2.0，4.0，5.0还缺了一些主要的知识，比如网络栈，VFS等。但是其他的一些内容，在现在的最新内核中，多多少少都能够看到这个版本的一些影子。这也是学习这个内核的原因之一。</p>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/20/blog_idx_101/" rel="prev" title="字符集、字符编码、国际化、本地化简要总结(UNICODE/UTF/ASCII/GB2312/GBK/GB18030)">
+      <i class="fa fa-chevron-left"></i> 字符集、字符编码、国际化、本地化简要总结(UNICODE/UTF/ASCII/GB2312/GBK/GB18030)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/18/blog_idx_103/" rel="next" title="Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel)">
+      Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%90%AD%E7%8E%AF%E5%A2%83"><span class="nav-number"></span> <span class="nav-text">搭环境</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Ubuntu18-04%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85"><span class="nav-number"></span> <span class="nav-text">Ubuntu18.04环境安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E4%B8%A4%E4%B8%AAbochs%E7%89%88%E6%9C%AC%E5%A4%87%E7%94%A8"><span class="nav-number"></span> <span class="nav-text">编译两个bochs版本备用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%88%91%E4%BB%AC%E7%BC%96%E8%AF%91%E7%9A%84%E5%86%85%E6%A0%B8"><span class="nav-number"></span> <span class="nav-text">运行我们编译的内核</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LinuxKernel%E5%90%AF%E5%8A%A8%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">LinuxKernel启动简介</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#boot-bootsect-S-%E9%98%B6%E6%AE%B5"><span class="nav-number"></span> <span class="nav-text">boot&#x2F;bootsect.S 阶段</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#boot-setup-S-%E9%98%B6%E6%AE%B5"><span class="nav-number"></span> <span class="nav-text">boot&#x2F;setup.S 阶段</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#boot-head-s-%E9%98%B6%E6%AE%B5"><span class="nav-number"></span> <span class="nav-text">boot&#x2F;head.s 阶段</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#init-main-c-%E5%88%B0%E8%BF%9B%E5%85%A5shell"><span class="nav-number"></span> <span class="nav-text">init&#x2F;main.c 到进入shell</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#tool-build-c"><span class="nav-number"></span> <span class="nav-text">tool&#x2F;build.c</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E6%BA%90"><span class="nav-number"></span> <span class="nav-text">开源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

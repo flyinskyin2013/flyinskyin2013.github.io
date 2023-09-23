@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Ubuntu 18.04 MLU270 加速卡一张  前言    阅读本文前，请务必须知以下前置文章概念：  《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 （ https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011728480&#x2F;a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="寒武纪加速平台(MLU200系列) 摸鱼指南（二）--- 模型移植-环境搭建">
+<meta property="og:url" content="https://e-x.top/2021/11/14/blog_idx_112/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Ubuntu 18.04 MLU270 加速卡一张  前言    阅读本文前，请务必须知以下前置文章概念：  《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 （ https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011728480&#x2F;a">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/MLU270.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/MLU270_pcie.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/cnmon.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/cncc.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/docker_image.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/test.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-11-14T10:13:51.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.906Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/MLU270.png">
+
+<link rel="canonical" href="https://e-x.top/2021/11/14/blog_idx_112/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>寒武纪加速平台(MLU200系列) 摸鱼指南（二）--- 模型移植-环境搭建 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/11/14/blog_idx_112/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          寒武纪加速平台(MLU200系列) 摸鱼指南（二）--- 模型移植-环境搭建
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-11-14 18:13:51" itemprop="dateCreated datePublished" datetime="2021-11-14T18:13:51+08:00">2021-11-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.1k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:13:38
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=112） 
+&emsp;&emsp;本文发布于 2021-11-14 18:13:51     （BlogID=112） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<ul>
+<li>Ubuntu 18.04</li>
+<li>MLU270 加速卡一张</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  阅读本文前，请务必须知以下前置文章概念：</p>
+<ul>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> ）</li>
+</ul>
+<p>  前文我们已经介绍一些基本的概念。在本文，将会从安装加速卡，到模型环境移植搭建完成，都会做一个简单的介绍。</p>
+<p>  若文中引用部分存在侵权，请及时联系我删除。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="安装MLU270加速卡到主机">安装MLU270加速卡到主机</h3>
+<hr>
+<p>  首先MLU270加速卡你可以直接把他看为一张普通的独立显卡就行。只需要安装在主机的PCIE x16 口即可，并连接好供电线，其供电线是特制的接口，需要官方提供的线缆进行转换一下接口。其官网渲染图如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/MLU270.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  开机后通过查看pcie设备即可发现刚刚安装的设备（lspci命令）：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/MLU270_pcie.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="安装驱动">安装驱动</h3>
+<hr>
+<p>  根据其官网资料（ <a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/driver/index.html">https://www.cambricon.com/docs/driver/index.html</a> ），我简要说明部分内容。</p>
+<p>  首先根据其资料，我们可以看到大概支持两个系列的os，一个是ubuntu/debian，一个是centos。这里，我建议使用ubuntu，具体原因，有兴趣的可以去查看此文档的注意部分。</p>
+<br/>
+<br/>
+<h5 id="在Ubuntu18-04上安装驱动">在Ubuntu18.04上安装驱动</h5>
+<p>  首先从你的供应商拿到驱动包，名字如：neuware-mlu270-driver-dkms_xxx_all.deb。然后不用客气，直接执行：sudo dpkg -i neuware-mlu270-driver-dkms_xxx_all.deb。</p>
+<p>  我们其实可以看到，其用DKMS来管理驱动，和安装N卡驱动非常类似。具体显示信息，请查看如上官网资料。这里只有一个问题要注意，就是内核版本一定要在其文档说明支持的范围内。</p>
+<p>  当安装成功后，执行：cnmon，可以看到一个类似nvidia-smi的信息，包含了加速卡的一些基本信息。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/cnmon.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="安装CNToolKit">安装CNToolKit</h3>
+<hr>
+<p>  其实和我们前置文章里面讲的软件框架部分，当我们准备好驱动之后，其实下一步就是安装运行时层。运行时层就是CNToolKit，里面包含了好几个模块。其具体介绍请查看其官网： <a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/cntoolkit/index.html">https://www.cambricon.com/docs/cntoolkit/index.html</a> 。</p>
+<p>  在CNToolKit模块里面，我接触的最多的就是CNRT，因为这是离线模型推理部分的底层支持部分。也就是说前文我提到的EasyDK就是大部分基于CNRT进行设计的。</p>
+<br/>
+<br/>
+<h5 id="在Ubuntu18-04上安装CNToolKit">在Ubuntu18.04上安装CNToolKit</h5>
+<p>  官方路子：</p>
+<ul>
+<li>sudo dpkg -i cntoolkit_xxx.deb</li>
+<li>sudo apt update</li>
+<li>sudo apt-get install cnas cncc cncodec cndev cndrv cnlicense cnpapi cnperf cnrt cnrtc cnstudio</li>
+</ul>
+<p>  野路子：</p>
+<ul>
+<li>解压cntoolkit_xxx.deb。</li>
+<li>找到里面的所有deb文件，选择自己需要的，直接解压安装。</li>
+</ul>
+<p>注意，野路子在边缘端环境配置的时候、边缘端程序生成的时候有奇效。</p>
+<p>  配置相关环境变量：</p>
+<ul>
+<li>export NEUWARE_HOME=“/usr/local/neuware”</li>
+<li>export PATH=“${NEUWARE_HOME}/bin:${PATH}”</li>
+</ul>
+<p>注意，此变量NEUWARE_HOME将会伴随着你移植模型，生成边缘端程序等阶段，需要注意。</p>
+<p>  安装好进行测试，执行命令：/usr/local/neuware/bin/cncc --version  得到如图输出：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/cncc.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="配置模型移植开发环境">配置模型移植开发环境</h3>
+<hr>
+<p>  寒武纪官方支持3种常见框架的模型移植，他们分别是caffe/tensorflow/pytorch，他们的官方资料如下：</p>
+<ul>
+<li>caffe: <a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/caffe/index.html">https://www.cambricon.com/docs/caffe/index.html</a></li>
+<li>tensorflow: <a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/tensorflow/user_guide/index.html">https://www.cambricon.com/docs/tensorflow/user_guide/index.html</a></li>
+<li>pytorch: <a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/pytorch/index.html">https://www.cambricon.com/docs/pytorch/index.html</a></li>
+</ul>
+<p>  寒武纪官方支持的环境配置方式有两种，一种是全程手动搭建环境。第二种是docker。</p>
+<p>  对于手动搭建环境，这里仁者见仁智者见智，我个人认为新手可以尝试着搭建一次就行，后续还是使用docker。因为手动搭建可以让你更加的了解整个移植工作的流程。以pytorch为例，因为手动搭建，大概包含了安装virtualenv，解压源码，设定NEUWARE_HOME环境，打patch，安装依赖，编译编译生成对应的库，运行单元测试，最终检测即可。</p>
+<p>  对于业务开发来说，我建议还是docker来的快点。</p>
+<br/>
+<br/>
+<h5 id="搭建模型移植docker环境">搭建模型移植docker环境</h5>
+<p>  docker的安装我就不说了，自己百度把docker基本环境搭好，能够跑hello-world就行。</p>
+<p>  首先我们在寒武纪那里可以拿到对应环境的docker镜像，下载到我们的安装了MLU270的主机电脑。然后执行命令： sudo docker load -i pytorch-xxxx-ubuntu18.04.tar，然后执行sudo docker images 查看你已经导入的image文件。如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/docker_image.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  然后执行寒武纪提供的run脚本即可。根据脚本中的配置，默认会将当期目录映射到docker的/home/share目录。</p>
+<p>  当我们第一次进入一个docker环境时，需要执行寒武纪提供的patch脚本（联系供应商），在docker根目录生成一个env_pytorch.sh文件，配设定相关的环境。</p>
+<p>  此外，每当我们执行run脚本进入docker后（docker run），每一次都需要执行：cd / &amp;&amp; source env_pytorch.sh 进入pytorch虚拟环境。这个时候执行如下命令，并反馈如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_112/test.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  使用docker还有一个好处是更新升级方便，更重要的是方便建立多个不同算法移植环境。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  对于寒武纪加速平台来说，我们不要将它视为一个新的事物，可以将它类比为Nvidia的显卡加速平台。加速卡驱动对应n卡驱动。cncc类比nvcc。bang c类比为cuda。更高级的算法推理和训练框架其实底层加速部分就是使用cuda/bang c/cpu-simd来构建的。对于我们用户来说，一般情况下，我们只需要普通的了解pytorch/tensorflow/caffe的api即可。只有当对某些特殊算子需要加速的时候，这个时候你有可能去涉及这些cuda/bang c/cpu-simd。这里寒武纪加速平台根据其提供的一些资料来看，直接在算子里面集成了例如ssd/yolov3/yolov5等目标检测的最后一个解码层，详情见相关文档。</p>
+<p>  这里介绍了寒武纪算法移植环境搭建的方法，同时也对整个流程做了一个简要的说明。其实如果你能够和供应商联系上，应该还可以得到一些其他的相关支持和资料。我这里由于一些原因，只引用了其官方公开的内容。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> ）</li>
+<li><a target="_blank" rel="noopener" href="https://www.cambricon.com/">https://www.cambricon.com/</a></li>
+<li>其他相关保密资料。</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/07/blog_idx_111/" rel="prev" title="寒武纪加速平台(MLU200系列) 摸鱼指南（一）--- 基本概念及相关介绍">
+      <i class="fa fa-chevron-left"></i> 寒武纪加速平台(MLU200系列) 摸鱼指南（一）--- 基本概念及相关介绍
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/21/blog_idx_113/" rel="next" title="寒武纪加速平台(MLU200系列) 摸鱼指南（三）--- 模型移植-分割网络实例">
+      寒武纪加速平台(MLU200系列) 摸鱼指南（三）--- 模型移植-分割网络实例 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85MLU270%E5%8A%A0%E9%80%9F%E5%8D%A1%E5%88%B0%E4%B8%BB%E6%9C%BA"><span class="nav-number"></span> <span class="nav-text">安装MLU270加速卡到主机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8"><span class="nav-number"></span> <span class="nav-text">安装驱动</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9C%A8Ubuntu18-04%E4%B8%8A%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8"><span class="nav-number"></span> <span class="nav-text">在Ubuntu18.04上安装驱动</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85CNToolKit"><span class="nav-number"></span> <span class="nav-text">安装CNToolKit</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9C%A8Ubuntu18-04%E4%B8%8A%E5%AE%89%E8%A3%85CNToolKit"><span class="nav-number"></span> <span class="nav-text">在Ubuntu18.04上安装CNToolKit</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%A8%A1%E5%9E%8B%E7%A7%BB%E6%A4%8D%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83"><span class="nav-number"></span> <span class="nav-text">配置模型移植开发环境</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%90%AD%E5%BB%BA%E6%A8%A1%E5%9E%8B%E7%A7%BB%E6%A4%8Ddocker%E7%8E%AF%E5%A2%83"><span class="nav-number"></span> <span class="nav-text">搭建模型移植docker环境</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

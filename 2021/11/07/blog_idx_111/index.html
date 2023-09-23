@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    从2019年开始，我们公司的智能分析平台核心架构就开始逐渐的转向了RK3399PRO，这是我们公司的第三代智能分析平台，前面两代分别是TK1和TX2，但是因为众所周知的原因，这一代分析平台选择了国内的一些替代商。经过了2019年和2020年的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="寒武纪加速平台(MLU200系列) 摸鱼指南（一）--- 基本概念及相关介绍">
+<meta property="og:url" content="https://e-x.top/2021/11/07/blog_idx_111/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    从2019年开始，我们公司的智能分析平台核心架构就开始逐渐的转向了RK3399PRO，这是我们公司的第三代智能分析平台，前面两代分别是TK1和TX2，但是因为众所周知的原因，这一代分析平台选择了国内的一些替代商。经过了2019年和2020年的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_111/software_framework.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_111/deployment.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-11-07T09:18:31.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.904Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_111/software_framework.png">
+
+<link rel="canonical" href="https://e-x.top/2021/11/07/blog_idx_111/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>寒武纪加速平台(MLU200系列) 摸鱼指南（一）--- 基本概念及相关介绍 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/11/07/blog_idx_111/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          寒武纪加速平台(MLU200系列) 摸鱼指南（一）--- 基本概念及相关介绍
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-11-07 17:18:31" itemprop="dateCreated datePublished" datetime="2021-11-07T17:18:31+08:00">2021-11-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-11-07 17:15:57
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=111） 
+&emsp;&emsp;本文发布于 2021-11-07 17:18:31     （BlogID=111）
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  从2019年开始，我们公司的智能分析平台核心架构就开始逐渐的转向了RK3399PRO，这是我们公司的第三代智能分析平台，前面两代分别是TK1和TX2，但是因为众所周知的原因，这一代分析平台选择了国内的一些替代商。经过了2019年和2020年的实际部署和使用，对于第三代智能分析平台来说，有一个硬性缺陷就是NPU算力过低（INT8 3T），导致了某些算法达不到实时帧率，其其他的性能还是不错的，如CPU计算力、编解码等等。正是由于这个算力的缺陷，所以在2020年，我们调研了市场上的其他算力平台的情况，经过某些渠道，我们和寒武纪联系上了。寒武纪给我们介绍了他们的MLU200系列智能分析平台的情况，并提供了相应测试板卡，经过相应的测试后，我们技术人员及公司领导对其比较认可，因此决定第四代平台会加入寒武纪的推理模块，最终形成了以RK作为主控，寒武纪作为推理模块的形式，为什么这样搭建，后文有所提及。由于现在市场上已经出现了类似我们公司的第四代智能分析平台的产品，于是相关介绍可以进行解密脱敏发布。本系列文章就是对这个寒武纪平台做一些简单的介绍及总结。</p>
+<p>  若文中引用部分存在侵权，请及时联系我删除。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="寒武纪加速平台简介">寒武纪加速平台简介</h3>
+<hr>
+<p>  寒武纪加速平台是有两个部分构成，一个部分是算力硬件，一部分是配套的软件。</p>
+<br/>
+<br/>
+<h5 id="寒武纪硬件部分">寒武纪硬件部分</h5>
+<p>  首先，这里介绍的是寒武纪的MLU200系列，在本文发布时，其实其MLU200系列的升级版，MLU300系列也在寒武纪内部及其相关的合作伙伴正在测试。</p>
+<p>  对于MLU200系列来说，我们从其官网可以看到，大概存在3个系列，一个是边缘端推理MLU220（只支持推理），一个是服务器端推理MLU270（只支持推理），一个是MLU290（支持训练和推理）。可以从其官网（<a target="_blank" rel="noopener" href="https://www.cambricon.com/%EF%BC%89">https://www.cambricon.com/）</a> 查看更加详细的介绍。</p>
+<p>  对于MLU220来说，这里介绍两个比较重要的参数，具备两种形态，一种是INT8 8T算力+8.25W功耗，一种是INT8 16T算力+16.5W功耗。MLU220边缘端模块正是我们公司第四代智能分析平台的核心部件之一，但是由于其CPU计算能力较弱，导致不能够进行大量的业务逻辑运算，这也是某些场景可能需要其他主控的原因。</p>
+<p>  对于MLU270来说，除了部署服务端的智能分析算法外，其对我们来说最重要的功能是作为模型移植的硬件。我们的智能分析算法想要比较好的工作在MLU220边缘端，就必须要经过MLU270上进行模型移植，这也是后续文章的重点之一。</p>
+<p>  对于MLU290来说，我们公司没有使用，但是看其介绍，一般来说都是应用在各云厂商、机房和服务中心等，其的最大亮点是支持模型训练。</p>
+<br/>
+<br/>
+<h5 id="寒武纪软件部分">寒武纪软件部分</h5>
+<p>  寒武纪软件部分我大概可以分为3类，一个是驱动，一个是运行时库，一个是其相关的算法框架等。如其官网的结构图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_111/software_framework.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  从上图来看，在相关的算法框架那块里面，还包含了两个我们实际用到了，但是其图中没有给出的介绍。图中的相关算法框架部分都是用于算法训练、推理、移植使用的。其实在推理部分来看（运行时之上），还应该包含寒武纪出的两个开源工程：EasyDK以及CNStream。</p>
+<p>  EasyDK是其基于其运行时库封装的一些常用和简易接口，对我们来说，可能最常用的就是关于离线模型推理部分。相关介绍请参见其官网： <a target="_blank" rel="noopener" href="https://github.com/Cambricon/easydk">https://github.com/Cambricon/easydk</a></p>
+<p>  CNStream是其基于EasyDK封装的一套应用层库，我觉得其和deepstream和MediaPipe有异曲同工之妙。相关介绍请参见其官网：<a target="_blank" rel="noopener" href="https://github.com/Cambricon/CNStream">https://github.com/Cambricon/CNStream</a></p>
+<p>  其实从这里我们可以看出，一般来说，我们自己的推理端的程序和服务，有三种形态：</p>
+<ul>
+<li>基于CNStream进行开发，其封装的还不错，并行处理的还行，但是可能就是不能够很好的和自己以前的程序框架移植和融合。</li>
+<li>基于EasyDK进行开发，简化调用及开发流程，但是会有些坑需要去阅读EasyDk源码和运行时相关的SDK文档。</li>
+<li>基于其运行时相关的SDK文档进行开发，需要花大量的时间进行学习，适合长期工作在此平台的相关人员。</li>
+</ul>
+<p>  对于我们公司来说，我们现在基本工作在EasyDK和其运行时之间，基于这两个进行混合编程，最终的理想状态是直接基于其运行时库进行开发。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="寒武纪加速平台使用简介">寒武纪加速平台使用简介</h3>
+<hr>
+<p>  在前言部分已经介绍过了，我们公司的第四代智能分析平台的核心构成部分是MLU220。因此，我们公司做的事情其实将已经训练好的Caffe、Pytorch等框架的模型移植到寒武纪平台。寒武纪平台根据其定位做了云端和终端的商业定位。其官网介绍图如下：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_111/deployment.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  下面我对我司使用的基本流程做一个简介。</p>
+<br/>
+<br/>
+<h5 id="部署流程简介">部署流程简介</h5>
+<p>  寒武纪平台的部署流程有一条主线是将一个原始模型转为一个离线模型。基本流程如下：</p>
+<ul>
+<li>得到算法的原始模型，如caffe/pytorch/tensorflow等框架的模型。</li>
+<li>配置对应框架模型的模型转换环境，有两种一种是手动配置，一种是docker。</li>
+<li>使用对应的框架模型转换环境，进行模型量化、转换得到离线模型。</li>
+<li>开发支持离线模型的程序应用，调用离线模型进行推理并做其他处理。</li>
+</ul>
+<p>  关于我司使用的基本流程，后续文章将会有一个实例来详细展开说明，这里就不多介绍了。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  本文主要介绍了寒武纪加速平台的一些概念。更多的详情，请查看寒武纪官网相关的介绍。</p>
+<p>  其实看到国内的各个软硬一体厂商发展的还是不错的，希望他们可以取得更加长足的发展，希望他们为国产争光。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.cambricon.com/">https://www.cambricon.com/</a></li>
+<li>其他相关保密资料。</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/08/15/blog_idx_110/" rel="prev" title="DL基础补全计划(六)---卷积和池化">
+      <i class="fa fa-chevron-left"></i> DL基础补全计划(六)---卷积和池化
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/14/blog_idx_112/" rel="next" title="寒武纪加速平台(MLU200系列) 摸鱼指南（二）--- 模型移植-环境搭建">
+      寒武纪加速平台(MLU200系列) 摸鱼指南（二）--- 模型移植-环境搭建 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%92%E6%AD%A6%E7%BA%AA%E5%8A%A0%E9%80%9F%E5%B9%B3%E5%8F%B0%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">寒武纪加速平台简介</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AF%92%E6%AD%A6%E7%BA%AA%E7%A1%AC%E4%BB%B6%E9%83%A8%E5%88%86"><span class="nav-number"></span> <span class="nav-text">寒武纪硬件部分</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AF%92%E6%AD%A6%E7%BA%AA%E8%BD%AF%E4%BB%B6%E9%83%A8%E5%88%86"><span class="nav-number"></span> <span class="nav-text">寒武纪软件部分</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%92%E6%AD%A6%E7%BA%AA%E5%8A%A0%E9%80%9F%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">寒武纪加速平台使用简介</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">部署流程简介</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

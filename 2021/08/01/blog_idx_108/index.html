@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Windows 10 VSCode Python 3.8.10 Pytorch 1.8.1 Cuda 10.2  前言    在《DL基础补全计划(三)—模型选择、欠拟合、过拟合》（ https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011728480&#x2F;artic">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DL基础补全计划(四)---对抗过拟合：权重衰减、Dropout">
+<meta property="og:url" content="https://e-x.top/2021/08/01/blog_idx_108/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Windows 10 VSCode Python 3.8.10 Pytorch 1.8.1 Cuda 10.2  前言    在《DL基础补全计划(三)—模型选择、欠拟合、过拟合》（ https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011728480&#x2F;artic">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/overfitting.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/w_weight_decay.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/wb_weight_decay1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/wb_weight_decay2.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/overfitting_dp.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/overfitting_dp_sov.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-08-01T09:35:43.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.896Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/overfitting.png">
+
+<link rel="canonical" href="https://e-x.top/2021/08/01/blog_idx_108/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>DL基础补全计划(四)---对抗过拟合：权重衰减、Dropout | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/08/01/blog_idx_108/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DL基础补全计划(四)---对抗过拟合：权重衰减、Dropout
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-08-01 17:35:43" itemprop="dateCreated datePublished" datetime="2021-08-01T17:35:43+08:00">2021-08-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>16k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>14 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:10:23
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=108） 
+&emsp;&emsp;本文发布于 2021-08-01 17:35:43     （BlogID=108） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<ul>
+<li>Windows 10</li>
+<li>VSCode</li>
+<li>Python 3.8.10</li>
+<li>Pytorch 1.8.1</li>
+<li>Cuda 10.2</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  在《DL基础补全计划(三)—模型选择、欠拟合、过拟合》（ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/118881125">https://blog.csdn.net/u011728480/article/details/118881125</a> ）一文中，我们已经了解了我们训练过程中的一些现象，对于欠拟合问题我们一般是增加训练集大小。对于过拟合，我们也提供了一个解决方案，那就是限制模型的复杂度（参数个数）。</p>
+<p>  在以后我们构造的模型里面，其参数都是成百上千的，如果通过限制参数（更换模型）来解决过拟合问题太简单粗暴了，于是我们需要一些更加细腻的手段来抑制过拟合。此外，我们还必须知道，我们增加训练集总是能够缓解过拟合的问题，但是这不是根本办法。于是深度学习大佬们又引出了其他的两个方案，他们分别是权重衰减和Dropout。</p>
+<p>  到此为止，我们可以有如下的方法缓解过拟合问题：</p>
+<ul>
+<li>控制模型复杂度</li>
+<li>增大训练集</li>
+<li>权重衰减</li>
+<li>Dropout</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="权重衰减-L2正则化">权重衰减(L2正则化)</h3>
+<hr>
+<p>  其实书上对于权重衰减的定义还是比较好理解的，我们定义我们的模型为M(X)，当M(X)=0时，此时，我们的模型最简单，因为所有的输入都是0。我们最终想要的是M(X)的值越来越接近于0，那么我们权重的范数也需要越来越接近于0，这样M(X)的复杂度越来越小。</p>
+<p>  出于以上的目的，我们可以将权重的范数给加到Loss函数结果里面去，通过BP算法，这样我们可以让权重的范数越来越接近于0。其中我们常用的L2范数，其可以限制权重中的大值，也可以使权重均匀分布，不会出现极端值，这是一般情况下我们想看到的。</p>
+<p>  下面，我们通过一个实例及图示来感性的认知权重衰减。</p>
+<br/>
+<br/>
+<h5 id="实例代码">实例代码</h5>
+<p>  首先我们设计了一个200个权重和1个偏置的数据生成器，加上噪声，得到我们数据集。这里我们采集了100个测试集和20个训练集。从这里我们马上就可以知道，这个肯定会过拟合，因为训练集太小了，而模型复杂度太大了。</p>
+<p>  下面是完整代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">from</span> torch <span class="keyword">import</span> nn</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> torch.utils <span class="keyword">import</span> data</span><br><span class="line"><span class="keyword">from</span> matplotlib.pyplot <span class="keyword">import</span> MultipleLocator</span><br><span class="line"></span><br><span class="line">fig, ax = plt.subplots()</span><br><span class="line">xdata0, ydata0 = [], []</span><br><span class="line">xdata1, ydata1 = [], []</span><br><span class="line">line0, = ax.plot([], [], <span class="string">&#x27;r-&#x27;</span>, label=<span class="string">&#x27;TrainError&#x27;</span>)</span><br><span class="line">line1, = ax.plot([], [], <span class="string">&#x27;b-&#x27;</span>, label=<span class="string">&#x27;TestError&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">init_and_show</span>():</span><br><span class="line">    ax.set_xlabel(<span class="string">&#x27;epoch&#x27;</span>)</span><br><span class="line">    ax.set_ylabel(<span class="string">&#x27;loss&#x27;</span>)</span><br><span class="line">    ax.set_title(<span class="string">&#x27;Train/Test Loss&#x27;</span>)</span><br><span class="line">    ax.set_xlim(<span class="number">0</span>, epochs)</span><br><span class="line">    ax.set_ylim(<span class="number">10e-5</span>, <span class="number">100</span>)</span><br><span class="line">    ax.set_yscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">    <span class="comment"># y_locator = MultipleLocator(0.1)</span></span><br><span class="line">    <span class="comment"># ax.yaxis.set_major_locator(y_locator)</span></span><br><span class="line">    ax.legend([line0, line1], (<span class="string">&#x27;TrainError&#x27;</span>, <span class="string">&#x27;TestError&#x27;</span>))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># ax.legend([line1], (&#x27;TestError&#x27;, ))</span></span><br><span class="line">    line0.set_data(xdata0, ydata0)</span><br><span class="line">    line1.set_data(xdata1, ydata1)</span><br><span class="line"></span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">l2_penalty</span>(<span class="params">w, b = <span class="literal">None</span></span>):</span><br><span class="line">    <span class="keyword">if</span> b == <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> (w**<span class="number">2</span>).<span class="built_in">sum</span>() / <span class="number">2</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> ((w**<span class="number">2</span>).<span class="built_in">sum</span>() + (b**<span class="number">2</span>).<span class="built_in">sum</span>()) / <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">synthetic_data</span>(<span class="params">true_w, true_b, num_examples</span>): <span class="comment">#@save</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;⽣成y = ax1 + bx2 + cx3 .... ....  + b + 噪声。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    X = np.random.normal(<span class="number">0</span>, <span class="number">1</span>, (num_examples, <span class="built_in">len</span>(true_w)))</span><br><span class="line"></span><br><span class="line">    y = np.matmul(X, true_w) + true_b</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 噪声</span></span><br><span class="line">    y += np.random.normal(<span class="number">0</span>, <span class="number">0.1</span>, y.shape)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> X, y.reshape((-<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TestNet</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, input_nums</span>):</span><br><span class="line">        <span class="built_in">super</span>(TestNet, self).__init__()</span><br><span class="line">        self.test_net = nn.Sequential(</span><br><span class="line">            <span class="comment"># y=X*W+B</span></span><br><span class="line">            <span class="comment"># x.shape(batch_size, input_nums), w.shape(input_nums, output_nums)</span></span><br><span class="line">            <span class="comment"># y.shape(batch_size, output_nums)</span></span><br><span class="line">            torch.nn.Linear(input_nums, <span class="number">1</span>)</span><br><span class="line">        )   </span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="comment"># print(x.dtype)</span></span><br><span class="line">        <span class="comment"># </span></span><br><span class="line">        <span class="keyword">return</span> self.test_net(x)</span><br><span class="line"></span><br><span class="line"><span class="comment"># copy from d2l/torch.py</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">load_array</span>(<span class="params">data_arrays, batch_size, is_train=<span class="literal">True</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Construct a PyTorch data iterator.&quot;&quot;&quot;</span></span><br><span class="line">    dataset = data.TensorDataset(*data_arrays)</span><br><span class="line">    <span class="keyword">return</span> data.DataLoader(dataset, batch_size, shuffle=is_train)</span><br><span class="line"></span><br><span class="line"><span class="comment"># def data_loader(batch_size, features, labels):</span></span><br><span class="line"><span class="comment">#     num_examples = len(features)</span></span><br><span class="line"><span class="comment">#     indices = list(range(num_examples))</span></span><br><span class="line"><span class="comment">#     np.random.shuffle(indices) # 样本的读取顺序是随机的</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#     for i in range(0, num_examples, batch_size):</span></span><br><span class="line"><span class="comment">#         j = np.array(indices[i: min(i + batch_size, num_examples)])</span></span><br><span class="line"><span class="comment">#         yield torch.tensor(features.take(j, 0)), torch.tensor(labels.take(j)) # take函数根据索引返回对应元素</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">train</span>(<span class="params">dataloader, model, loss_fn, optimizer, lambda_val = <span class="number">3</span></span>):</span><br><span class="line">    size = train_examples</span><br><span class="line">    num_batches = train_examples / batch_size</span><br><span class="line">    train_loss_sum = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> batch, (X, y) <span class="keyword">in</span> <span class="built_in">enumerate</span>(dataloader):</span><br><span class="line">        <span class="comment"># move X, y to gpu</span></span><br><span class="line">        <span class="keyword">if</span> torch.cuda.is_available():</span><br><span class="line">            X = X.to(<span class="string">&#x27;cuda&#x27;</span>, dtype=torch.float32)</span><br><span class="line">            y = y.to(<span class="string">&#x27;cuda&#x27;</span>, dtype=torch.float32)</span><br><span class="line">        <span class="comment"># Compute prediction and loss</span></span><br><span class="line">        pred = model(X)</span><br><span class="line">        param_iter = model.parameters()</span><br><span class="line">        <span class="comment"># loss = loss_fn(pred, y) + lambda_val*l2_penalty(next(param_iter), next(param_iter))</span></span><br><span class="line">        <span class="comment"># next(model.parameters())</span></span><br><span class="line">        loss = loss_fn(pred, y) + lambda_val*l2_penalty(<span class="built_in">next</span>(model.parameters()))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Backpropagation</span></span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line"></span><br><span class="line">        train_loss_sum += loss.item()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> batch % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">            loss, current = loss.item(), batch * <span class="built_in">len</span>(X)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;loss: <span class="subst">&#123;loss:&gt;7f&#125;</span>  [<span class="subst">&#123;current:&gt;5d&#125;</span>/<span class="subst">&#123;size:&gt;5d&#125;</span>]&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Train Error: \n Avg loss: <span class="subst">&#123;train_loss_sum/num_batches:&gt;8f&#125;</span> \n&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> train_loss_sum/num_batches</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test</span>(<span class="params">dataloader, model, loss_fn</span>):</span><br><span class="line">    num_batches = test_examples / batch_size</span><br><span class="line">    test_loss = <span class="number">0</span></span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        <span class="keyword">for</span> X, y <span class="keyword">in</span> dataloader:</span><br><span class="line">            <span class="comment"># move X, y to gpu</span></span><br><span class="line">            <span class="keyword">if</span> torch.cuda.is_available():</span><br><span class="line">                X = X.to(<span class="string">&#x27;cuda&#x27;</span>, dtype=torch.float32)</span><br><span class="line">                y = y.to(<span class="string">&#x27;cuda&#x27;</span>, dtype=torch.float32)</span><br><span class="line">            pred = model(X)</span><br><span class="line">            test_loss += loss_fn(pred, y).item()</span><br><span class="line"></span><br><span class="line">    test_loss /= num_batches</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Test Error: \n Avg loss: <span class="subst">&#123;test_loss:&gt;8f&#125;</span> \n&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> test_loss</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    device = <span class="string">&#x27;cuda&#x27;</span> <span class="keyword">if</span> torch.cuda.is_available() <span class="keyword">else</span> <span class="string">&#x27;cpu&#x27;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Using &#123;&#125; device&#x27;</span>.<span class="built_in">format</span>(device))</span><br><span class="line">    </span><br><span class="line">    num_inputs = <span class="number">200</span></span><br><span class="line"></span><br><span class="line">    true_w = np.ones(num_inputs) * <span class="number">0.01</span></span><br><span class="line"></span><br><span class="line">    true_b = <span class="number">0.78</span>  </span><br><span class="line"></span><br><span class="line">    test_examples = <span class="number">100</span></span><br><span class="line">    train_examples = <span class="number">20</span></span><br><span class="line">    </span><br><span class="line">    num_examples = test_examples + train_examples</span><br><span class="line"></span><br><span class="line">    f1, labels = synthetic_data(true_w, true_b, num_examples)</span><br><span class="line">    <span class="built_in">print</span>(f1.shape)</span><br><span class="line">    <span class="built_in">print</span>(labels.shape)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    l1_loss_fn = torch.nn.MSELoss()</span><br><span class="line">    </span><br><span class="line">    learning_rate = <span class="number">0.01</span></span><br><span class="line"></span><br><span class="line">    model = TestNet(num_inputs)</span><br><span class="line"></span><br><span class="line">    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    model = model.to(device)</span><br><span class="line">    <span class="built_in">print</span>(model)</span><br><span class="line"></span><br><span class="line">    epochs = <span class="number">100</span></span><br><span class="line"></span><br><span class="line">    model.train()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    batch_size = <span class="number">5</span></span><br><span class="line"></span><br><span class="line">    train_data = (torch.tensor(f1[:train_examples,]), torch.tensor(labels[:train_examples,]))</span><br><span class="line">    test_data = (torch.tensor(f1[train_examples:,]), torch.tensor(labels[train_examples:,]))</span><br><span class="line"></span><br><span class="line">    train_dataloader = load_array(train_data ,batch_size, <span class="literal">True</span>)</span><br><span class="line">    test_dataloader = load_array(test_data ,batch_size, <span class="literal">True</span>)</span><br><span class="line">    <span class="comment"># verify dataloader</span></span><br><span class="line">    <span class="comment"># for x,y in train_dataloader:</span></span><br><span class="line">    <span class="comment">#     print(x.shape)</span></span><br><span class="line">    <span class="comment">#     print(y.shape)</span></span><br><span class="line">    <span class="comment">#     print(torch.matmul( x , torch.tensor(true_w)) + torch.tensor(true_b))</span></span><br><span class="line">    <span class="comment">#     print(y)</span></span><br><span class="line">    <span class="comment">#     break</span></span><br><span class="line">    param_iter = model.parameters()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;W = &#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">next</span>(param_iter).shape)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;b = &#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">next</span>(param_iter).dtype)</span><br><span class="line"></span><br><span class="line">    model.train()</span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(epochs):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Epoch <span class="subst">&#123;t+<span class="number">1</span>&#125;</span>\n-------------------------------&quot;</span>)</span><br><span class="line">        train_l = train(train_dataloader, model, l1_loss_fn, optimizer, lambda_val=<span class="number">3</span>)</span><br><span class="line">        test_l = test(test_dataloader, model, l1_loss_fn)</span><br><span class="line">        ydata0.append(train_l*<span class="number">10</span>)</span><br><span class="line">        ydata1.append(test_l*<span class="number">10</span>)</span><br><span class="line">        xdata0.append(t)</span><br><span class="line">        xdata1.append(t)</span><br><span class="line">        <span class="comment"># print(test_l)</span></span><br><span class="line">        <span class="comment"># print(train_l)</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Done!&quot;</span>)</span><br><span class="line"></span><br><span class="line">    init_and_show()</span><br><span class="line"></span><br><span class="line">    param_iter = model.parameters()</span><br><span class="line">    <span class="comment"># print(&#x27;W = &#x27;)</span></span><br><span class="line">    <span class="comment"># print(next(param_iter).shape)</span></span><br><span class="line">    <span class="comment"># print(&#x27;b = &#x27;)</span></span><br><span class="line">    <span class="comment"># print(next(param_iter).shape)</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;w的L2范数是：&#x27;</span>, np.linalg.norm(<span class="built_in">next</span>(param_iter).to(<span class="string">&#x27;cpu&#x27;</span>).detach().numpy()))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;b的L2范数是：&#x27;</span>, np.linalg.norm(<span class="built_in">next</span>(param_iter).to(<span class="string">&#x27;cpu&#x27;</span>).detach().numpy()))</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="过拟合">过拟合</h5>
+<p>  这个时候是未添加l2到损失函数的。<br>
+  train函数如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">train_l = train(train_dataloader, model, l1_loss_fn, optimizer, lambda_val=<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>  训练结果如下，存在严重的过拟合现象：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/overfitting.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<br/>
+<br/>
+<h5 id="权重衰减">权重衰减</h5>
+<p>  我们先对w进行权重衰减。<br>
+  train函数如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">train_l = train(train_dataloader, model, l1_loss_fn, optimizer, lambda_val=<span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+<p>  训练结果如下，过拟合现象出现了缓解：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/w_weight_decay.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<br/>
+<br/>
+<br/>
+<br/>
+<h5 id="权重衰减适应性">权重衰减适应性</h5>
+<p>  我们对w和b同时进行权重衰减。train函数如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=<span class="number">3</span>)</span><br><span class="line">train_l = train(train_dataloader, model, l1_loss_fn, optimizer, lambda_val=<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>  训练结果如下，我们发现，过拟合现象并没有缓解：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/wb_weight_decay1.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  就是上图引起了我的兴趣，因为我们引入了权重衰减，但是其并没有缓解，这是为什么呢？还记得我们权重衰减的目标是将权重的范数逼近于0吗？但是我们b是一个不接近于0的常量，因此过拟合并没有缓解。</p>
+<p>  我们对w和b同时进行权重衰减。我们修改，train函数如下，主要将true_b调整为接近于0，这样我们同时对w，b进行衰减就是合理的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">true_b = <span class="number">0.01</span></span><br><span class="line">optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=<span class="number">3</span>)</span><br><span class="line">train_l = train(train_dataloader, model, l1_loss_fn, optimizer, lambda_val=<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/wb_weight_decay2.png" alt="rep_img"/></center>
+    </div>
+</div>  
+&emsp;&emsp;我们通过上面两张图的结果，说明的权重衰减的适应性以及目标。注意我们一般情况下不会对b进行权重衰减，因为其是常量。我看学习资料上并没有介绍为什么偏置不能够进行权重衰减，这里我做的这个实验可以当做一个原因吧。
+<p>  pytorch的优化器里面的weight_decay参数是对所有参数进行衰减，要注意这个问题，若想单独对w进行衰减，请分别对不同的参数设定不同的优化器。这一块网上资料很多，我就不多说了。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Dropout">Dropout</h3>
+<hr>
+<p>  首先，Dropout是在([Srivastava et al., 2014] Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., &amp; Salakhutdinov, R. (2014). Dropout: a simple way to prevent neural networks from overfitting. The Journal of Machine Learning Research, 15(1), 1929‒1958.)一文中引出的。</p>
+<p>  对于Dropout，我们可以从资料里面的代码里面看到其相关的原理：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">dropout_layer</span>(<span class="params">X, dropout</span>):</span><br><span class="line">    <span class="keyword">assert</span> <span class="number">0</span> &lt;= dropout &lt;= <span class="number">1</span></span><br><span class="line">    <span class="comment"># 在本情况中，所有元素都被丢弃。</span></span><br><span class="line">    <span class="keyword">if</span> dropout == <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> np.zeros_like(X)</span><br><span class="line">    <span class="comment"># 在本情况中，所有元素都被保留。</span></span><br><span class="line">    <span class="keyword">if</span> dropout == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> X</span><br><span class="line">    mask = np.random.uniform(<span class="number">0</span>, <span class="number">1</span>, X.shape) &gt; dropout</span><br><span class="line">    <span class="built_in">print</span>(mask.astype(np.float32))</span><br><span class="line">    <span class="keyword">return</span> mask.astype(np.float32) * X / (<span class="number">1.0</span> - dropout)</span><br></pre></td></tr></table></figure>
+<p>  其工作如下：在训练的时候，按照传入的概率p丢弃一部分输出，并除以1-p。在测试的时候，跳过dropout_layer。其能正常工作的关键就是‘玄学’，打破了前一层和后一层的特定关联，破坏了两层之间的特定关联，缓解了过拟合。这个部分，建议多体会，虽然随机置0了部分值，但是输出规模是的趋势是一定的。</p>
+<p>  虽然我们从这里说明了其生效的原理，但是我们并没有解释为啥这样写是合理的？注意为何我们要在训练的时候除以1-p呢？</p>
+<p>  其实我们可以看到，Dropout是针对输出的，当我们只要保证训练和测试的输出规模保持一致，就可以保证测试和训练的结果是一致的。这里的规模保持一致，其实就是他们两个的期望保持一致。定义输入为X, dropout概率为p(以p的概率丢弃)，那么$E(x) = ((1-p)X + p*0)/(1-p) = X$。因此，我们也可以得到结论，我们在训练时dropout生效，测试时直接跳过dropout层，这两种情况下的X的规模是一致的，不影响我们的网络结果。</p>
+<p>  此外，我们从这里可以看到，dropout是以概率来丢弃相关的输入X，那么我们必须在X规模足够大的情况下使用dropout，才能保证剩下的X能够学到足够的特征。因此，我们平常一般把dropout放在全连接层后。</p>
+<p>  下面，我们自己构造一个分类网络，使用FashionMNIST数据集（60000训练，10000测试）。然后在全连接层后面接dropout层，默认是不丢弃任何项，dropout的p=0，代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">from</span> torch <span class="keyword">import</span> nn</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> torch.utils <span class="keyword">import</span> data</span><br><span class="line"><span class="keyword">from</span> matplotlib.pyplot <span class="keyword">import</span> MultipleLocator</span><br><span class="line"><span class="keyword">from</span> torchvision <span class="keyword">import</span> datasets, transforms</span><br><span class="line"><span class="keyword">from</span> torch.utils.data <span class="keyword">import</span> DataLoader</span><br><span class="line"></span><br><span class="line">fig, ax = plt.subplots()</span><br><span class="line">xdata, ydata = [[], [], [], []], [[], [], [], []]</span><br><span class="line">line0, = ax.plot([], [], <span class="string">&#x27;r-&#x27;</span>, label=<span class="string">&#x27;TrainError&#x27;</span>)</span><br><span class="line">line1, = ax.plot([], [], <span class="string">&#x27;b-&#x27;</span>, label=<span class="string">&#x27;TrainAcc&#x27;</span>)</span><br><span class="line">line2, = ax.plot([], [], <span class="string">&#x27;g-&#x27;</span>, label=<span class="string">&#x27;TestError&#x27;</span>)</span><br><span class="line">line3, = ax.plot([], [], <span class="string">&#x27;y-&#x27;</span>, label=<span class="string">&#x27;TestAcc&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">init_and_show</span>():</span><br><span class="line">    ax.set_xlabel(<span class="string">&#x27;epoch&#x27;</span>)</span><br><span class="line">    ax.set_ylabel(<span class="string">&#x27;loss/acc&#x27;</span>)</span><br><span class="line">    ax.set_title(<span class="string">&#x27;Train/Test Loss/Acc&#x27;</span>)</span><br><span class="line">    ax.set_xlim(<span class="number">0</span>, epochs)</span><br><span class="line">    ax.set_ylim(<span class="number">0</span>, <span class="number">1</span>)</span><br><span class="line">    <span class="comment"># ax.set_yscale(&#x27;log&#x27;)</span></span><br><span class="line">    <span class="comment"># y_locator = MultipleLocator(0.1)</span></span><br><span class="line">    <span class="comment"># ax.yaxis.set_major_locator(y_locator)</span></span><br><span class="line">    ax.legend([line0, line1, line2, line3], (<span class="string">&#x27;TrainError&#x27;</span>, <span class="string">&#x27;TrainAcc&#x27;</span>, <span class="string">&quot;TestError&quot;</span>, <span class="string">&quot;TestAcc&quot;</span>))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># ax.legend([line1], (&#x27;TestError&#x27;, ))</span></span><br><span class="line">    line0.set_data(xdata[<span class="number">0</span>], ydata[<span class="number">0</span>])</span><br><span class="line">    line1.set_data(xdata[<span class="number">1</span>], ydata[<span class="number">1</span>])</span><br><span class="line">    line2.set_data(xdata[<span class="number">2</span>], ydata[<span class="number">2</span>])</span><br><span class="line">    line3.set_data(xdata[<span class="number">3</span>], ydata[<span class="number">3</span>])</span><br><span class="line"></span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">dropout_layer</span>(<span class="params">X, dropout</span>):</span><br><span class="line">    <span class="keyword">assert</span> <span class="number">0</span> &lt;= dropout &lt;= <span class="number">1</span></span><br><span class="line">    <span class="comment"># 在本情况中，所有元素都被丢弃。</span></span><br><span class="line">    <span class="keyword">if</span> dropout == <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> np.zeros_like(X)</span><br><span class="line">    <span class="comment"># 在本情况中，所有元素都被保留。</span></span><br><span class="line">    <span class="keyword">if</span> dropout == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> X</span><br><span class="line">    mask = np.random.uniform(<span class="number">0</span>, <span class="number">1</span>, X.shape) &gt; dropout</span><br><span class="line">    <span class="built_in">print</span>(mask.astype(np.float32))</span><br><span class="line">    <span class="keyword">return</span> mask.astype(np.float32) * X / (<span class="number">1.0</span> - dropout)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TestNet</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, dropout_p_arr = [<span class="number">0</span>, <span class="number">0</span>]</span>):</span><br><span class="line">        <span class="built_in">super</span>(TestNet, self).__init__()</span><br><span class="line">        self.test_net = nn.Sequential(</span><br><span class="line"></span><br><span class="line">            torch.nn.Linear(<span class="number">1</span>*<span class="number">28</span>*<span class="number">28</span>, <span class="number">512</span>),</span><br><span class="line">            torch.nn.ReLU(),</span><br><span class="line">            torch.nn.Dropout(dropout_p_arr[<span class="number">0</span>]),</span><br><span class="line"></span><br><span class="line">            torch.nn.Linear(<span class="number">512</span>, <span class="number">512</span>),</span><br><span class="line">            torch.nn.ReLU(),</span><br><span class="line">            torch.nn.Dropout(dropout_p_arr[<span class="number">1</span>]),</span><br><span class="line">            </span><br><span class="line">            torch.nn.Linear(<span class="number">512</span>, <span class="number">10</span>),</span><br><span class="line"></span><br><span class="line">        )   </span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="comment"># print(x.dtype)</span></span><br><span class="line">        <span class="comment"># </span></span><br><span class="line">        <span class="keyword">return</span> self.test_net(x)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">LoadFashionMNISTByTorchApi</span>():</span><br><span class="line">    resize=<span class="number">28</span></span><br><span class="line">    trans = [transforms.ToTensor()]</span><br><span class="line">    <span class="keyword">if</span> resize:</span><br><span class="line">        trans.insert(<span class="number">0</span>, transforms.Resize(resize))</span><br><span class="line">    trans = transforms.Compose(trans)</span><br><span class="line">    <span class="comment"># 60000*28*28</span></span><br><span class="line">    training_data = datasets.FashionMNIST(</span><br><span class="line">        root=<span class="string">&quot;..\data&quot;</span>,</span><br><span class="line">        train=<span class="literal">True</span>,</span><br><span class="line">        download=<span class="literal">True</span>,</span><br><span class="line">        transform=trans</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 10000*28*28</span></span><br><span class="line">    test_data = datasets.FashionMNIST(</span><br><span class="line">        root=<span class="string">&quot;..\data&quot;</span>,</span><br><span class="line">        train=<span class="literal">False</span>,</span><br><span class="line">        download=<span class="literal">True</span>,</span><br><span class="line">        transform=trans</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="comment"># labels_map = &#123;</span></span><br><span class="line">    <span class="comment">#     0: &quot;T-Shirt&quot;,</span></span><br><span class="line">    <span class="comment">#     1: &quot;Trouser&quot;,</span></span><br><span class="line">    <span class="comment">#     2: &quot;Pullover&quot;,</span></span><br><span class="line">    <span class="comment">#     3: &quot;Dress&quot;,</span></span><br><span class="line">    <span class="comment">#     4: &quot;Coat&quot;,</span></span><br><span class="line">    <span class="comment">#     5: &quot;Sandal&quot;,</span></span><br><span class="line">    <span class="comment">#     6: &quot;Shirt&quot;,</span></span><br><span class="line">    <span class="comment">#     7: &quot;Sneaker&quot;,</span></span><br><span class="line">    <span class="comment">#     8: &quot;Bag&quot;,</span></span><br><span class="line">    <span class="comment">#     9: &quot;Ankle Boot&quot;,</span></span><br><span class="line">    <span class="comment"># &#125;</span></span><br><span class="line">    <span class="comment"># figure = plt.figure(figsize=(8, 8))</span></span><br><span class="line">    <span class="comment"># cols, rows = 3, 3</span></span><br><span class="line">    <span class="comment"># for i in range(1, cols * rows + 1):</span></span><br><span class="line">    <span class="comment">#     sample_idx = torch.randint(len(training_data), size=(1,)).item()</span></span><br><span class="line">    <span class="comment">#     img, label = training_data[sample_idx]</span></span><br><span class="line">    <span class="comment">#     figure.add_subplot(rows, cols, i)</span></span><br><span class="line">    <span class="comment">#     plt.title(labels_map[label])</span></span><br><span class="line">    <span class="comment">#     plt.axis(&quot;off&quot;)</span></span><br><span class="line">    <span class="comment">#     plt.imshow(img.squeeze(), cmap=&quot;gray&quot;)</span></span><br><span class="line">    <span class="comment"># plt.show()</span></span><br><span class="line">    <span class="keyword">return</span> training_data, test_data</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">train</span>(<span class="params">dataloader, model, loss_fn, optimizer</span>):</span><br><span class="line">    num_batches = <span class="built_in">len</span>(dataloader)</span><br><span class="line">    size = num_batches*batch_size</span><br><span class="line">    train_loss_sum = <span class="number">0</span></span><br><span class="line">    train_acc_sum = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> batch, (X, y) <span class="keyword">in</span> <span class="built_in">enumerate</span>(dataloader):</span><br><span class="line">        <span class="comment"># move X, y to gpu</span></span><br><span class="line">        <span class="keyword">if</span> torch.cuda.is_available():</span><br><span class="line">            X = X.to(<span class="string">&#x27;cuda&#x27;</span>, dtype=torch.float32)</span><br><span class="line">            y = y.to(<span class="string">&#x27;cuda&#x27;</span>)</span><br><span class="line">        <span class="comment"># Compute prediction and loss</span></span><br><span class="line">        pred = model(X.reshape(batch_size,  -<span class="number">1</span>))</span><br><span class="line">        <span class="comment"># print(pred.shape)</span></span><br><span class="line">        <span class="comment"># print(y.shape)</span></span><br><span class="line">        </span><br><span class="line">        loss = loss_fn(pred, y)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Backpropagation</span></span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line"></span><br><span class="line">        train_loss_sum += loss.item()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># cal train acc</span></span><br><span class="line">        pred = model(X.reshape(batch_size,  -<span class="number">1</span>))</span><br><span class="line">        train_acc_sum += (pred.argmax(<span class="number">1</span>) == y).<span class="built_in">type</span>(torch.<span class="built_in">float</span>).<span class="built_in">sum</span>().item()/batch_size</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> batch % <span class="number">100</span> == <span class="number">0</span>:</span><br><span class="line">            loss, current = loss.item(), batch * <span class="built_in">len</span>(X)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;loss: <span class="subst">&#123;loss:&gt;7f&#125;</span>  [<span class="subst">&#123;current:&gt;5d&#125;</span>/<span class="subst">&#123;size:&gt;5d&#125;</span>]&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Train Error: \n Avg loss: <span class="subst">&#123;train_loss_sum/num_batches:&gt;8f&#125;</span> \n&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Train Acc  : \n Avg acc : <span class="subst">&#123;train_acc_sum/num_batches:&gt;8f&#125;</span> \n&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> train_loss_sum/num_batches, train_acc_sum/num_batches</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test</span>(<span class="params">dataloader, model, loss_fn</span>):</span><br><span class="line">    num_batches = <span class="built_in">len</span>(dataloader)</span><br><span class="line">    test_loss = <span class="number">0</span></span><br><span class="line">    test_acc = <span class="number">0</span></span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        <span class="keyword">for</span> X, y <span class="keyword">in</span> dataloader:</span><br><span class="line">            <span class="comment"># move X, y to gpu</span></span><br><span class="line">            <span class="keyword">if</span> torch.cuda.is_available():</span><br><span class="line">                X = X.to(<span class="string">&#x27;cuda&#x27;</span>, dtype=torch.float32)</span><br><span class="line">                y = y.to(<span class="string">&#x27;cuda&#x27;</span>)</span><br><span class="line">            pred = model(X.reshape(batch_size, -<span class="number">1</span>))</span><br><span class="line">            test_loss += loss_fn(pred, y).item()</span><br><span class="line">            test_acc += (pred.argmax(<span class="number">1</span>) == y).<span class="built_in">type</span>(torch.<span class="built_in">float</span>).<span class="built_in">sum</span>().item()/batch_size</span><br><span class="line">    test_loss /= num_batches</span><br><span class="line">    test_acc /= num_batches</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Test Error: \n Avg loss: <span class="subst">&#123;test_loss:&gt;8f&#125;</span> \n&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Test Acc  : \n Avg loss: <span class="subst">&#123;test_acc:&gt;8f&#125;</span>  \n&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> test_loss, test_acc</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    device = <span class="string">&#x27;cuda&#x27;</span> <span class="keyword">if</span> torch.cuda.is_available() <span class="keyword">else</span> <span class="string">&#x27;cpu&#x27;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Using &#123;&#125; device&#x27;</span>.<span class="built_in">format</span>(device))</span><br><span class="line">    </span><br><span class="line">    loss_fn = torch.nn.CrossEntropyLoss()</span><br><span class="line">    </span><br><span class="line">    learning_rate = <span class="number">0.5</span></span><br><span class="line">    <span class="comment"># [0.4, 0.7]</span></span><br><span class="line">    model = TestNet()</span><br><span class="line"></span><br><span class="line">    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    model = model.to(device)</span><br><span class="line">    <span class="built_in">print</span>(model)</span><br><span class="line"></span><br><span class="line">    epochs = <span class="number">10</span></span><br><span class="line"></span><br><span class="line">    model.train()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    batch_size = <span class="number">200</span></span><br><span class="line"></span><br><span class="line">    train_data, test_data = LoadFashionMNISTByTorchApi()</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    train_dataloader = DataLoader(train_data, batch_size, shuffle=<span class="literal">True</span>)</span><br><span class="line">    test_dataloader = DataLoader(test_data, batch_size, shuffle=<span class="literal">True</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">len</span>(train_dataloader))</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">len</span>(test_dataloader))</span><br><span class="line">    <span class="comment"># #verify dataloader</span></span><br><span class="line">    <span class="comment"># for x,y in train_dataloader:</span></span><br><span class="line">    <span class="comment">#     print(x.shape)</span></span><br><span class="line">    <span class="comment">#     print(y.shape)</span></span><br><span class="line">    <span class="comment">#     break</span></span><br><span class="line"></span><br><span class="line">    param_iter = model.parameters()</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">next</span>(param_iter).shape)</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(epochs):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Epoch <span class="subst">&#123;t+<span class="number">1</span>&#125;</span>\n-------------------------------&quot;</span>)</span><br><span class="line">        model.train()</span><br><span class="line">        train_l, train_acc = train(train_dataloader, model, loss_fn, optimizer)</span><br><span class="line">        model.<span class="built_in">eval</span>()</span><br><span class="line">        test_l, test_acc = test(test_dataloader, model, loss_fn)</span><br><span class="line"></span><br><span class="line">        xdata[<span class="number">0</span>].append(t)</span><br><span class="line">        xdata[<span class="number">1</span>].append(t)</span><br><span class="line">        xdata[<span class="number">2</span>].append(t)</span><br><span class="line">        xdata[<span class="number">3</span>].append(t)</span><br><span class="line"></span><br><span class="line">        ydata[<span class="number">0</span>].append(train_l)</span><br><span class="line">        ydata[<span class="number">1</span>].append(train_acc)</span><br><span class="line">        ydata[<span class="number">2</span>].append(test_l)</span><br><span class="line">        ydata[<span class="number">3</span>].append(test_acc)</span><br><span class="line">        </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Done!&quot;</span>)</span><br><span class="line"></span><br><span class="line">    init_and_show()</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="正常过拟合">正常过拟合</h5>
+<p>  直接用上面代码进行训练后得到结果如下：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/overfitting_dp.png" alt="rep_img"/></center>
+    </div>
+</div>    
+&emsp;&emsp;我们可以发现，测试准确率比训练准确率低，满足过拟合的现象。
+<h5 id="启用dropout">启用dropout</h5>
+<p>  修改训练代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">    <span class="comment"># [0.4, 0.7]</span></span><br><span class="line">model = TestNet([<span class="number">0.4</span>, <span class="number">0.7</span>])</span><br></pre></td></tr></table></figure>
+<p>  训练结果如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_108/overfitting_dp_sov.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  我们可以很直观的发现，训练和测试的acc和error出现了重合的情况，至少证明了过拟合现象出现了缓解。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  对于权重衰减，一般就是要将参数的L2范数尽量学习来趋近于0，这样模型复杂度变小。此外权重衰减还可以将参数限制到一个稳定的范围，避免出现了较大的波动。对于稳定的学习过程是有帮助的。</p>
+<p>  对于Dropout来说，就是打破一些输出比较大的相关层的关联性，注意，其是针对输出，并不是针对权重。有些时候，相关层的关联性就是我们要学的，但是有些时候，这种关联性可能就是不需要的，所以通过这种‘玄学’的方式，在训练的时候，以概率性来丢弃某些输出，打破这项输出和下一层的关联性。这对于大的网络来说，是有意义的。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/d2l-ai/d2l-zh/releases">https://github.com/d2l-ai/d2l-zh/releases</a> (V1.0.0)</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/d2l-ai/d2l-zh/releases">https://github.com/d2l-ai/d2l-zh/releases</a> (V2.0.0 alpha1)</li>
+<li>Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., &amp; Salakhutdinov, R. (2014). Dropout: a simple way to prevent neural networks from overfitting. The Journal of Machine Learning Research, 15(1), 1929‒1958.</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/18/blog_idx_107/" rel="prev" title="DL基础补全计划(三)---模型选择、欠拟合、过拟合">
+      <i class="fa fa-chevron-left"></i> DL基础补全计划(三)---模型选择、欠拟合、过拟合
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/08/blog_idx_109/" rel="next" title="DL基础补全计划(五)---数值稳定性及参数初始化（梯度消失、梯度爆炸）">
+      DL基础补全计划(五)---数值稳定性及参数初始化（梯度消失、梯度爆炸） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%83%E9%87%8D%E8%A1%B0%E5%87%8F-L2%E6%AD%A3%E5%88%99%E5%8C%96"><span class="nav-number"></span> <span class="nav-text">权重衰减(L2正则化)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B%E4%BB%A3%E7%A0%81"><span class="nav-number"></span> <span class="nav-text">实例代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%BF%87%E6%8B%9F%E5%90%88"><span class="nav-number"></span> <span class="nav-text">过拟合</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9D%83%E9%87%8D%E8%A1%B0%E5%87%8F"><span class="nav-number"></span> <span class="nav-text">权重衰减</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9D%83%E9%87%8D%E8%A1%B0%E5%87%8F%E9%80%82%E5%BA%94%E6%80%A7"><span class="nav-number"></span> <span class="nav-text">权重衰减适应性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dropout"><span class="nav-number"></span> <span class="nav-text">Dropout</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%AD%A3%E5%B8%B8%E8%BF%87%E6%8B%9F%E5%90%88"><span class="nav-number"></span> <span class="nav-text">正常过拟合</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%90%AF%E7%94%A8dropout"><span class="nav-number"></span> <span class="nav-text">启用dropout</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

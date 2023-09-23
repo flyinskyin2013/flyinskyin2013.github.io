@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 背景    参考前置文章：《一个简单的RTMP服务器实现 — RTMP与H264》https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011728480&#x2F;article&#x2F;details&#x2F;85770696     前置知识    《一个简单的RTMP服务器实现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一个简单的RTMP服务器实现 --- RTMP复杂握手（Complex Handshake）">
+<meta property="og:url" content="https://e-x.top/2019/01/09/blog_idx_078/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 背景    参考前置文章：《一个简单的RTMP服务器实现 — RTMP与H264》https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011728480&#x2F;article&#x2F;details&#x2F;85770696     前置知识    《一个简单的RTMP服务器实现">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_078/complex_hs.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2019-01-09T08:57:55.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.827Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_078/complex_hs.png">
+
+<link rel="canonical" href="https://e-x.top/2019/01/09/blog_idx_078/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>一个简单的RTMP服务器实现 --- RTMP复杂握手（Complex Handshake） | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2019/01/09/blog_idx_078/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          一个简单的RTMP服务器实现 --- RTMP复杂握手（Complex Handshake）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-01-09 16:57:55" itemprop="dateCreated datePublished" datetime="2019-01-09T16:57:55+08:00">2019-01-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>6.8k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>6 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-30 21:20:37
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=078） 
+&emsp;&emsp;本文发布于 2019-01-09 16:57:55，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=078） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="背景">背景</h3>
+<hr>
+<p>  参考前置文章：《一个简单的RTMP服务器实现 — RTMP与H264》<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/85770696">https://blog.csdn.net/u011728480/article/details/85770696</a></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="前置知识">前置知识</h3>
+<hr>
+<p>  《一个简单的RTMP服务器实现 — RTMP与H264》：<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/85770696">https://blog.csdn.net/u011728480/article/details/85770696</a></p>
+<p>  《一个简单的RTMP服务器实现 — RTMP与FLV》：<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/85780974">https://blog.csdn.net/u011728480/article/details/85780974</a></p>
+<p>  《一个简单的RTMP服务器实现 — RTMP实现要点》：<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/86010851">https://blog.csdn.net/u011728480/article/details/86010851</a></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="为啥需要RTMP复杂握手">为啥需要RTMP复杂握手</h3>
+<hr>
+<p>  曾经的我，那么的天真，我按照官方文档以及官方文档的相关资料进行了RTMP的服务器的实现。奈何，前端使用的是Video.js，需要调用flash进行rtmp流播放，但是就是播放不起来。</p>
+<p>  在许多次尝试后，flash还是不能够播放我传输的rtmp流。我就开始了怀疑人生了。因为vlc和plotplayer都是能播放的，但是flash不能够播放。于是乎，我就猜想是flash播放器有什么特殊的毛病，需要我去治一治。</p>
+<p>  又过了许久，我搜遍了网络，我第一次看见这个问题的可能答案是在某论坛的一篇过期的帖子里面。</p>
+<p>  <font color = red size = 5>原因是flash播放器需要特殊的握手方式才能够播放h264+aac的rtmp流（具体表现为：播放器连接上了rtmp服务器，但是没有任何图像和声音）。于是我知道了，我需要改变自己的服务器的握手流程。</font></p>
+<p>  经过前期在RTMP中的折腾，我知道我要找的东西是RTMP复杂握手流程。于是就去网上找了找。经过查找，发现了一篇不错的文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/win_lin/article/details/13006803">https://blog.csdn.net/win_lin/article/details/13006803</a> (这篇文章貌似是srs的作者写的，里面就有我现在这个问题的答案，这里及其感谢大佬的文章。)</p>
+<p>  本文内容是上文提到的大佬的文章的一个补充，希望大家结合着一起看，实现自己的RTMP服务器。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="RTMP复杂握手">RTMP复杂握手</h3>
+<hr>
+<p>  下图为S1,C1。S2,C2的结构图</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_078/complex_hs.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  上图中一眼就可以看懂相关包的结构。其中需要注意的是一个c1_s1-joined的结构。他是把s1,c1中的digest的32bytes去除后，然后把剩下的内容拼接在一起形成的一个数组。</p>
+<p>  下面这两个数组是一个常量，在后面的计算会用到。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">byte</span>[] FP_KEY = &#123;</span><br><span class="line">    (<span class="type">byte</span>) <span class="number">0x47</span>, (<span class="type">byte</span>) <span class="number">0x65</span>, (<span class="type">byte</span>) <span class="number">0x6E</span>, (<span class="type">byte</span>) <span class="number">0x75</span>, (<span class="type">byte</span>) <span class="number">0x69</span>, (<span class="type">byte</span>) <span class="number">0x6E</span>, (<span class="type">byte</span>) <span class="number">0x65</span>, (<span class="type">byte</span>) <span class="number">0x20</span>,</span><br><span class="line">    (<span class="type">byte</span>) <span class="number">0x41</span>, (<span class="type">byte</span>) <span class="number">0x64</span>, (<span class="type">byte</span>) <span class="number">0x6F</span>, (<span class="type">byte</span>) <span class="number">0x62</span>, (<span class="type">byte</span>) <span class="number">0x65</span>, (<span class="type">byte</span>) <span class="number">0x20</span>, (<span class="type">byte</span>) <span class="number">0x46</span>, (<span class="type">byte</span>) <span class="number">0x6C</span>,</span><br><span class="line">    (<span class="type">byte</span>) <span class="number">0x61</span>, (<span class="type">byte</span>) <span class="number">0x73</span>, (<span class="type">byte</span>) <span class="number">0x68</span>, (<span class="type">byte</span>) <span class="number">0x20</span>, (<span class="type">byte</span>) <span class="number">0x50</span>, (<span class="type">byte</span>) <span class="number">0x6C</span>, (<span class="type">byte</span>) <span class="number">0x61</span>, (<span class="type">byte</span>) <span class="number">0x79</span>,</span><br><span class="line">    (<span class="type">byte</span>) <span class="number">0x65</span>, (<span class="type">byte</span>) <span class="number">0x72</span>, (<span class="type">byte</span>) <span class="number">0x20</span>, (<span class="type">byte</span>) <span class="number">0x30</span>, (<span class="type">byte</span>) <span class="number">0x30</span>, (<span class="type">byte</span>) <span class="number">0x31</span>, <span class="comment">// Genuine Adobe Flash Player 001</span></span><br><span class="line">    (<span class="type">byte</span>) <span class="number">0xF0</span>, (<span class="type">byte</span>) <span class="number">0xEE</span>, (<span class="type">byte</span>) <span class="number">0xC2</span>, (<span class="type">byte</span>) <span class="number">0x4A</span>, (<span class="type">byte</span>) <span class="number">0x80</span>, (<span class="type">byte</span>) <span class="number">0x68</span>, (<span class="type">byte</span>) <span class="number">0xBE</span>, (<span class="type">byte</span>) <span class="number">0xE8</span>,</span><br><span class="line">    (<span class="type">byte</span>) <span class="number">0x2E</span>, (<span class="type">byte</span>) <span class="number">0x00</span>, (<span class="type">byte</span>) <span class="number">0xD0</span>, (<span class="type">byte</span>) <span class="number">0xD1</span>, (<span class="type">byte</span>) <span class="number">0x02</span>, (<span class="type">byte</span>) <span class="number">0x9E</span>, (<span class="type">byte</span>) <span class="number">0x7E</span>, (<span class="type">byte</span>) <span class="number">0x57</span>,</span><br><span class="line">    (<span class="type">byte</span>) <span class="number">0x6E</span>, (<span class="type">byte</span>) <span class="number">0xEC</span>, (<span class="type">byte</span>) <span class="number">0x5D</span>, (<span class="type">byte</span>) <span class="number">0x2D</span>, (<span class="type">byte</span>) <span class="number">0x29</span>, (<span class="type">byte</span>) <span class="number">0x80</span>, (<span class="type">byte</span>) <span class="number">0x6F</span>, (<span class="type">byte</span>) <span class="number">0xAB</span>,</span><br><span class="line">    (<span class="type">byte</span>) <span class="number">0x93</span>, (<span class="type">byte</span>) <span class="number">0xB8</span>, (<span class="type">byte</span>) <span class="number">0xE6</span>, (<span class="type">byte</span>) <span class="number">0x36</span>, (<span class="type">byte</span>) <span class="number">0xCF</span>, (<span class="type">byte</span>) <span class="number">0xEB</span>, (<span class="type">byte</span>) <span class="number">0x31</span>, (<span class="type">byte</span>) <span class="number">0xAE</span>&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">byte</span> FMSKey[] = &#123;</span><br><span class="line">        (<span class="type">byte</span>)<span class="number">0x47</span>, (<span class="type">byte</span>)<span class="number">0x65</span>, (<span class="type">byte</span>)<span class="number">0x6e</span>, (<span class="type">byte</span>)<span class="number">0x75</span>, (<span class="type">byte</span>)<span class="number">0x69</span>, (<span class="type">byte</span>)<span class="number">0x6e</span>, (<span class="type">byte</span>)<span class="number">0x65</span>, (<span class="type">byte</span>)<span class="number">0x20</span>,</span><br><span class="line">        (<span class="type">byte</span>)<span class="number">0x41</span>, (<span class="type">byte</span>)<span class="number">0x64</span>, (<span class="type">byte</span>)<span class="number">0x6f</span>, (<span class="type">byte</span>)<span class="number">0x62</span>, (<span class="type">byte</span>)<span class="number">0x65</span>, (<span class="type">byte</span>)<span class="number">0x20</span>, (<span class="type">byte</span>)<span class="number">0x46</span>, (<span class="type">byte</span>)<span class="number">0x6c</span>,</span><br><span class="line">        (<span class="type">byte</span>)<span class="number">0x61</span>, (<span class="type">byte</span>)<span class="number">0x73</span>, (<span class="type">byte</span>)<span class="number">0x68</span>, (<span class="type">byte</span>)<span class="number">0x20</span>, (<span class="type">byte</span>)<span class="number">0x4d</span>, (<span class="type">byte</span>)<span class="number">0x65</span>, (<span class="type">byte</span>)<span class="number">0x64</span>, (<span class="type">byte</span>)<span class="number">0x69</span>,</span><br><span class="line">        (<span class="type">byte</span>)<span class="number">0x61</span>, (<span class="type">byte</span>)<span class="number">0x20</span>, (<span class="type">byte</span>)<span class="number">0x53</span>, (<span class="type">byte</span>)<span class="number">0x65</span>, (<span class="type">byte</span>)<span class="number">0x72</span>, (<span class="type">byte</span>)<span class="number">0x76</span>, (<span class="type">byte</span>)<span class="number">0x65</span>, (<span class="type">byte</span>)<span class="number">0x72</span>,</span><br><span class="line">        (<span class="type">byte</span>)<span class="number">0x20</span>, (<span class="type">byte</span>)<span class="number">0x30</span>, (<span class="type">byte</span>)<span class="number">0x30</span>, (<span class="type">byte</span>)<span class="number">0x31</span>, <span class="comment">// Genuine Adobe Flash Media Server 001</span></span><br><span class="line">        (<span class="type">byte</span>)<span class="number">0xf0</span>, (<span class="type">byte</span>)<span class="number">0xee</span>, (<span class="type">byte</span>)<span class="number">0xc2</span>, (<span class="type">byte</span>)<span class="number">0x4a</span>, (<span class="type">byte</span>)<span class="number">0x80</span>, (<span class="type">byte</span>)<span class="number">0x68</span>, (<span class="type">byte</span>)<span class="number">0xbe</span>, (<span class="type">byte</span>)<span class="number">0xe8</span>,</span><br><span class="line">        (<span class="type">byte</span>)<span class="number">0x2e</span>, (<span class="type">byte</span>)<span class="number">0x00</span>, (<span class="type">byte</span>)<span class="number">0xd0</span>, (<span class="type">byte</span>)<span class="number">0xd1</span>, (<span class="type">byte</span>)<span class="number">0x02</span>, (<span class="type">byte</span>)<span class="number">0x9e</span>, (<span class="type">byte</span>)<span class="number">0x7e</span>, (<span class="type">byte</span>)<span class="number">0x57</span>,</span><br><span class="line">        (<span class="type">byte</span>)<span class="number">0x6e</span>, (<span class="type">byte</span>)<span class="number">0xec</span>, (<span class="type">byte</span>)<span class="number">0x5d</span>, (<span class="type">byte</span>)<span class="number">0x2d</span>, (<span class="type">byte</span>)<span class="number">0x29</span>, (<span class="type">byte</span>)<span class="number">0x80</span>, (<span class="type">byte</span>)<span class="number">0x6f</span>, (<span class="type">byte</span>)<span class="number">0xab</span>,</span><br><span class="line">        (<span class="type">byte</span>)<span class="number">0x93</span>, (<span class="type">byte</span>)<span class="number">0xb8</span>, (<span class="type">byte</span>)<span class="number">0xe6</span>, (<span class="type">byte</span>)<span class="number">0x36</span>, (<span class="type">byte</span>)<span class="number">0xcf</span>, (<span class="type">byte</span>)<span class="number">0xeb</span>, (<span class="type">byte</span>)<span class="number">0x31</span>, (<span class="type">byte</span>)<span class="number">0xae</span></span><br><span class="line">&#125;; </span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="C1，S1-伪代码实现">C1，S1 伪代码实现</h3>
+<hr>
+<p>  下面会列出c1的伪代码实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">char</span> * <span class="type">const</span> C1 = <span class="keyword">new</span> <span class="type">unsigned</span> <span class="type">char</span>[<span class="number">1536</span>];<span class="comment">//s1,c1,s2,c2大小都是1536字节</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">Random</span>(C1);<span class="comment">//把C1每个字节随机化</span></span><br><span class="line"></span><br><span class="line">C1[<span class="number">0</span><span class="number">-3</span>] = <span class="built_in">current_time</span>();</span><br><span class="line"></span><br><span class="line">C1[<span class="number">4</span><span class="number">-7</span>] = &#123;<span class="number">0x80</span>, <span class="number">0x00</span>, <span class="number">0x07</span>, <span class="number">0x02</span>&#125;;<span class="comment">//这个是定值</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//自行决定使用哪种schema结构,定义c1_schema_type</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> key_offset = <span class="built_in">Random</span>(<span class="number">0</span><span class="number">-632</span>);<span class="comment">//在取值范围[0-632) (764-4-128，观察key结构可知)中随机一个值赋值给key_offset(key-data的相对位置).</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> digest_offset = <span class="built_in">Random</span>(<span class="number">0</span><span class="number">-728</span>);<span class="comment">//在取值范围[0-728)(764-32-4，观察digest结构可知)中随机一个值赋值给digest_offset(digest-data的相对位置).</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> absolute_key_offset = <span class="built_in">CalAbsoluteKeyOffset</span>(key_offset, c1_schema_type );<span class="comment">//根据c1_schema_type，按照相同类型获取key结构中，key-data在数组中的绝对位置</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> absolute_digest_offset = <span class="built_in">CalAbsoluteDigestOffset</span>(digest_offset , c1_schema_type );<span class="comment">//根据c1_schema_type，按照相同类型获取digest结构中，digest-data在数组中的绝对位置</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">SetC1KeyOffset</span>(key_offset, c1_schema_type);<span class="comment">//把keyoffset设置到C1中，注意，key结构中这里的offset 的4个字节的值必须加起来等于key_offset的值。</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">SetC1DigestOffset</span>(digest_offset , c1_schema_type);<span class="comment">//把digest_offset 设置到C1中，注意，digest结构中这里的offset 的4个字节的值必须加起来等于digest_offset 的值。</span></span><br><span class="line"></span><br><span class="line">c1_s1_joined_array = <span class="built_in">GetC1JoinedArray</span>(absolute_digest_offset);<span class="comment">//这里是根据绝对digest偏移，然后去掉digest32个字节，然后返回digest的前后组合得到的数组结果（1536-32）</span></span><br><span class="line"></span><br><span class="line">c1_digest = <span class="built_in">HMACsha256</span>(c1_s1_joined_array , FP_KEY, <span class="number">30</span>);<span class="comment">//调用openssl中的Hmacsha256算法计算秘钥</span></span><br><span class="line"><span class="built_in">SetC1Digest</span>(c1_digest , c1_schema_type);<span class="comment">//把计算出来的digest设置到c1中去。然后c1构造完成，即可发送给服务器</span></span><br></pre></td></tr></table></figure>
+<p>  注意：C1中的key值就是我们的随机值即可。严格按照顺序计算，设置时间，版本，key_offset,digest_offset，然后才能够计算c1_s1_joined_array，最后得到c1_digest。</p>
+<p>  下面会列出s1的伪代码实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">char</span> * <span class="type">const</span> S1 = <span class="keyword">new</span> <span class="type">unsigned</span> <span class="type">char</span>[<span class="number">1536</span>];<span class="comment">//s1,c1,s2,c2大小都是1536字节</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">Random</span>(S1);<span class="comment">//把S1每个字节随机化</span></span><br><span class="line"></span><br><span class="line">S1[<span class="number">0</span><span class="number">-3</span>] = <span class="built_in">current_time</span>();</span><br><span class="line"></span><br><span class="line">S1[<span class="number">4</span><span class="number">-7</span>] = &#123;<span class="number">0x04</span>, <span class="number">0x05</span>, <span class="number">0x00</span>, <span class="number">0x01</span>&#125;;<span class="comment">//这个是定值版本。</span></span><br><span class="line"></span><br><span class="line">c1_schema_type = <span class="built_in">GetC1SchemaType</span>();<span class="comment">//获取C1的schema type。得出是key-digest structure 还是 digest-key structure</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> key_offset = <span class="built_in">Random</span>(<span class="number">0</span><span class="number">-632</span>);<span class="comment">//在取值范围[0-632) (764-4-128，观察key结构可知)中随机一个值赋值给key_offset(key-data的相对位置).</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> digest_offset = <span class="built_in">Random</span>(<span class="number">0</span><span class="number">-728</span>);<span class="comment">//在取值范围[0-728)(764-32-4，观察digest结构可知)中随机一个值赋值给digest_offset(digest-data的相对位置).</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> absolute_key_offset = <span class="built_in">CalAbsoluteKeyOffset</span>(key_offset, c1_schema_type );<span class="comment">//根据c1_schema_type，按照相同类型获取key结构中，key-data在数组中的绝对位置</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> absolute_digest_offset = <span class="built_in">CalAbsoluteDigestOffset</span>(digest_offset , c1_schema_type );<span class="comment">//根据c1_schema_type，按照相同类型获取digest结构中，digest-data在数组中的绝对位置</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">SetS1KeyOffset</span>(key_offset, c1_schema_type);<span class="comment">//把keyoffset设置到S1中，注意，key结构中这里的offset 的4个字节的值必须加起来等于key_offset的值。</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">SetS1DigestOffset</span>(digest_offset , c1_schema_type);<span class="comment">//把digest_offset 设置到S1中，注意，digest结构中这里的offset 的4个字节的值必须加起来等于digest_offset 的值。</span></span><br><span class="line"></span><br><span class="line"><span class="type">unsigned</span> <span class="type">char</span> * <span class="type">const</span> c1_key = <span class="built_in">GetC1Key</span>();<span class="comment">//获取C1的key</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//这里参考srs开源框架的实现，调用openssl的DH算法中相关内容。</span></span><br><span class="line"><span class="comment">//根据上文那篇srs作者的文章的评论部分内容，这里相当于是要算出一个128公钥作为s1的key就可以了。不需要得到共享秘钥。</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">char</span> * <span class="type">const</span> s1_key = <span class="built_in">GetDHPublicKey</span>();</span><br><span class="line"></span><br><span class="line"><span class="built_in">SetS1Key</span>(s1_key , c1_schema_type);<span class="comment">//设置s1 key 到s1数组中，方便计算c1_s1-joined结构。</span></span><br><span class="line">c1_s1_joined_array = <span class="built_in">GetS1JoinedArray</span>(absolute_digest_offset);<span class="comment">//这里是根据绝对digest偏移，然后去掉digest32个字节，然后返回digest的前后组合得到的数组结果（1536-32）</span></span><br><span class="line"></span><br><span class="line">s1_digest = <span class="built_in">HMACsha256</span>(c1_s1_joined_array , FMSKey, <span class="number">36</span>);<span class="comment">//调用openssl中的Hmacsha256算法计算秘钥</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">SetS1Digest</span>(s1_digest , c1_schema_type);<span class="comment">//把计算出来的digest设置到s1中去。然后s1构造完成，即可发送给客户端</span></span><br></pre></td></tr></table></figure>
+<p>  这里必须严格按照流程走：</p>
+<p>  把1536字节buffer随机化，设置时间，版本信息。设置s1_key，s1_key_offset信息，然后设置s1_digest_offset信息。以上都做完以后，计算出c1_s1_joined_array 。根据c1_s1_joined_array ，FMSKey计算出s1_digest，把s1_digest设置到s1buffer中。到了这一步，即可把s1发送出去了。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="C2-S2的伪代码实现">C2 S2的伪代码实现</h3>
+<hr>
+<p>  C2伪代码实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">char</span> * <span class="type">const</span> C2 = <span class="keyword">new</span> <span class="type">unsigned</span> <span class="type">char</span>[<span class="number">1536</span>];<span class="comment">//s1,c1,s2,c2大小都是1536字节</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">Random</span>(C2);<span class="comment">//把C2每个字节随机化</span></span><br><span class="line"></span><br><span class="line">s1_digest = <span class="built_in">GetS1Digest</span>();<span class="comment">//得到s1的digest</span></span><br><span class="line"></span><br><span class="line">tmp_key = <span class="built_in">HMACsha256</span>(s1_digest, FPKey, <span class="number">62</span>);</span><br><span class="line"></span><br><span class="line">c2_random_data = <span class="built_in">GetC2RandomData</span>();<span class="comment">//得到c2[0~1503]</span></span><br><span class="line"></span><br><span class="line">c2_digest = <span class="built_in">HMACsha256</span>(c2_random_data, tmp_key, <span class="number">32</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">SetC2Digest</span>(c2_digest);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  就是连续计算秘钥得到C2 key即可</p>
+<p>  S2伪代码实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">char</span> * <span class="type">const</span> S2 = <span class="keyword">new</span> <span class="type">unsigned</span> <span class="type">char</span>[<span class="number">1536</span>];<span class="comment">//s1,c1,s2,c2大小都是1536字节</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">Random</span>(S2);<span class="comment">//把S2每个字节随机化</span></span><br><span class="line"></span><br><span class="line">c1_digest = <span class="built_in">GetC1Digest</span>();<span class="comment">//得到c1的digest</span></span><br><span class="line"></span><br><span class="line">tmp_key = <span class="built_in">HMACsha256</span>(c1_digest, FMSKey, <span class="number">68</span>);</span><br><span class="line"></span><br><span class="line">s2_random_data = <span class="built_in">GetS2RandomData</span>();<span class="comment">//得到s2[0~1503]</span></span><br><span class="line"></span><br><span class="line">s2_digest = <span class="built_in">HMACsha256</span>(s2_random_data, tmp_key, <span class="number">32</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">SetS2Digest</span>(s2_digest);</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  总结：</p>
+<ol>
+<li>就是按照别人推断出来的东西进行代码实现，同时明确一下一些字段定义。</li>
+<li>按照大佬文中评论，验证了一下，public_key和share_key对RTMP没有影响。</li>
+</ol>
+<h3 id="本系列文末总结">本系列文末总结</h3>
+<ol>
+<li>按照一个文档，实现了相关功能是一件有成就感的事情。</li>
+<li>现在已经是2019年了，你要相信，你要做的事情，极有可能是别人做过的，可以去多查查资料以备参考。</li>
+<li>静下心来做事，我发现有些时候我很浮躁。同时敢怀疑别人，并且思索怀疑的理由。</li>
+</ol>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/01/08/blog_idx_077/" rel="prev" title="一个简单的RTMP服务器实现 --- RTMP实现要点">
+      <i class="fa fa-chevron-left"></i> 一个简单的RTMP服务器实现 --- RTMP实现要点
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/02/14/blog_idx_079/" rel="next" title="java 手动生成jni头文件(JNI静态注册)">
+      java 手动生成jni头文件(JNI静态注册) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number"></span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="nav-number"></span> <span class="nav-text">前置知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E5%95%A5%E9%9C%80%E8%A6%81RTMP%E5%A4%8D%E6%9D%82%E6%8F%A1%E6%89%8B"><span class="nav-number"></span> <span class="nav-text">为啥需要RTMP复杂握手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RTMP%E5%A4%8D%E6%9D%82%E6%8F%A1%E6%89%8B"><span class="nav-number"></span> <span class="nav-text">RTMP复杂握手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C1%EF%BC%8CS1-%E4%BC%AA%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number"></span> <span class="nav-text">C1，S1 伪代码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C2-S2%E7%9A%84%E4%BC%AA%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number"></span> <span class="nav-text">C2 S2的伪代码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%AC%E7%B3%BB%E5%88%97%E6%96%87%E6%9C%AB%E6%80%BB%E7%BB%93"><span class="nav-number"></span> <span class="nav-text">本系列文末总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

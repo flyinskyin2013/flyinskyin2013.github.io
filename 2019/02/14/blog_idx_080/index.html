@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    本文适合至少知道makefile，jni，ndk，gcc基本编译知识是什么鬼东西的人阅读。     背景    以前，关于android中使用jni相关的东西的时候(jni头文件生成，jni的so文件的生成)，我太依赖与as工具了。导致了，什">
+<meta property="og:type" content="article">
+<meta property="og:title" content="android ndk生成第三方库的so方法(ndk-build，Application.mk，Android.mk)">
+<meta property="og:url" content="https://e-x.top/2019/02/14/blog_idx_080/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    本文适合至少知道makefile，jni，ndk，gcc基本编译知识是什么鬼东西的人阅读。     背景    以前，关于android中使用jni相关的东西的时候(jni头文件生成，jni的so文件的生成)，我太依赖与as工具了。导致了，什">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_080/result.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2019-02-14T07:40:13.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.833Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_080/result.png">
+
+<link rel="canonical" href="https://e-x.top/2019/02/14/blog_idx_080/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>android ndk生成第三方库的so方法(ndk-build，Application.mk，Android.mk) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2019/02/14/blog_idx_080/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          android ndk生成第三方库的so方法(ndk-build，Application.mk，Android.mk)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-02-14 15:40:13" itemprop="dateCreated datePublished" datetime="2019-02-14T15:40:13+08:00">2019-02-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-30 21:32:57
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=080） 
+&emsp;&emsp;本文发布于 2019-02-14 15:40:13，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=080） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  本文适合至少知道makefile，jni，ndk，gcc基本编译知识是什么鬼东西的人阅读。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="背景">背景</h3>
+<hr>
+<p>  以前，关于android中使用jni相关的东西的时候(jni头文件生成，jni的so文件的生成)，我太依赖与as工具了。导致了，什么都需要ide来完成，平常这么用的时候，其实是没有什么毛病的。但是比如说你要发布一个自己封装的库时候，自己在ide上配置然后编译其实是没有什么问题的，但是你把as工程发给别人的时候，总会遇到这样那样的问题，很烦。于是想着把生成android app使用的so独立出来，方便我们查找错误，同时也加深了自己对于android ndk的理解。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="NDK">NDK</h3>
+<hr>
+<p>  ndk 是android提供的原生开发包。它可以让android app可以利用c和c++的库等等。在我们安装的android sdk中，其实是就包含了ndk的内容，可以说ndk 部分内容是android系统可以正常运行的基石,因为在android 系统中，很多内容不适合使用java来开发，所以只能通过java调用c和c++的方式来实现相应的内容。</p>
+<p>  本文也是按照android开发者网站的ndk相关文档进行学习总结，同时也贴出一些基本错误方便排查。(<a target="_blank" rel="noopener" href="https://developer.android.google.cn/ndk/guides/">https://developer.android.google.cn/ndk/guides/</a>)</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="ndk-build-脚本">ndk-build 脚本</h3>
+<hr>
+<p>  按照官方文档的说法：ndk-build 这个脚本在ndk r4的时候就存在了。它的主要作用就是初始化很多内容，然后执行gnu-make 来编译ndk部分的源码。</p>
+<p>  其核心执行的命令官网也给出来了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GNUMAKE -f &lt;ndk&gt;/build/core/build-local.mk &lt;parameters&gt;</span><br></pre></td></tr></table></figure>
+<p>  这里我们其实也知道了，要成功使用这个脚本必须安装gnu-make （还必须是3.81级以上的版本）</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Android-mk文件">Android.mk文件</h3>
+<hr>
+<p>  首先我们要明白，Android.mk只是一个makefile片段，这个片段中定义相关变量，然后被make命令使用和解析，我们只需要按照别人规定好的方法填写相应变量的值即可。</p>
+<p>  这里我主要使用了最基本的一些变量,同时提供相应的注释解释，如果要查看完整说明，请参考<a target="_blank" rel="noopener" href="https://developer.android.google.cn/ndk/guides/%E4%B8%ADandroid.mk%E9%83%A8%E5%88%86%E5%86%85%E5%AE%B9%EF%BC%8C%E5%AE%9E%E4%BE%8B%E5%A6%82%E4%B8%8B%EF%BC%9A">https://developer.android.google.cn/ndk/guides/中android.mk部分内容，实例如下：</a></p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH := <span class="variable">$(<span class="built_in">call</span> my-<span class="built_in">dir</span>)</span></span><br><span class="line"><span class="comment">#这个LOCAL_PATH变量存储的是当前文件所在目录，是通过调用my-dir这个函数实现的</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(CLEAR_VARS)</span></span><br><span class="line"><span class="comment">#CLEAR_VARS是一个特殊的makefile文件，其中清空了许多变量的值</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE := android-shmem</span><br><span class="line"><span class="comment">#LOCAL_MODULE填写的是你要生成的so的库名字的核心部分，这里生成的库名字为：libandroid-shmem.so</span></span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES := shmem.c</span><br><span class="line"><span class="comment">#LOCAL_SRC_FILES填写你要编译到so的源文件名字</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include</span> <span class="variable">$(BUILD_SHARED_LIBRARY)</span></span><br><span class="line"><span class="comment">#BUILD_SHARED_LIBRARY指向一个特殊的makefile文件，将会收集以上的变量信息，然后生成动态库。</span></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Application-mk文件">Application.mk文件</h3>
+<hr>
+<p>  这个文件也是一个makefile文件，</p>
+<p>  我这里也列出一个实例来说明：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">APP_CFLAGS += -std=c99</span><br><span class="line"><span class="comment">#做或者c++编程的都应该知道编译器编译参数设置</span></span><br><span class="line">APP_CPPFLAGS +=</span><br><span class="line"><span class="comment">#做或者c++编程的都应该知道编译器编译参数设置</span></span><br><span class="line">APP_LDFLAGS += -llog</span><br><span class="line"><span class="comment">#做或者c++编程的都应该知道编译器链接参数设置，这里是填写依赖了哪些动态库</span></span><br><span class="line">APP_STL +=</span><br><span class="line"><span class="comment">#生成 对应 某一运行时库的动态库文件</span></span><br><span class="line"></span><br><span class="line">APP_PIE = true</span><br><span class="line"><span class="comment"># 生成位置独立的代码，</span></span><br><span class="line"></span><br><span class="line">APP_ABI = armeabi-v7a</span><br><span class="line"><span class="comment">#这个变量我们会经常遇到，主要是指定app或者说so运行的cpu指令集。</span></span><br><span class="line"></span><br><span class="line">APP_PLATFORM = android-21</span><br><span class="line"><span class="comment">#这个对应的android版本号</span></span><br></pre></td></tr></table></figure>
+<p>  这里的APP_ABI的内容对于我们来说特别重要，我这里把官网的内容搬过来了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">基于 ARMv5TE的设备硬件（采用软件浮点运算）：APP_ABI := armeabi（兼容性最好，浮点运算性能差劲）</span><br><span class="line">基于 ARMv7 的设备上的硬件 FPU 指令	APP_ABI := armeabi-v7a</span><br><span class="line">ARMv8 AArch64	APP_ABI := arm64-v8a</span><br><span class="line">IA-32	APP_ABI := x86</span><br><span class="line">Intel64	APP_ABI := x86_64</span><br><span class="line">MIPS32	APP_ABI := mips</span><br><span class="line">MIPS64 (r6)	APP_ABI := mips64</span><br><span class="line">所有支持的指令集	APP_ABI := all</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="使用实例">使用实例</h3>
+<hr>
+<p>  如果直接运行ndk-build会报如下错误：</p>
+<ul>
+<li>Android NDK: Could not find application project directory !</li>
+<li>Android NDK: Please define the NDK_PROJECT_PATH variable to point to it.</li>
+</ul>
+<p>  提示我们有个变量没有设置，我们设置上，后续还会提示其他的问题，我们一并设置，</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=./Android.mk NDK_APPLICATION_MK=./Application.mk</span><br></pre></td></tr></table></figure>
+<ul>
+<li>NDK_PROJECT_PATH 对应项目路径</li>
+<li>APP_BUILD_SCRIPT 对应Android.mk路径，这个变量有默认值，具体参考官网。</li>
+<li>NDK_APPLICATION_MK 对应Applicaiton.mk路径</li>
+</ul>
+<p>  结果：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_080/result.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  总结</p>
+<p>  文中只是介绍了非常基础的内容，如果需要一些骚操作，可能就会用到一些其他变量，对于这些内容，请参考文中提到的android开发者官网。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/02/14/blog_idx_079/" rel="prev" title="java 手动生成jni头文件(JNI静态注册)">
+      <i class="fa fa-chevron-left"></i> java 手动生成jni头文件(JNI静态注册)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/03/12/blog_idx_081/" rel="next" title="Android匿名共享内存(Anonymous Shared Memory) --- 瞎折腾记录 (驱动程序篇)">
+      Android匿名共享内存(Anonymous Shared Memory) --- 瞎折腾记录 (驱动程序篇) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number"></span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NDK"><span class="nav-number"></span> <span class="nav-text">NDK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ndk-build-%E8%84%9A%E6%9C%AC"><span class="nav-number"></span> <span class="nav-text">ndk-build 脚本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Android-mk%E6%96%87%E4%BB%B6"><span class="nav-number"></span> <span class="nav-text">Android.mk文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Application-mk%E6%96%87%E4%BB%B6"><span class="nav-number"></span> <span class="nav-text">Application.mk文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%AE%9E%E4%BE%8B"><span class="nav-number"></span> <span class="nav-text">使用实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

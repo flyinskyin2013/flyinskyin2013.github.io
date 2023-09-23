@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    无     EC20 驱动移植与测试    EC20简介   EC20是一个全网通的4G模块，并提供了详细的驱动移植资料（源码+文档），我也仅仅是照着文档，一点点的改，并建立起来一个可用的环境。   EC20驱动移植准备  首先你会从厂家拿到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="移远EC20 4G模块Linux驱动移植和测试">
+<meta property="og:url" content="https://e-x.top/2017/11/21/blog_idx_046/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    无     EC20 驱动移植与测试    EC20简介   EC20是一个全网通的4G模块，并提供了详细的驱动移植资料（源码+文档），我也仅仅是照着文档，一点点的改，并建立起来一个可用的环境。   EC20驱动移植准备  首先你会从厂家拿到">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_046/kernel0.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_046/kernel1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2017-11-21T02:28:14.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.746Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_046/kernel0.png">
+
+<link rel="canonical" href="https://e-x.top/2017/11/21/blog_idx_046/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>移远EC20 4G模块Linux驱动移植和测试 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2017/11/21/blog_idx_046/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          移远EC20 4G模块Linux驱动移植和测试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-11-21 10:28:14" itemprop="dateCreated datePublished" datetime="2017-11-21T10:28:14+08:00">2017-11-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>7.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>7 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-16 18:30:41
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=046） 
+&emsp;&emsp;本文发布于 2017-11-21 10:28:14，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=046） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="EC20-驱动移植与测试">EC20 驱动移植与测试</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="EC20简介">EC20简介</h5>
+<p>  EC20是一个全网通的4G模块，并提供了详细的驱动移植资料（源码+文档），我也仅仅是照着文档，一点点的改，并建立起来一个可用的环境。</p>
+<br/>
+<br/>
+<h5 id="EC20驱动移植准备">EC20驱动移植准备</h5>
+<ol>
+<li>首先你会从厂家拿到一个资料文件，并解压（类似Quectel_GobiNetSR01A02V16.zip）</li>
+<li>你会找到一个用户手册的PDF打开（类似Quectel_WCDMA&amp;LTE_Linux_USB_Driver_User_Guide_V1.6.pdf）</li>
+<li>这里还有一个Readme.txt告诉你需要阅读上文pdf的哪些内容。可能如下：</li>
+</ol>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">About GobiNet driver, please refer to the chapter 3.2、3.4、5.4、6</span><br><span class="line">About ConnectManager，please refer to the chapter 5.4</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>按照pdf指示如下。</li>
+</ol>
+<br/>
+<br/>
+<h5 id="EC20-Linux驱动移植">EC20 Linux驱动移植</h5>
+<ol>
+<li>增加PID&amp;VID（对着两个不了解的，建议去找找资料来看看，这个的意思可以简单理解为这个设备的唯一标识）<br>
+[KERNEL]/drivers/usb/serial/option.c</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">usb_device_id</span> <span class="title">option_ids</span>[] =</span> &#123;</span><br><span class="line">	<span class="meta">#<span class="keyword">if</span> 1 <span class="comment">//Added by Sky  </span></span></span><br><span class="line">	&#123; USB_DEVICE(<span class="number">0x05C6</span>, <span class="number">0x9090</span>) &#125;, <span class="comment">/* Quectel UC15 */</span>  </span><br><span class="line">	&#123; USB_DEVICE(<span class="number">0x05C6</span>, <span class="number">0x9003</span>) &#125;, <span class="comment">/* Quectel UC20 */</span>  </span><br><span class="line">	&#123; USB_DEVICE(<span class="number">0x05C6</span>, <span class="number">0x9215</span>) &#125;, <span class="comment">/* Quectel EC20 */</span>  </span><br><span class="line">	&#123; USB_DEVICE(<span class="number">0x2C7C</span>, <span class="number">0x0125</span>) &#125;, <span class="comment">/* Quectel EC25/EC20 R2.0 */</span>  </span><br><span class="line">	&#123; USB_DEVICE(<span class="number">0x2C7C</span>, <span class="number">0x0121</span>) &#125;, <span class="comment">/* Quectel EC21 */</span> </span><br><span class="line">	<span class="meta">#<span class="keyword">endif</span> </span></span><br></pre></td></tr></table></figure>
+<p>  这里其实只需要{ USB_DEVICE(0x05C6, 0x9215) }, /* Quectel EC20 */  这一项，其他是无关紧要的，可以不放进去。option_ids[]就是一usb serial的设备pid，vid表。</p>
+<ol start="2">
+<li>注释掉冲突的vid以及pid设备（我猜存在相同的vid和pid是历史的原因）<br>
+[KERNEL]/drivers/usb/serial/qcserial.c</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Comment by Sky,</span></span><br><span class="line"><span class="comment">//&#123;USB_DEVICE(0x05c6, 0x9215)&#125;,	/* Acer Gobi 2000 Modem device (VP413) */</span></span><br></pre></td></tr></table></figure>
+<p>[KERNEL]/drivers/net/usb/qmi_wwan.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//comment by Sky</span></span><br><span class="line"><span class="comment">//&#123;QMI_GOBI_DEVICE(0x05c6, 0x9215)&#125;,	/* Acer Gobi 2000 Modem device (VP413) */</span></span><br></pre></td></tr></table></figure>
+<p>  注意这里貌似只有EC20的冲突了。</p>
+<ol start="3">
+<li>添加零包处理（这个和usb 协议中的批量传输有关）<br>
+For Linux Kernel Version newer than 2.6.34:</li>
+</ol>
+<p>File: [KERNEL]/drivers/usb/serial/usb_wwan.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">usb_fill_bulk_urb(urb, serial-&gt;dev,      usb_sndbulkpipe(serial-&gt;dev, endpoint) | dir,      buf, len, callback, ctx);</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> 1 <span class="comment">//Added by Sky for Zero Packet</span></span></span><br><span class="line"><span class="keyword">if</span> (dir == USB_DIR_OUT)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">usb_device_descriptor</span> *<span class="title">desc</span> =</span> &amp;serial-&gt;dev-&gt;descriptor;</span><br><span class="line">	<span class="keyword">if</span> (desc-&gt;idVendor == cpu_to_le16(<span class="number">0x05C6</span>) &amp;&amp; desc-&gt;idProduct == cpu_to_le16(<span class="number">0x9090</span>))</span><br><span class="line">		urb-&gt;transfer_flags |= URB_ZERO_PACKET;</span><br><span class="line">	<span class="keyword">if</span> (desc-&gt;idVendor == cpu_to_le16(<span class="number">0x05C6</span>) &amp;&amp; desc-&gt;idProduct == cpu_to_le16(<span class="number">0x9003</span>))</span><br><span class="line">		urb-&gt;transfer_flags |= URB_ZERO_PACKET;</span><br><span class="line">	<span class="keyword">if</span> (desc-&gt;idVendor == cpu_to_le16(<span class="number">0x05C6</span>) &amp;&amp; desc-&gt;idProduct == cpu_to_le16(<span class="number">0x9215</span>))</span><br><span class="line">		urb-&gt;transfer_flags |= URB_ZERO_PACKET;</span><br><span class="line">	<span class="keyword">if</span> (desc-&gt;idVendor == cpu_to_le16(<span class="number">0x2C7C</span>))</span><br><span class="line">		urb-&gt;transfer_flags |= URB_ZERO_PACKET;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> </span></span><br></pre></td></tr></table></figure>
+<p>  注意，pdf上还有For Linux Kernel Version older than 2.6.35的内容，请自行根据内核版本查看。</p>
+<ol start="4">
+<li>增加休眠后唤醒接口</li>
+</ol>
+<p>For Linux Kernel Version newer than 3.4:</p>
+<p>File: [KERNEL]/drivers/usb/serial/option.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">usb_serial_driver</span> <span class="title">option_1port_device</span> =</span> &#123;</span><br><span class="line">	.driver = &#123;</span><br><span class="line">		.owner =	THIS_MODULE,</span><br><span class="line">		.name =		<span class="string">&quot;option1&quot;</span>,</span><br><span class="line">	&#125;,</span><br><span class="line">	.description       = <span class="string">&quot;GSM modem (1-port)&quot;</span>,</span><br><span class="line">	.id_table          = option_ids,</span><br><span class="line">	.num_ports         = <span class="number">1</span>,</span><br><span class="line">	.probe             = option_probe,</span><br><span class="line">	.open              = usb_wwan_open,</span><br><span class="line">	.close             = usb_wwan_close,</span><br><span class="line">	.dtr_rts	   = usb_wwan_dtr_rts,</span><br><span class="line">	.write             = usb_wwan_write,</span><br><span class="line">	.write_room        = usb_wwan_write_room,</span><br><span class="line">	.chars_in_buffer   = usb_wwan_chars_in_buffer,</span><br><span class="line">	.set_termios       = usb_wwan_set_termios,</span><br><span class="line">	.tiocmget          = usb_wwan_tiocmget,</span><br><span class="line">	.tiocmset          = usb_wwan_tiocmset,</span><br><span class="line">	.ioctl             = usb_wwan_ioctl,</span><br><span class="line">	.attach            = option_attach,</span><br><span class="line">	.release           = option_release,</span><br><span class="line">	.port_probe        = usb_wwan_port_probe,</span><br><span class="line">	.port_remove	   = usb_wwan_port_remove,</span><br><span class="line">	.read_int_callback = option_instat_callback,</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_PM</span></span><br><span class="line">	.suspend           = usb_wwan_suspend,</span><br><span class="line">	.resume            = usb_wwan_resume,</span><br><span class="line">	<span class="meta">#<span class="keyword">if</span> 1  <span class="comment">//Added by Sky  </span></span></span><br><span class="line">	.reset_resume   = usb_wwan_resume, </span><br><span class="line">	<span class="meta">#<span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>如果要使用 GobiNet or QMI WWAN，需要阻止第四个接口注册为串口。<br>
+For Linux Kernel Version newer than 2.6.30:</li>
+</ol>
+<p>File: [KERNEL]/drivers/usb/serial/option.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">option_probe</span><span class="params">(<span class="keyword">struct</span> usb_serial *serial,</span></span><br><span class="line"><span class="params">			<span class="type">const</span> <span class="keyword">struct</span> usb_device_id *id)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">usb_interface_descriptor</span> *<span class="title">iface_desc</span> =</span></span><br><span class="line">				&amp;serial-&gt;interface-&gt;cur_altsetting-&gt;desc;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">usb_device_descriptor</span> *<span class="title">dev_desc</span> =</span> &amp;serial-&gt;dev-&gt;descriptor;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Never bind to the CD-Rom emulation interface	*/</span></span><br><span class="line">	<span class="keyword">if</span> (iface_desc-&gt;bInterfaceClass == <span class="number">0x08</span>)</span><br><span class="line">		<span class="keyword">return</span> -ENODEV;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * Don&#x27;t bind reserved interfaces (like network ones) which often have</span></span><br><span class="line"><span class="comment">	 * the same class/subclass/protocol as the serial interfaces.  Look at</span></span><br><span class="line"><span class="comment">	 * the Windows driver .INF files for reserved interface numbers.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">if</span> (is_blacklisted(</span><br><span class="line">		iface_desc-&gt;bInterfaceNumber,</span><br><span class="line">		OPTION_BLACKLIST_RESERVED_IF,</span><br><span class="line">		(<span class="type">const</span> <span class="keyword">struct</span> option_blacklist_info *) id-&gt;driver_info))</span><br><span class="line">		<span class="keyword">return</span> -ENODEV;</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * Don&#x27;t bind network interface on Samsung GT-B3730, it is handled by</span></span><br><span class="line"><span class="comment">	 * a separate module.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">if</span> (dev_desc-&gt;idVendor == cpu_to_le16(SAMSUNG_VENDOR_ID) &amp;&amp;</span><br><span class="line">	    dev_desc-&gt;idProduct == cpu_to_le16(SAMSUNG_PRODUCT_GT_B3730) &amp;&amp;</span><br><span class="line">	    iface_desc-&gt;bInterfaceClass != USB_CLASS_CDC_DATA)</span><br><span class="line">		<span class="keyword">return</span> -ENODEV;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		<span class="meta">#<span class="keyword">if</span> 1  <span class="comment">//Added by Sky </span></span></span><br><span class="line">		<span class="comment">//Quectel UC20&#x27;s interface 4 can be used as USB Network device  </span></span><br><span class="line">		<span class="keyword">if</span> (serial-&gt;dev-&gt;descriptor.idVendor == cpu_to_le16(<span class="number">0x05C6</span>) &amp;&amp; serial-&gt;dev-&gt;descriptor.idProduct == cpu_to_le16(<span class="number">0x9003</span>)  \</span><br><span class="line">			 &amp;&amp; serial-&gt;interface-&gt;cur_altsetting-&gt;desc.bInterfaceNumber &gt;= <span class="number">4</span>)   </span><br><span class="line">		<span class="keyword">return</span> -ENODEV; </span><br><span class="line">		<span class="comment">//Quectel EC20&#x27;s interface 4 can be used as USB Network device  </span></span><br><span class="line">		<span class="keyword">if</span> (serial-&gt;dev-&gt;descriptor.idVendor == cpu_to_le16(<span class="number">0x05C6</span>) &amp;&amp; serial-&gt;dev-&gt;descriptor.idProduct == cpu_to_le16(<span class="number">0x9215</span>)  \</span><br><span class="line">			&amp;&amp; serial-&gt;interface-&gt;cur_altsetting-&gt;desc.bInterfaceNumber &gt;= <span class="number">4</span>)   </span><br><span class="line">			<span class="keyword">return</span> -ENODEV; </span><br><span class="line">			<span class="comment">//Quectel EC21&amp;EC25&amp;EC20 R2.0&#x27;s interface 4 can be used as USB Network device  </span></span><br><span class="line">		<span class="keyword">if</span> (serial-&gt;dev-&gt;descriptor.idVendor == cpu_to_le16(<span class="number">0x2C7C</span>)   \</span><br><span class="line">			&amp;&amp; serial-&gt;interface-&gt;cur_altsetting-&gt;desc.bInterfaceNumber &gt;= <span class="number">4</span>)   </span><br><span class="line">			<span class="keyword">return</span> -ENODEV; </span><br><span class="line">		<span class="meta">#<span class="keyword">endif</span> </span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Store device id so we can use it during attach. */</span></span><br><span class="line">	usb_set_serial_data(serial, (<span class="type">void</span> *)id);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>修改内核配置，并编译内核，刷入新内核<br>
+  添加USB 串口 GSM 和 CDMA 驱动选项</li>
+</ol>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_046/kernel0.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  启用USB网络支持</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_046/kernel1.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  添加驱动代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Step 5: Please add the following statements to file &quot;[KERNEL]/drivers/net/usb/Makefile&quot; ([KERNEL]/drivers/usb/net/Makefile if the kernel version is older than 2.6.22). </span></span><br><span class="line">obj-y += GobiNet.o </span><br><span class="line">GobiNet-objs := GobiUSBNet.o QMIDevice.o QMI.o </span><br></pre></td></tr></table></figure>
+<ol start="7">
+<li>quectel-CM 测试</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//交叉编译quectel-CM </span></span><br><span class="line"><span class="comment">/*quectel-CM will  call busybox udhpc to obtain IP and NDS, and busybox udhpc will call script file /usr/share/udhcpc/default.script to set IP/DNS/Routing table for Linux board. You can download this tool’s source code from https://busybox.net/. You should enable CONFIG_UDHCPC in busybox menuconfig，and copy the script file [BUSYBOX]/examples/udhcp/simple.script to your Linux board (renamed as /usr/share/udhcpc/default.script). */</span></span><br><span class="line">quectel-CM –s ctnet &amp; </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">355</span>] Quectel_ConnectManager_SR01A01V10 </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">356</span>] ./quectel-CM profile = ctnet<span class="comment">///, pincode =  </span></span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">357</span>] Find qmichannel = /dev/qcqmi2 </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">358</span>] Find usbnet_adapter = eth2 </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">368</span>] Get clientWDS = <span class="number">7</span> </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">400</span>] Get clientDMS = <span class="number">8</span> </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">432</span>] Get clientNAS = <span class="number">9</span> </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">464</span>] Get clientWDA = <span class="number">10</span> </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">496</span>] requestBaseBandVersion EC20CQAR02A03E2G_BETA0914  <span class="number">1</span>  [Sep <span class="number">14</span> <span class="number">2015</span> <span class="number">13</span>:<span class="number">51</span>:<span class="number">27</span>] </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">560</span>] requestGetSIMStatus SIMStatus: SIM_READY </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">624</span>] requestGetProfile ctnet<span class="comment">///0 </span></span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">656</span>] requestRegistrationState MCC: <span class="number">460</span>, MNC: <span class="number">11</span>, PS: Attached, DataCap: LTE </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">688</span>] requestQueryDataCall ConnectionStatus: DISCONNECTED </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">720</span>] requestRegistrationState MCC: <span class="number">460</span>, MNC: <span class="number">11</span>, PS: Attached, DataCap: LTE </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">752</span>] requestQueryDataCall ConnectionStatus: DISCONNECTED </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">816</span>] requestSetupDataCall WdsConnectionIPv4Handle: <span class="number">0x43cc4478</span> </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">912</span>] requestQueryDataCall ConnectionStatus: CONNECTED </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">937</span>] udhcpc (v1<span class="number">.20</span><span class="number">.2</span>) started </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">956</span>] Sending discover... </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">960</span>] Sending select <span class="keyword">for</span> <span class="number">10.172</span><span class="number">.27</span><span class="number">.151</span>... </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">964</span>] Lease of <span class="number">10.172</span><span class="number">.27</span><span class="number">.151</span> obtained, lease time <span class="number">7200</span> </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">45</span>:<span class="number">984</span>] deleting routers </span><br><span class="line">route: SIOCDELRT: No such process </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">46</span>:<span class="number">003</span>] adding dns <span class="number">61.132</span><span class="number">.163</span><span class="number">.68</span> </span><br><span class="line">[<span class="number">01</span><span class="number">-01</span>_00:<span class="number">26</span>:<span class="number">46</span>:<span class="number">003</span>] adding dns <span class="number">202.102</span><span class="number">.213</span><span class="number">.68</span> </span><br></pre></td></tr></table></figure>
+<p>  注意，这里需要UDHCPC ，检测你的busybox是否有这个东西，如果不存在，你需要重新移植busybox，启用CONFIG_UDHCPC选项。还需要配置一个配置文件，注意检查。</p>
+<p>  特别提示，其中很多关于内核源码修改，以及内核配置修改，不同的版本有不同的写法，文档里面都有详细说明，请使用时，特别注意。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/11/20/blog_idx_045/" rel="prev" title="Libcurl & Log4cplus 移植和使用 以及 Jsoncpp 简单使用">
+      <i class="fa fa-chevron-left"></i> Libcurl & Log4cplus 移植和使用 以及 Jsoncpp 简单使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/12/15/blog_idx_047/" rel="next" title="LeNet-5 论文及原理分析(笨鸟角度)">
+      LeNet-5 论文及原理分析(笨鸟角度) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EC20-%E9%A9%B1%E5%8A%A8%E7%A7%BB%E6%A4%8D%E4%B8%8E%E6%B5%8B%E8%AF%95"><span class="nav-number"></span> <span class="nav-text">EC20 驱动移植与测试</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#EC20%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">EC20简介</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#EC20%E9%A9%B1%E5%8A%A8%E7%A7%BB%E6%A4%8D%E5%87%86%E5%A4%87"><span class="nav-number"></span> <span class="nav-text">EC20驱动移植准备</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#EC20-Linux%E9%A9%B1%E5%8A%A8%E7%A7%BB%E6%A4%8D"><span class="nav-number"></span> <span class="nav-text">EC20 Linux驱动移植</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

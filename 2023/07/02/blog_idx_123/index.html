@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    由于某些其他的原因，我们在测试另外一个问题的时候发现了一个奇怪的现象：在我们一直朴素的认知下，如果一个程序创建了parent-process和child-process，这个时候，当child-process正在运行，parent-proce">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux Subreaper 机制及内核态逃离方法(PR_SET_CHILD_SUBREAPER, prctl, systemed)">
+<meta property="og:url" content="https://e-x.top/2023/07/02/blog_idx_123/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    由于某些其他的原因，我们在测试另外一个问题的时候发现了一个奇怪的现象：在我们一直朴素的认知下，如果一个程序创建了parent-process和child-process，这个时候，当child-process正在运行，parent-proce">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/run_test.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/first_ppid.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/second_ppid.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/run_test1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/drv_out.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/first_ppid1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/second_ppid1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2023-07-02T08:25:00.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.928Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/run_test.png">
+
+<link rel="canonical" href="https://e-x.top/2023/07/02/blog_idx_123/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>Linux Subreaper 机制及内核态逃离方法(PR_SET_CHILD_SUBREAPER, prctl, systemed) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2023/07/02/blog_idx_123/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux Subreaper 机制及内核态逃离方法(PR_SET_CHILD_SUBREAPER, prctl, systemed)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-07-02 16:25:00" itemprop="dateCreated datePublished" datetime="2023-07-02T16:25:00+08:00">2023-07-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>9 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=123） 
+&emsp;&emsp;本文发布于 2023-07-02 16:25             （BlogID=123） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  由于某些其他的原因，我们在测试另外一个问题的时候发现了一个奇怪的现象：在我们一直朴素的认知下，如果一个程序创建了parent-process和child-process，这个时候，当child-process正在运行，parent-process退出的时候，child-process会被托孤到init进程。但是我们却通过pstree -p 发现了并不是这样的，他会被托孤到某一个特殊进程下面，这个特殊进程并不是init进程，而是init进程下面的某一个进程。下面是这个现象的验证过程：</p>
+<p>  测试程序</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> pid = fork();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pid &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;fork failed.\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (pid &gt; <span class="number">0</span>)&#123;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;parent : child pid = %d\n&quot;</span>, pid);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;child doing ... ...\n&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;first get ppid = %d\n&quot;</span>, getppid());</span><br><span class="line">        sleep(<span class="number">20</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;second get ppid = %d\n&quot;</span>, getppid());</span><br><span class="line">        sleep(<span class="number">1000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    sleep(<span class="number">15</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  我们运行这个程序后，其运行输出如下图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/run_test.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  我们对这个图进行分析，可以知道，当前的运行a.out进程pid是72140，然后子进程的pid是72141，在parent-process退出后，我们再次获取ppid，可以看到输出是3203。</p>
+<p>  接着我们看一下在parent-process未退出时的进程树图片节选：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/first_ppid.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  在图中我们可以知道，我们的a.out在systemd(3203)-&gt;gnome-terminal-(3741)-&gt;bash(5073)-&gt;a.out(72140)</p>
+<p>  接着我们看一下在parent-process退出时的进程树图片节选：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/second_ppid.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  在图中我们可以知道，当parent-process退出后，子进程72141被托孤给了systemd(3203)，并不是我们熟知的pid为1的init进程。这里提前透露一下3203是systemd --user一个进程（同时也是一个subreaper）。</p>
+<p>  带着对这个问题的疑问，我查询了相关的资料，做了相关的实验，查询到这个现象的原因是PR_SET_CHILD_SUBREAPER相关导致的，因此有了本文的相关内容。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="什么是Subreaper-PR-SET-CHILD-SUBREAPER-？">什么是Subreaper(PR_SET_CHILD_SUBREAPER) ？</h3>
+<hr>
+<p>  对于这个问题，我们还是要去看man手册，链接如下：<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/prctl.2.html">https://man7.org/linux/man-pages/man2/prctl.2.html</a></p>
+<p>  通过prctl函数，我们可以对当前进程做很多有趣的设置，其中一个就是PR_SET_CHILD_SUBREAPER选项，他主要是用来收集这些托孤进程的，一般是用来给一些守护进程管理进程（例如：上文提到的systemd）使用，使得一个进程能够管理自己的所有后代进程。其主要还是操作当前进程的task_struct中的is_child_subreaper属性，下面是实现的源码节选：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//kernel/sys.c</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">propagate_has_child_subreaper</span><span class="params">(<span class="keyword">struct</span> task_struct *p, <span class="type">void</span> *data)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * If task has has_child_subreaper - all its descendants</span></span><br><span class="line"><span class="comment">	 * already have these flag too and new descendants will</span></span><br><span class="line"><span class="comment">	 * inherit it on fork, skip them.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * If we&#x27;ve found child_reaper - skip descendants in</span></span><br><span class="line"><span class="comment">	 * it&#x27;s subtree as they will never get out pidns.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="keyword">if</span> (p-&gt;signal-&gt;has_child_subreaper ||</span><br><span class="line">	    is_child_reaper(task_pid(p)))</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	p-&gt;signal-&gt;has_child_subreaper = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//kernel/sys.c</span></span><br><span class="line">SYSCALL_DEFINE5(prctl, <span class="type">int</span>, option, <span class="type">unsigned</span> <span class="type">long</span>, arg2, <span class="type">unsigned</span> <span class="type">long</span>, arg3,</span><br><span class="line">		<span class="type">unsigned</span> <span class="type">long</span>, arg4, <span class="type">unsigned</span> <span class="type">long</span>, arg5)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">me</span> =</span> current;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">switch</span> (option)&#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">case</span> PR_SET_CHILD_SUBREAPER:</span><br><span class="line">            me-&gt;signal-&gt;is_child_subreaper = !!arg2;</span><br><span class="line">            <span class="keyword">if</span> (!arg2)</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="comment">//此函数遍历当前进程的所有子进程，并调用propagate_has_child_subreaper设置has_child_subreaper属性。</span></span><br><span class="line">            walk_process_tree(me, propagate_has_child_subreaper, <span class="literal">NULL</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> PR_GET_CHILD_SUBREAPER:</span><br><span class="line">            error = put_user(me-&gt;signal-&gt;is_child_subreaper,</span><br><span class="line">                    (<span class="type">int</span> __user *)arg2);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  通过如上的源码，我们可以知道了PR_SET_CHILD_SUBREAPER的实现部分原理，但是现在我们还是不知道为啥这样设置之后，当一个进程还有子进程时，当前进程退出后，子进程就托孤给了这个子进程收割者。这里可以提前透露一下，主要是和task_struct中的has_child_subreaper属性有关系。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="当含有子进程的父进程退出时，怎么进行托孤的？">当含有子进程的父进程退出时，怎么进行托孤的？</h3>
+<hr>
+<p>  其实从问题就可以看出一点端倪，这个托孤的动作一般是发生在进程退出的时候，所以我们去找进程退出相关的代码应该能够找到一些启发。一般来说，我们的进程退出都会调用exit系统调用，对应到内核态，其实就是do_exit。我们通过has_child_subreaper来全局搜索，可以看到一些关联。下面是部分代码节选：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> __noreturn <span class="title function_">do_exit</span><span class="params">(<span class="type">long</span> code)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">tsk</span> =</span> current;</span><br><span class="line">    <span class="type">int</span> group_dead;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    exit_notify(tsk, group_dead);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Send signals to all our closest relatives so that they know</span></span><br><span class="line"><span class="comment"> * to properly mourn us..</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">exit_notify</span><span class="params">(<span class="keyword">struct</span> task_struct *tsk, <span class="type">int</span> group_dead)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">	LIST_HEAD(dead);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">	forget_original_parent(tsk, &amp;dead);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * This does two things:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * A.  Make init inherit all the child processes</span></span><br><span class="line"><span class="comment"> * B.  Check to see if any process groups have become orphaned</span></span><br><span class="line"><span class="comment"> *	as a result of our exiting, and if they have any stopped</span></span><br><span class="line"><span class="comment"> *	jobs, send them a SIGHUP and then a SIGCONT.  (POSIX 3.2.2.2)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">forget_original_parent</span><span class="params">(<span class="keyword">struct</span> task_struct *father,</span></span><br><span class="line"><span class="params">					<span class="keyword">struct</span> list_head *dead)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">p</span>, *<span class="title">t</span>, *<span class="title">reaper</span>;</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (unlikely(!list_empty(&amp;father-&gt;ptraced)))</span><br><span class="line">		exit_ptrace(father, dead);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Can drop and reacquire tasklist_lock */</span></span><br><span class="line">	<span class="comment">//通过task_active_pid_ns()-&gt;child_reaper查找到一个reaper,然后返回出来，注意一般情况下这里查出来的进程就是当前namespace的init进程。</span></span><br><span class="line">	reaper = find_child_reaper(father, dead);</span><br><span class="line">	<span class="keyword">if</span> (list_empty(&amp;father-&gt;children))</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//根据init进程和has_child_subreaper属性，查询真正符合条件的reaper</span></span><br><span class="line">	reaper = find_new_reaper(father, reaper);</span><br><span class="line">	list_for_each_entry(p, &amp;father-&gt;children, sibling) &#123;<span class="comment">//遍历当前退出进程的所有子进程</span></span><br><span class="line">		for_each_thread(p, t) &#123;<span class="comment">//遍历所有子进程的线程</span></span><br><span class="line">			RCU_INIT_POINTER(t-&gt;real_parent, reaper);<span class="comment">//设置真正的父进程，这里的父进程就是上面我们查找出来了的满足要求的reaper</span></span><br><span class="line">			BUG_ON((!t-&gt;ptrace) != (rcu_access_pointer(t-&gt;parent) == father));</span><br><span class="line">			<span class="keyword">if</span> (likely(!t-&gt;ptrace))</span><br><span class="line">				t-&gt;parent = t-&gt;real_parent;</span><br><span class="line">			<span class="keyword">if</span> (t-&gt;pdeath_signal)</span><br><span class="line">				group_send_sig_info(t-&gt;pdeath_signal,</span><br><span class="line">						    SEND_SIG_NOINFO, t,</span><br><span class="line">						    PIDTYPE_TGID);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * If this is a threaded reparent there is no need to</span></span><br><span class="line"><span class="comment">		 * notify anyone anything has happened.</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">		<span class="keyword">if</span> (!same_thread_group(reaper, father))</span><br><span class="line">			reparent_leader(father, p, dead);</span><br><span class="line">	&#125;</span><br><span class="line">	list_splice_tail_init(&amp;father-&gt;children, &amp;reaper-&gt;children);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  在forget_original_parent中，我们可以看到整个方法的作用就是，找到一个reaper，然后将所有子进程交付给这个reaper。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="我们怎么逃离PR-SET-CHILD-SUBREAPER的影响呢？">我们怎么逃离PR_SET_CHILD_SUBREAPER的影响呢？</h3>
+<hr>
+<p>  其实这个问题就在forget_original_parent中的find_new_reaper函数中，也就是has_child_subreaper这个属性怎么生效，下面我们来看看这个函数的功能：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * When we die, we re-parent all our children, and try to:</span></span><br><span class="line"><span class="comment"> * 1. give them to another thread in our thread group, if such a member exists</span></span><br><span class="line"><span class="comment"> * 2. give it to the first ancestor process which prctl&#x27;d itself as a</span></span><br><span class="line"><span class="comment"> *    child_subreaper for its children (like a service manager)</span></span><br><span class="line"><span class="comment"> * 3. give it to the init process (PID 1) in our pid namespace</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">struct</span> task_struct *<span class="title function_">find_new_reaper</span><span class="params">(<span class="keyword">struct</span> task_struct *father,</span></span><br><span class="line"><span class="params">					   <span class="keyword">struct</span> task_struct *child_reaper)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">thread</span>, *<span class="title">reaper</span>;</span></span><br><span class="line"></span><br><span class="line">	thread = find_alive_thread(father);</span><br><span class="line">	<span class="keyword">if</span> (thread)</span><br><span class="line">		<span class="keyword">return</span> thread;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (father-&gt;signal-&gt;has_child_subreaper) &#123;<span class="comment">//注意has_child_subreaper属性生效的地方。</span></span><br><span class="line">		<span class="type">unsigned</span> <span class="type">int</span> ns_level = task_pid(father)-&gt;level;</span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">		 * Find the first -&gt;is_child_subreaper ancestor in our pid_ns.</span></span><br><span class="line"><span class="comment">		 * We can&#x27;t check reaper != child_reaper to ensure we do not</span></span><br><span class="line"><span class="comment">		 * cross the namespaces, the exiting parent could be injected</span></span><br><span class="line"><span class="comment">		 * by setns() + fork().</span></span><br><span class="line"><span class="comment">		 * We check pid-&gt;level, this is slightly more efficient than</span></span><br><span class="line"><span class="comment">		 * task_active_pid_ns(reaper) != task_active_pid_ns(father).</span></span><br><span class="line"><span class="comment">		 */</span></span><br><span class="line">		<span class="keyword">for</span> (reaper = father-&gt;real_parent;</span><br><span class="line">		     task_pid(reaper)-&gt;level == ns_level;</span><br><span class="line">		     reaper = reaper-&gt;real_parent) &#123;</span><br><span class="line">			<span class="keyword">if</span> (reaper == &amp;init_task)</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">if</span> (!reaper-&gt;signal-&gt;is_child_subreaper)</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line">			thread = find_alive_thread(reaper);</span><br><span class="line">			<span class="keyword">if</span> (thread)</span><br><span class="line">				<span class="keyword">return</span> thread;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> child_reaper;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  我们从find_new_reaper中可以知道，当has_child_subreaper有值时，我们就从当前进程的父进程开始查找，当找到一个进程的is_child_subreaper属性是有值时，我们就返回这个进程作为真正的reaper。当has_child_subreaper无值时，就是以init进程为reaper来托孤。</p>
+<p>  从以上的推理来看，我们有两个方案可以逃离PR_SET_CHILD_SUBREAPER影响：</p>
+<ul>
+<li>直接改写真正PR_SET_CHILD_SUBREAPER的地方，不启用这个属性。例如修改systemd的源码。</li>
+<li>写一个内核态的小工具，修改指定进程的as_child_subreaper的值，当我们禁用此值时，在进程退出时，就会把子进程托孤给init进程。</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="我们怎么逃离PR-SET-CHILD-SUBREAPER的影响呢？-2">我们怎么逃离PR_SET_CHILD_SUBREAPER的影响呢？</h3>
+<hr>
+<p>  按照上一个小结的结论，我们一般情况下是不会去改一些开源的系统程序，例如：systemd。因此我们选择直接写一个基本的内核态模块，直接修改其task_struct数据结构即可。ko文件如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/module.h&gt;</span>	<span class="comment">/* Needed by all modules */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/kernel.h&gt;</span>	<span class="comment">/* Needed for KERN_INFO */</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/pid.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/sched/signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/sched/mm.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/mm_types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/rwsem.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/slab.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/fs.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/mmap_lock.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/pid_namespace.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">MODULE_AUTHOR(<span class="string">&quot;sky &lt;sky@sky.com&gt;&quot;</span>);</span><br><span class="line">MODULE_DESCRIPTION(<span class="string">&quot;sky&#x27;s hack&quot;</span>);</span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br><span class="line">MODULE_VERSION(<span class="string">&quot;1.0.0&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> hack_pid = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">module_param_named(hack_pid, hack_pid, uint, S_IRUGO);</span><br><span class="line">MODULE_PARM_DESC(hack_pid, <span class="string">&quot;hack_pid&quot;</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">init_module</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	printk(KERN_INFO <span class="string">&quot;Hello sky_hack.\n&quot;</span>);</span><br><span class="line">	printk(KERN_INFO <span class="string">&quot;hack pid %d\n&quot;</span>, hack_pid);</span><br><span class="line"></span><br><span class="line">	rcu_read_lock();</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">pid</span> * _<span class="title">pid_struct</span> =</span> find_vpid(hack_pid);</span><br><span class="line">	<span class="keyword">if</span> (<span class="literal">NULL</span> == _pid_struct)&#123;</span><br><span class="line"></span><br><span class="line">		printk(<span class="string">&quot;get pid struct failed.\n&quot;</span>);</span><br><span class="line">		rcu_read_unlock();</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> * _<span class="title">task_struct</span> =</span> get_pid_task(_pid_struct, PIDTYPE_PID);</span><br><span class="line">	<span class="keyword">if</span> (<span class="literal">NULL</span> == _task_struct)&#123;</span><br><span class="line"></span><br><span class="line">		printk(<span class="string">&quot;get task struct failed.\n&quot;</span>);</span><br><span class="line">		rcu_read_unlock();</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span> * _<span class="title">mm_struct</span> =</span> get_task_mm(_task_struct);</span><br><span class="line">	<span class="keyword">if</span> (<span class="literal">NULL</span> == _mm_struct)&#123;</span><br><span class="line"></span><br><span class="line">		printk(<span class="string">&quot;get mm struct failed.\n&quot;</span>);</span><br><span class="line">		rcu_read_unlock();</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	mmap_read_lock(_mm_struct);</span><br><span class="line">    <span class="keyword">if</span> (_mm_struct-&gt;exe_file) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="type">char</span> * pathname = kmalloc(PATH_MAX, GFP_ATOMIC);</span><br><span class="line">                <span class="keyword">if</span> (pathname) &#123;</span><br><span class="line">                    <span class="type">char</span> * p = d_path(&amp;_mm_struct-&gt;exe_file-&gt;f_path, pathname, PATH_MAX);</span><br><span class="line">                    <span class="comment">/*Now you have the path name of exe in p*/</span></span><br><span class="line">					printk(KERN_INFO <span class="string">&quot;process full path %s\n&quot;</span>, p);</span><br><span class="line">                &#125;</span><br><span class="line">				kfree(pathname);</span><br><span class="line">    &#125;</span><br><span class="line">	mmap_read_unlock(_mm_struct);</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">pid_namespace</span> *<span class="title">pid_ns</span> =</span> task_active_pid_ns(_task_struct);</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">reaper</span> =</span> pid_ns-&gt;child_reaper;</span><br><span class="line"></span><br><span class="line">	printk(KERN_INFO <span class="string">&quot;pid_ns-&gt;child_reaper=%x, current task_struct=%x\n&quot;</span>, pid_ns-&gt;child_reaper, _task_struct);</span><br><span class="line">	printk(KERN_INFO <span class="string">&quot;is_child_subreaper %d\n&quot;</span>, _task_struct-&gt;signal-&gt;is_child_subreaper);</span><br><span class="line">	printk(KERN_INFO <span class="string">&quot;has_child_subreaper %d\n&quot;</span>, _task_struct-&gt;signal-&gt;has_child_subreaper);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//escape from a subreaper by do_exit()</span></span><br><span class="line">	_task_struct-&gt;signal-&gt;has_child_subreaper = <span class="number">0</span>;</span><br><span class="line">	rcu_read_unlock();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">cleanup_module</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	printk(KERN_INFO <span class="string">&quot;Goodbye sky_hack.\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  当前这个驱动的唯一目的就是把指定pid进程的has_child_subreaper改为0，这样就可以逃离subreaper。</p>
+<p>  编译Makefile</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">obj-m += sky_hack.o</span><br><span class="line"><span class="section">all:</span></span><br><span class="line">    make -C /lib/modules/<span class="variable">$(<span class="built_in">shell</span> uname -r)</span>/build M=<span class="variable">$(PWD)</span> modules</span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">    make -C /lib/modules/<span class="variable">$(<span class="built_in">shell</span> uname -r)</span>/build M=<span class="variable">$(PWD)</span> clean</span><br></pre></td></tr></table></figure>
+<p>  下面我们再一次做上面的测试，运行a.out，查看a.out相关的进程树，然后运行sky_hack.ko hack_pid=‘a.out进程id’，等待一段时间后，当a.out退出后，再次查看a.out的相关进程树即可。</p>
+<p>  运行a.out的输出：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/run_test1.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  我们其实可以看到，按照上面我们的说明进行操作后，a.out第二次打印的ppid已经是1了，这意味着我们逃离subreaper成功了。</p>
+<p>  下面我们看看insmod sky_hack.ko hack_pid=14749的输出：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/drv_out.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  我们其实可以看到，在驱动里面我们打印了a.out进程的has_child_subreaper属性是1，因此我们在驱动中重置了它，导致了退出时，成功托孤给了init进程。</p>
+<p>  下面我们看看这整个阶段中的进程树状况：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/first_ppid1.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  这里的进程分布和上述开始的一样。</p>
+<p>  我们看看逃离subreaper后：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_123/second_ppid1.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  这里的进程分布就和最开始的不一样的，我们成功的将我们的子进程托孤给了init进程。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  我们首先从一个其他问题，遇到了这个现象，然后我们深究了这个现象产生的原因，并且最终尝试设计出逃离这种现象的技术方案。这其中会涉及一些内核源码，驱动编写，同时加深了我们对subreaper的理解。经过这些过程后，我们对Linux内核，Linux的应用开发会有一个新的认知和理解。同时也增强了我们解决问题的综合能力。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/07/02/blog_idx_121/" rel="prev" title="Linux 图形栈从入门到放弃 --- Linux 图形相关概念简介">
+      <i class="fa fa-chevron-left"></i> Linux 图形栈从入门到放弃 --- Linux 图形相关概念简介
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/07/02/blog_idx_122/" rel="next" title="LinuxDNS分析从入门到放弃（记一次有趣的dns问题排查记录，ping 源码分析，getaddrinfo源码分析）">
+      LinuxDNS分析从入门到放弃（记一次有趣的dns问题排查记录，ping 源码分析，getaddrinfo源码分析） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFSubreaper-PR-SET-CHILD-SUBREAPER-%EF%BC%9F"><span class="nav-number"></span> <span class="nav-text">什么是Subreaper(PR_SET_CHILD_SUBREAPER) ？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BD%93%E5%90%AB%E6%9C%89%E5%AD%90%E8%BF%9B%E7%A8%8B%E7%9A%84%E7%88%B6%E8%BF%9B%E7%A8%8B%E9%80%80%E5%87%BA%E6%97%B6%EF%BC%8C%E6%80%8E%E4%B9%88%E8%BF%9B%E8%A1%8C%E6%89%98%E5%AD%A4%E7%9A%84%EF%BC%9F"><span class="nav-number"></span> <span class="nav-text">当含有子进程的父进程退出时，怎么进行托孤的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%91%E4%BB%AC%E6%80%8E%E4%B9%88%E9%80%83%E7%A6%BBPR-SET-CHILD-SUBREAPER%E7%9A%84%E5%BD%B1%E5%93%8D%E5%91%A2%EF%BC%9F"><span class="nav-number"></span> <span class="nav-text">我们怎么逃离PR_SET_CHILD_SUBREAPER的影响呢？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%91%E4%BB%AC%E6%80%8E%E4%B9%88%E9%80%83%E7%A6%BBPR-SET-CHILD-SUBREAPER%E7%9A%84%E5%BD%B1%E5%93%8D%E5%91%A2%EF%BC%9F-2"><span class="nav-number"></span> <span class="nav-text">我们怎么逃离PR_SET_CHILD_SUBREAPER的影响呢？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

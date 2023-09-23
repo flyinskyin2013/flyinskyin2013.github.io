@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在之前，一直是通过生活、工作零零碎碎接触过加密及加密算法相关的信息，但是也只是听说过，并不知道这些算法用处和区别。   最近由于工作安排，需要将Fernet算法实现一版C++的加解密定制程序，由于Fernet组合了许多的基础加密算法，因此在这">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）">
+<meta property="og:url" content="https://e-x.top/2024/03/16/blog_idx_127/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在之前，一直是通过生活、工作零零碎碎接触过加密及加密算法相关的信息，但是也只是听说过，并不知道这些算法用处和区别。   最近由于工作安排，需要将Fernet算法实现一版C++的加解密定制程序，由于Fernet组合了许多的基础加密算法，因此在这">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2024-03-16T03:18:00.000Z">
+<meta property="article:modified_time" content="2024-04-21T09:06:07.910Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://e-x.top/2024/03/16/blog_idx_127/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充） | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2024/03/16/blog_idx_127/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-03-16 11:18:00" itemprop="dateCreated datePublished" datetime="2024-03-16T11:18:00+08:00">2024-03-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-21 17:06:07" itemprop="dateModified" datetime="2024-04-21T17:06:07+08:00">2024-04-21</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=127） 
+&emsp;&emsp;本文发布于 2024-03-16 11:18:00             （BlogID=127） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  在之前，一直是通过生活、工作零零碎碎接触过加密及加密算法相关的信息，但是也只是听说过，并不知道这些算法用处和区别。</p>
+<p>  最近由于工作安排，需要将Fernet算法实现一版C++的加解密定制程序，由于Fernet组合了许多的基础加密算法，因此在这个地方，对一些常用的基础加密算法做一个总结。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="加密是什么？">加密是什么？</h3>
+<hr>
+<p>  介绍：把“原始数据”通过某种算法+秘钥变换后，得到了“加密数据”的这个过程叫做加密。从这里也可以看到，对于加密来说，其核心要素就是：加密算法+秘钥。</p>
+<p>  意义：对于“加密数据”来说，未授权的用户，不能够直接知道“原始数据”的内容。</p>
+<p>  下面介绍一些常见的加密类别和加密相关配套的其他内容。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="对称加密">对称加密</h3>
+<hr>
+<p>  对称加密是指使用 一个相同秘钥 就能对消息进行加密和解密的加密方法。</p>
+<p>  对称加密的特点就是使用 一个相同秘钥。</p>
+<p>  我们常见的对称加密有：XOR、AES等。下面我们来简单分析一下AES加密。</p>
+<br/>
+<br/>
+<h5 id="AES加密">AES加密</h5>
+<p>  高级加密标准（Advanced Encryption Standard，AES），是一种区块加密标准。从它的定义来看，其特点是区块加密，一般来说，我们常见的有AES128和AES256。</p>
+<p>  例如我们可以用如下的openssl提供的方法进行AES的加解密：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">AES_set_encrypt_key</span><span class="params">(<span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *userKey, <span class="type">const</span> <span class="type">int</span> bits,</span></span><br><span class="line"><span class="params">                        AES_KEY *key)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">AES_set_decrypt_key</span><span class="params">(<span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *userKey, <span class="type">const</span> <span class="type">int</span> bits,</span></span><br><span class="line"><span class="params">                        AES_KEY *key)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//注意这里只是一种cbc加密方法，aes还有很多其他加密方法</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">AES_cbc_encrypt</span><span class="params">(<span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *in, <span class="type">unsigned</span> <span class="type">char</span> *out,</span></span><br><span class="line"><span class="params">                     <span class="type">size_t</span> length, <span class="type">const</span> AES_KEY *key,</span></span><br></pre></td></tr></table></figure>
+<p>  其实我们从上面的描述来看，就知道AES一般以16字节或者32字节为一组（我们将其定义为区块大小），进行加密。这里就会引申出一个问题，如果我们的数据（最后一组消息）不够一个区块大小，我们应该怎么办？这里提供的常见方案就是做填充。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="非对称加密（公钥加密算法）">非对称加密（公钥加密算法）</h3>
+<hr>
+<p>  我们知道，加密一般是用于消息传递，那么如果是对称加密的情况下，要传递的两个事务：加密消息+秘钥。对于对称加密来说，如果我们的秘钥泄露了，就基本上等于明文传递了。因此，有了非对称加密。其实后面很多的加密方法就在平衡 加密消息+秘钥 两个事情。</p>
+<p>  非对称加密就是有两个秘钥（私钥，公钥），实现1对多的双向通信。其中我们常见的加密方式是：RSA，ECC等。下面，我们尝试简单介绍RSA。</p>
+<br/>
+<br/>
+<h5 id="RSA-加密算法">RSA 加密算法</h5>
+<p>  简介（来自于Wikipedia）：RSA加密算法是一种非对称加密算法。RSA是由罗纳德·李维斯特（Ron Rivest）、阿迪·萨莫尔（Adi Shamir）和伦纳德·阿德曼（Leonard Adleman）在1977年一起提出的。当时他们三人都在麻省理工学院工作。RSA 就是他们三人姓氏开头字母拼在一起组成的。</p>
+<p>  RSA只从使用的角度来说，只需要了解如下的大致的概念：</p>
+<ul>
+<li>模数N、公钥指数pubE、私钥指数priE</li>
+<li>加密：秘文=明文^priE mod N，秘文=明文^pubE mod N</li>
+<li>解密：明文=秘文^pubE mod N，明文=秘文^priE mod N</li>
+</ul>
+<p>  从上面来看，私钥= 私钥指数priE + 模数N，公钥= 公钥指数pubE + 模数N。至于公钥，私钥，模数怎么来的，网上已有许多资料，有兴趣可以去看看。</p>
+<p>  基于openssl的RSA代码节选：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 生成秘钥，秘钥里面包含了私钥+公钥</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_generate_key_ex</span><span class="params">(RSA *rsa, <span class="type">int</span> bits, BIGNUM *e, BN_GENCB *cb)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 基于公钥和私钥的加解密</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_public_encrypt</span><span class="params">(<span class="type">int</span> flen, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *from,</span></span><br><span class="line"><span class="params">                       <span class="type">unsigned</span> <span class="type">char</span> *to, RSA *rsa, <span class="type">int</span> padding)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_private_encrypt</span><span class="params">(<span class="type">int</span> flen, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *from,</span></span><br><span class="line"><span class="params">                        <span class="type">unsigned</span> <span class="type">char</span> *to, RSA *rsa, <span class="type">int</span> padding)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_public_decrypt</span><span class="params">(<span class="type">int</span> flen, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *from,</span></span><br><span class="line"><span class="params">                       <span class="type">unsigned</span> <span class="type">char</span> *to, RSA *rsa, <span class="type">int</span> padding)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_private_decrypt</span><span class="params">(<span class="type">int</span> flen, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *from,</span></span><br><span class="line"><span class="params">                        <span class="type">unsigned</span> <span class="type">char</span> *to, RSA *rsa, <span class="type">int</span> padding)</span>;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="散列函数（Hash-function）">散列函数（Hash function）</h3>
+<hr>
+<p>  介绍：使用 散列函数（md5, sha1, sha256） 对原始数据进行处理，生成散列值（数字摘要）。这些散列函数保证一个输入对应一个输出，并且通过散列值无法得到原始数据输入，因此不属于加密。</p>
+<p>  此外，如果散列函数不够健壮，可能会出现碰撞的可能性。</p>
+<p>  意义：由于其不同的数据输入会得到不同的散列值，因此主要用来校验数据的完整性。</p>
+<p>  基于openssl的常见散列函数代码节选：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA1_Init</span><span class="params">(SHA_CTX *c)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA1_Update</span><span class="params">(SHA_CTX *c, <span class="type">const</span> <span class="type">void</span> *data, <span class="type">size_t</span> len)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA1_Final</span><span class="params">(<span class="type">unsigned</span> <span class="type">char</span> *md, SHA_CTX *c)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA256_Init</span><span class="params">(SHA256_CTX *c)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA256_Update</span><span class="params">(SHA256_CTX *c, <span class="type">const</span> <span class="type">void</span> *data, <span class="type">size_t</span> len)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA256_Final</span><span class="params">(<span class="type">unsigned</span> <span class="type">char</span> *md, SHA256_CTX *c)</span>;</span><br></pre></td></tr></table></figure>
+<p>  其实做过编程的人，对hash这个概念并不陌生。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="消息认证码">消息认证码</h3>
+<hr>
+<p>  含义：使用 散列函数+秘钥来生成认证码（MAC）。相较于散列函数来说，对于同一个消息，需要指定的秘钥+散列函数才能够得到最终的认证码。</p>
+<p>  意义：在散列函数中，原始数据和散列值是绑定的。在一个消息传递系统中，散列函数只解决了数据完整性的问题，并没有解决数据来源是否可靠的问题（可以伪造原始数据+新散列值）。 通过消息验证码，由于有了秘钥的保护， 解决了 散列值+消息 来源不可靠的问题。</p>
+<p>  基于openssl的消息认证码代码节选：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//这里的evp_md用来描述不同的散列函数</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">char</span> *<span class="title function_">HMAC</span><span class="params">(<span class="type">const</span> EVP_MD *evp_md, <span class="type">const</span> <span class="type">void</span> *key,</span></span><br><span class="line"><span class="params">                     <span class="type">int</span> key_len, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *d, <span class="type">size_t</span> n,</span></span><br><span class="line"><span class="params">                     <span class="type">unsigned</span> <span class="type">char</span> *md, <span class="type">unsigned</span> <span class="type">int</span> *md_len)</span>;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="签名算法">签名算法</h3>
+<hr>
+<p>  下面是签名的一个简单流程：</p>
+<ul>
+<li>基于公钥加密系统，生成秘钥对（公钥、私钥）。</li>
+<li>对消息进行数字摘要计算。</li>
+<li>对数字摘要进行私钥加密，得到数字签名。</li>
+<li>将信息、数字签名、公钥发给接收者，接收者可以验证：信息的完整性+发送者的身份。</li>
+</ul>
+<p>  从这里来看，我们可以知道，签名其实和消息认证码具有相同的意义，都能够验证：完整性+发送者的身份。但是由于其原理，导致其应用场景不一致。例如：数字签名由于使用非对称加密，而消息认证码可以认为是使用了对称加密，导致他们的使用场景是不一样的。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="CA机构与数字证书">CA机构与数字证书</h3>
+<hr>
+<p>  其实从名字上来看，就知道CA机构与数字证书和签名算法相关，为了解决公钥加密系统中，公钥是否可信的问题。下面是它们的一些概念：</p>
+<ul>
+<li>CA（Certificate Authority）是“证书颁发机构”的简称，它是“受信任”的第三方组织，负责验证申请者身份并发放数字证书。</li>
+<li>数字证书是：特定用户或系统身份信息（如域名、组织名等）+ 该用户公钥 + 由权威机构（CA）签署的数字签名（对用户的信息+公钥） 组成的数据结构。</li>
+</ul>
+<p>  简单来说，由于我们信任了CA的证书（CA的公钥），我们可以用CA的公钥解密出 数字证书用户的公钥，然后我们用 数字证书用户的公钥 和 数字证书用户加密通信。总的来说，数字证书其实是一个信任链的问题。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Base64-编码">Base64 编码</h3>
+<hr>
+<p>  介绍：一种将 二进制数据 编码为 可见字符 的编码方法。简单来说就是用 4个字节的可见字符 代替是 3个字节数据 的编码过程。</p>
+<p>  意义：可以将二进制数据表达为文本信息，方便后续对二进制数据进行处理。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="数据区块填充，PKCS（Public-Key-Cryptography-Standards）">数据区块填充，PKCS（Public-Key Cryptography Standards）</h3>
+<hr>
+<p>  特别说明，PKCS是一系列公钥密码标准，里面具备很多的内容，其大概有15个标准，分别是pkcs1,pkcs2 … … pkcs14,pkcs15</p>
+<p>  从上面我们知道，现在常用的填充方法是：公钥加密标准（PKCS，Public-Key Cryptography Standards）里面的节选内容。其有很多填充类别，例如：PKCS1-padding节选, PKCS5-padding节选, PKCS7-padding节选，我们这里只讨论pkcs5和pkcs7。（注意，这些标准除了数据填充，还有其他定义内容。）</p>
+<p>  下面先介绍PKCS5-padding，先定义数据区块大小为SIZE，pkcs5和pkcs7的填充说明，下面以SIZE=8字节举例：</p>
+<ul>
+<li>要填充7个字节,那么填入的值就是0×07;</li>
+<li>如果只填充１个字节，那么填入的值就是0×01;</li>
+<li>数据恰好是8的倍数时还要补8个字节的0×08。</li>
+</ul>
+<p>  从上面的PKCS5-padding，我们可以知道，这里需要数据区块固定为8字节。如果我们想给其他大小的数据区块做数据对齐，那么PKCS5-padding就不满足要求，因此就有PKCS7-padding的填充方法：</p>
+<ul>
+<li>PKCS7-padding的数据区块大小可以是：1-255字节。</li>
+<li>其他的，PKCS7-padding填充原理和PKCS5一样。</li>
+</ul>
+<p>  从上面可知，PKCS7-padding节选包含了PKCS5-padding节选，且适用性范围更加的广泛。</p>
+<p>  到了这里，我们就能够对AES128或者AES256做基于PKCS7-padding的16字节对齐或者32字节对齐的操作了。</p>
+<p>  这里的代码实现很简单，这里提供一种方法，大概就是：首先对消息进行强制扩大255字节，然后根据数据区块大小做填充即可，基本可以实现pkcs7填充的原理。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  其实，我们从上面的内容来看，能发现一些规律：</p>
+<ul>
+<li>
+<p>由于信任链的存在，因此有了CA机构和数字证书，而数字证书与签名算法相关，而签名算法又与 非对称加密和散列函数强相关。</p>
+</li>
+<li>
+<p>然后为了实现我们现在常见的加密系统，我们使用了：对称加密、非对称加密、散列函数、消息认证码和base64编码等手段。</p>
+</li>
+</ul>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/11/19/blog_idx_126/" rel="prev" title="初识uds之abstract socket">
+      <i class="fa fa-chevron-left"></i> 初识uds之abstract socket
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/03/17/blog_idx_128/" rel="next" title="关于进程同步与互斥的一些概念（锁、cas、futex）">
+      关于进程同步与互斥的一些概念（锁、cas、futex） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number"></span> <span class="nav-text">加密是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86"><span class="nav-number"></span> <span class="nav-text">对称加密</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#AES%E5%8A%A0%E5%AF%86"><span class="nav-number"></span> <span class="nav-text">AES加密</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%EF%BC%88%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">非对称加密（公钥加密算法）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#RSA-%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="nav-number"></span> <span class="nav-text">RSA 加密算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%A3%E5%88%97%E5%87%BD%E6%95%B0%EF%BC%88Hash-function%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">散列函数（Hash function）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E8%AE%A4%E8%AF%81%E7%A0%81"><span class="nav-number"></span> <span class="nav-text">消息认证码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%BE%E5%90%8D%E7%AE%97%E6%B3%95"><span class="nav-number"></span> <span class="nav-text">签名算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CA%E6%9C%BA%E6%9E%84%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6"><span class="nav-number"></span> <span class="nav-text">CA机构与数字证书</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Base64-%E7%BC%96%E7%A0%81"><span class="nav-number"></span> <span class="nav-text">Base64 编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9D%97%E5%A1%AB%E5%85%85%EF%BC%8CPKCS%EF%BC%88Public-Key-Cryptography-Standards%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">数据区块填充，PKCS（Public-Key Cryptography Standards）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

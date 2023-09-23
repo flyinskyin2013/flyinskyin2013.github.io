@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Ubuntu 18.04 MLU270 加速卡一张 寒武纪Pytorch-Docker移植环境  前言    阅读本文前，请务必须知以下前置文章概念：  《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( https:&#x2F;&#x2F;blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="寒武纪加速平台(MLU200系列) 摸鱼指南（三）--- 模型移植-分割网络实例">
+<meta property="og:url" content="https://e-x.top/2021/11/21/blog_idx_113/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Ubuntu 18.04 MLU270 加速卡一张 寒武纪Pytorch-Docker移植环境  前言    阅读本文前，请务必须知以下前置文章概念：  《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( https:&#x2F;&#x2F;blog">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_113/seg_result.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_113/offline_info_fp32.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_113/offline_info_fp16.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-11-21T09:29:37.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.908Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_113/seg_result.png">
+
+<link rel="canonical" href="https://e-x.top/2021/11/21/blog_idx_113/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>寒武纪加速平台(MLU200系列) 摸鱼指南（三）--- 模型移植-分割网络实例 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/11/21/blog_idx_113/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          寒武纪加速平台(MLU200系列) 摸鱼指南（三）--- 模型移植-分割网络实例
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-11-21 17:29:37" itemprop="dateCreated datePublished" datetime="2021-11-21T17:29:37+08:00">2021-11-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>5 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:14:11
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=113） 
+&emsp;&emsp;本文发布于 2021-11-21 17:29:37     （BlogID=113） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<ul>
+<li>Ubuntu 18.04</li>
+<li>MLU270 加速卡一张</li>
+<li>寒武纪Pytorch-Docker移植环境</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  阅读本文前，请务必须知以下前置文章概念：</p>
+<ul>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</li>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</li>
+</ul>
+<p>  经过了前面两篇文章的介绍，我们也对寒武纪加速平台有了一个朴实的了解。为了加深我们对寒武纪平台的理解，我这里将会使用一个分割网络的实例来展示寒武纪平台整个模型移植和部署过程。</p>
+<p>  若文中引用部分存在侵权，请及时联系我删除。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="实例基本介绍">实例基本介绍</h3>
+<hr>
+<p>  这里对这个简单的分割网络做一个简介，这里训练使用的是CamVid数据集。输入是1*3*480*480。输出是480*480。</p>
+<p>  这里最终的效果就是分割出输入图片里面的汽车。最终网络效果测试如下图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_113/seg_result.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  这个时候，我们也得到了一个可以用于移植和测试的pth模型文件。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="移植模型基本步骤">移植模型基本步骤</h3>
+<hr>
+<p>  其实Pytorch的模型移植还是比较简单的，按照一定流程进行测试即可。我总结的基本流程如下：</p>
+<ul>
+<li>在docker里面，跑cpu版本的模型推理代码。</li>
+<li>在docker里面，跑cpu版本的量化模型生成代码，同时进行量化模型的测试。</li>
+<li>在docker里面，将量化模型转换为离线模型。</li>
+</ul>
+<br/>
+<br/>
+<h5 id="在Docker里运行cpu推理代码">在Docker里运行cpu推理代码</h5>
+<p>  至今为止，根据寒武纪官方文档描述，现在的docker环境里面存在的是pytorch1.3环境，这个可能和主流模型支持的pytorch 1.7+有差异。所以，为了后续工作的顺利展开，我们不要一上来就开始量化模型，先保证模型能够在pytorch 1.3环境能够正常工作。</p>
+<p>  当我们训练好模型后，得到pth文件，然后在训练环境里面还会做一个测试pth文件的脚本，判断模型的效果。同理，我们应该将此测试脚本放到移植环境里面再跑一次，一般来说都会多多少少出点问题。</p>
+<p>  至今为止，我们遇到过两大类问题，一类为pytorch1.3某些算子不支持，可以更换为其他类似算子，或者自己实现这个算子。第二类为一些版本问题，比如模型保存的格式在pytorch1.6后使用的是zip格式（详情见torch.save api说明注释里面），旧版本要加载模型，需要使用_use_new_zipfile_serialization=False重新存储一下模型文件。</p>
+<p>  一般来说，大致的模型转换代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 存在一个模型test.pth(zip格式)</span></span><br><span class="line"><span class="comment"># 存在一个获取的模型网络结构类：TestModel</span></span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line">model = TestModel()</span><br><span class="line">state_dict = torch.load(<span class="string">&#x27;test.pth&#x27;</span>, map_location=torch.device(<span class="string">&#x27;cpu&#x27;</span>))</span><br><span class="line">model.load_state_dict(state_dict, strict=<span class="literal">True</span>)           </span><br><span class="line"></span><br><span class="line">torch.save(model, <span class="string">&#x27;new_test.pth&#x27;</span>, _use_new_zipfile_serialization=<span class="literal">False</span>)</span><br><span class="line"><span class="comment"># 得到了旧版本的pth文件。方便pytorch 1.6以下进行加载</span></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="在Docker里处理量化模型">在Docker里处理量化模型</h5>
+<p>  这里有两个步骤，首先是使用寒武纪的pytorch接口生成量化模型，然后对量化模型进行测试。注意，这里生成的量化模型有两种，一种是INT8，一种是INT16，具体怎么选择，根据实际情况。一般来说，分类、分割算法可以尝试直接使用INT8，目标检测需要测试再下结论。此外INT8由于运算量的减少，也意味着推理速度的提升。如果不特殊说明，后续默认采用的是INT8模式。</p>
+<p>  此外，还需要说明的是，量化一般是量化卷积、全连接等这些参数量较大的层，其他的模型参数依旧是FP16或者FP32存在。</p>
+<p>  首先生成量化模型：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 存在一个模型new_test.pth(非zip格式)</span></span><br><span class="line"><span class="comment"># 存在一个获取的模型网络结构类：TestModel</span></span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch_mlu.core.mlu_quantize <span class="keyword">as</span> mlu_quantize</span><br><span class="line"></span><br><span class="line">model = TestModel()</span><br><span class="line">state_dict = torch.load(<span class="string">&#x27;new_test.pth&#x27;</span>, map_location=torch.device(<span class="string">&#x27;cpu&#x27;</span>))</span><br><span class="line">model.load_state_dict(state_dict, <span class="literal">False</span>)          </span><br><span class="line">mean=[]</span><br><span class="line">std=[] </span><br><span class="line"><span class="comment"># 注意此接口，这里不使用firstconv优化，它的作用是将归一化放到第一层去一起加速做，但是有些模型的前处理是不需要这样做的，具体信息，请参考寒武纪官方文档。</span></span><br><span class="line">net_quantization = mlu_quantize.quantize_dynamic_mlu(model, &#123;<span class="string">&#x27;mean&#x27;</span>:mean, <span class="string">&#x27;std&#x27;</span>:std, <span class="string">&#x27;firstconv&#x27;</span>:<span class="literal">False</span>&#125;, dtype=<span class="string">&#x27;int8&#x27;</span>, gen_quant=<span class="literal">True</span>)</span><br><span class="line">torch.save(net_quantization.state_dict(), <span class="string">&#x27;test_quantization.pth&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 得到了INT8的量化模型文件test_quantization.pth</span></span><br></pre></td></tr></table></figure>
+<p>  然后在量化模型上测试，此步骤的内容是验证模型量化之后，使用寒武纪定制的pytorch量化算子能否正常得到结果：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 存在一个INT8的量化模型文件test_quantization.pth</span></span><br><span class="line"><span class="comment"># 存在一个获取的模型网络结构类：TestModel</span></span><br><span class="line"><span class="keyword">import</span> torch_mlu</span><br><span class="line"><span class="keyword">import</span> torch_mlu.core.mlu_model <span class="keyword">as</span> ct</span><br><span class="line"><span class="keyword">import</span> torch_mlu.core.mlu_quantize <span class="keyword">as</span> mlu_quantize</span><br><span class="line"></span><br><span class="line">model = TestModel()</span><br><span class="line"> </span><br><span class="line"><span class="comment"># step 1</span></span><br><span class="line">net = mlu_quantize.quantize_dynamic_mlu(model)</span><br><span class="line"><span class="comment"># step 2</span></span><br><span class="line">net.load_state_dict(torch.load(<span class="string">&#x27;test_quantization.pth&#x27;</span>))</span><br><span class="line"><span class="comment"># 这里是</span></span><br><span class="line">input_data=torch.randn((<span class="number">1</span>,<span class="number">3</span>,<span class="number">480</span>,<span class="number">480</span>))</span><br><span class="line"><span class="comment"># step 3</span></span><br><span class="line">net_mlu = net.to(ct.mlu_device())</span><br><span class="line">input_mlu = input_data.to(ct.mlu_device())</span><br><span class="line"><span class="comment"># step 4</span></span><br><span class="line">output=net_mlu(input_mlu)</span><br><span class="line"><span class="built_in">print</span>(output.cpu())</span><br><span class="line"><span class="comment"># output的shape是480*480</span></span><br></pre></td></tr></table></figure>
+<p>  如果这里量化之后的推理结果都是准确无误的，那么基本证明了模型移植成功了。其实从这里可以看出，这里的mlu其实就可以类比cuda，就可以大致猜想mlu是什么样的存在了。</p>
+<br/>
+<br/>
+<h5 id="在Docker里生成离线模型">在Docker里生成离线模型</h5>
+<p>  在之前的基础上，其实我们很快很方便的就生成了离线模型，不过这里的离线模型同样也有两种，还记得前文说的量化只会量化一些特殊层的参数，而模型中的其他层也是用的FP16或者，FP32,因此，离线模型也具备两种，一种是FP16,一种是FP32。通常来说，一个INT8版本的FP16离线模型是最佳的离线模型。</p>
+<p>  生成MLU220离线模型：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 存在一个INT8的量化模型文件test_quantization.pth</span></span><br><span class="line"><span class="comment"># 存在一个获取的模型网络结构类：TestModel</span></span><br><span class="line"><span class="keyword">import</span> torch_mlu</span><br><span class="line"><span class="keyword">import</span> torch_mlu.core.mlu_model <span class="keyword">as</span> ct</span><br><span class="line"><span class="keyword">import</span> torch_mlu.core.mlu_quantize <span class="keyword">as</span> mlu_quantize</span><br><span class="line"></span><br><span class="line">model = TestModel()</span><br><span class="line"> </span><br><span class="line"><span class="comment"># step 1</span></span><br><span class="line">net = mlu_quantize.quantize_dynamic_mlu(model)</span><br><span class="line"><span class="comment"># step 2</span></span><br><span class="line">net.load_state_dict(torch.load(<span class="string">&#x27;test_quantization.pth&#x27;</span>))</span><br><span class="line"><span class="comment"># </span></span><br><span class="line">input_data=torch.randn((<span class="number">1</span>,<span class="number">3</span>,<span class="number">480</span>,<span class="number">480</span>))</span><br><span class="line"><span class="comment"># step 3</span></span><br><span class="line">net_mlu = net.to(ct.mlu_device())</span><br><span class="line">input_mlu = input_data.to(ct.mlu_device())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 详细查看文档，一般4</span></span><br><span class="line">core_number = <span class="number">4</span></span><br><span class="line">ct.set_core_number(core_number)</span><br><span class="line">ct.set_core_version(<span class="string">&#x27;MLU220&#x27;</span>)</span><br><span class="line"><span class="comment"># torch_mlu.core.mlu_model.set_input_format(input_format)</span></span><br><span class="line">ct.save_as_cambricon(<span class="string">&#x27;test&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">net_trace = torch.jit.trace(net_mlu, input_mlu, check_trace=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">net_trace(input_mlu) </span><br><span class="line"></span><br><span class="line">torch_mlu.core.mlu_model.save_as_cambricon(<span class="string">&quot;&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 最终，我们得到了test.cambricon 和 test.cambricon_twins。test.cambricon_twins是离线模型的说明文件，包含输入数据格式通道等信息，也包含输出相关的信息。</span></span><br></pre></td></tr></table></figure>
+<p>  到此，我们已经得到了离线模型，也完成了我们模型移植的前面一半的工作。</p>
+<p>  此外，如果想得到MLU270的离线模型，也可以将set_core_version参数改为MLU270。如果将模型和输入tensor调用half()之后，就会得到fp16的模型格式，具体参考寒武纪官方文档。</p>
+<p>  .cambricon_twins文件有一个重要的作用就是描述离线模型网络是输入输出格式及通道，毕竟我们的网络一般结果对不上，很大的原因都是预处理和后处理的毛病。下面我会给出.cambricon_twins的两个实例，一个是INT8FP32,一个是INT8FP16。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_113/offline_info_fp32.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_113/offline_info_fp16.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  模型的移植流程，基本上都是固定的，一旦熟悉之后，其实就不会改了。</p>
+<p>  最终一般有6个模型生成，两个INT8和INT16的量化模型。4个离线模型，INT8-FP32，INT8-FP16，INT16-FP32，INT16-FP16。不同的模型对应不同的速度和精度，根据模型实际情况酌情选择。</p>
+<p>  注意，寒武纪除了支持Pytorch模型移植外，还支持caffe和tensorflow，因此如果需要转换这些模型，请查看对应文档。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</li>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</li>
+<li><a target="_blank" rel="noopener" href="https://www.cambricon.com/">https://www.cambricon.com/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/pytorch/index.html">https://www.cambricon.com/docs/pytorch/index.html</a></li>
+<li>其他相关保密资料。</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/14/blog_idx_112/" rel="prev" title="寒武纪加速平台(MLU200系列) 摸鱼指南（二）--- 模型移植-环境搭建">
+      <i class="fa fa-chevron-left"></i> 寒武纪加速平台(MLU200系列) 摸鱼指南（二）--- 模型移植-环境搭建
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/28/blog_idx_114/" rel="next" title="寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析">
+      寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="nav-number"></span> <span class="nav-text">实例基本介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E6%A4%8D%E6%A8%A1%E5%9E%8B%E5%9F%BA%E6%9C%AC%E6%AD%A5%E9%AA%A4"><span class="nav-number"></span> <span class="nav-text">移植模型基本步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9C%A8Docker%E9%87%8C%E8%BF%90%E8%A1%8Ccpu%E6%8E%A8%E7%90%86%E4%BB%A3%E7%A0%81"><span class="nav-number"></span> <span class="nav-text">在Docker里运行cpu推理代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9C%A8Docker%E9%87%8C%E5%A4%84%E7%90%86%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B"><span class="nav-number"></span> <span class="nav-text">在Docker里处理量化模型</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%9C%A8Docker%E9%87%8C%E7%94%9F%E6%88%90%E7%A6%BB%E7%BA%BF%E6%A8%A1%E5%9E%8B"><span class="nav-number"></span> <span class="nav-text">在Docker里生成离线模型</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

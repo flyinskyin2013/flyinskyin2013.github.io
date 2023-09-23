@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    VFS(Virtual File System)是一种软件抽象，主要还是为了连接用户态、内核态和实际文件系统本身。例如：我们可以write一个字符串到磁盘ext4 fs上的某个文件。   在linux里面，有各种各样的文件系统，它们实际存放的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 文件系统(二) --- vfs简单分析">
+<meta property="og:url" content="https://e-x.top/2024/05/12/blog_idx_131/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    VFS(Virtual File System)是一种软件抽象，主要还是为了连接用户态、内核态和实际文件系统本身。例如：我们可以write一个字符串到磁盘ext4 fs上的某个文件。   在linux里面，有各种各样的文件系统，它们实际存放的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2024-05-12T02:29:00.000Z">
+<meta property="article:modified_time" content="2024-05-12T02:36:24.087Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://e-x.top/2024/05/12/blog_idx_131/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>Linux 文件系统(二) --- vfs简单分析 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2024/05/12/blog_idx_131/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux 文件系统(二) --- vfs简单分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-05-12 10:29:00 / Modified: 10:36:24" itemprop="dateCreated datePublished" datetime="2024-05-12T10:29:00+08:00">2024-05-12</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>9.6k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>9 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=131） 
+&emsp;&emsp;本文发布于 2024-05-12 10:29:00            （BlogID=131） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  VFS(Virtual File System)是一种软件抽象，主要还是为了连接用户态、内核态和实际文件系统本身。例如：我们可以write一个字符串到磁盘ext4 fs上的某个文件。</p>
+<p>  在linux里面，有各种各样的文件系统，它们实际存放的位置可能是硬盘（ext4fs等）、RAM(sysfs, procfs, devtmpfs等)、网络(nfs等)等等存储介质。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="VFS的基础知识">VFS的基础知识</h3>
+<hr>
+<p>  这里主要介绍VFS的基础知识,以及我们常见的文件操作怎么对应到VFS里面，主要以ext4 fs与vfs的关联为例子.</p>
+<br/>
+<br/>
+<h5 id="Directory-Entry-Cache-dcache">Directory Entry Cache (dcache)</h5>
+<p>  在vfs里面提供了一种缓存机制，缓存struct dentry项，这个dcache在内核里面表示了一个文件系统的整个文件目录信息（从根目录开始的一个目录信息），但是作为一种cache数据结构，一般会存在cache miss然后创建对应struct dentry。这样就可以很快的查找到我们传入的一个路径的文件对于的struct dentry项。</p>
+<p>  vfs通过我们常见的open接口操作文件时，一般是用路径来标识一个文件名的，那么怎么将我们传入的名字转换成对应的目录/文件信息呢？答案就是上面提到的dcache数据结构，通过查询dcache得到目录/文件信息，这个部分的内容也是open系统调用常常做的事情。</p>
+<p>  下面是dcache项的基本定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> &#123;</span></span><br><span class="line">	<span class="comment">/* RCU lookup touched fields */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> d_flags;		<span class="comment">/* protected by d_lock */</span></span><br><span class="line">	<span class="type">seqcount_spinlock_t</span> d_seq;	<span class="comment">/* per dentry seqlock */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">hlist_bl_node</span> <span class="title">d_hash</span>;</span>	<span class="comment">/* lookup hash list */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> *<span class="title">d_parent</span>;</span>	<span class="comment">/* parent directory */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">qstr</span> <span class="title">d_name</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *<span class="title">d_inode</span>;</span>		<span class="comment">/* Where the name belongs to - NULL is</span></span><br><span class="line"><span class="comment">					 * negative */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">char</span> d_iname[DNAME_INLINE_LEN];	<span class="comment">/* small names */</span></span><br><span class="line">	... ...</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">d_sb</span>;</span>	<span class="comment">/* The root of the dentry tree */</span></span><br><span class="line">	... ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>  还记得我们在《Linux 文件系统(一) — ext4文件系统简介》（ <a target="_blank" rel="noopener" href="https://www.cnblogs.com/Iflyinsky/p/18162137">https://www.cnblogs.com/Iflyinsky/p/18162137</a> ）中提到，目录也是一种文件嘛？文件又是用inode来表示的，那么struct dentry就可以得到对应的struct inode信息了。</p>
+<br/>
+<br/>
+<h5 id="struct-inode-对象">struct inode 对象</h5>
+<p>  大家应该都听过一句话，在unix里面，一切皆文件。那么对于vfs来说，一个独立的文件就是struct inode对象.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Keep mostly read-only and often accessed (especially for</span></span><br><span class="line"><span class="comment"> * the RCU path lookup and &#x27;stat&#x27; data) fields at the beginning</span></span><br><span class="line"><span class="comment"> * of the &#x27;struct inode&#x27;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">inode</span> &#123;</span></span><br><span class="line"></span><br><span class="line">	... ...</span><br><span class="line">	<span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">inode_operations</span>	*<span class="title">i_op</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">super_block</span>	*<span class="title">i_sb</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">address_space</span>	*<span class="title">i_mapping</span>;</span>	</span><br><span class="line">	... ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  其实这个struct inode和struct ext4_inode有许多相似的属性，他们也有些许关联。</p>
+<p>  对于struct inode来说，很重要的就是struct inode_operations，这个代表着我们可以对这个inode进行的操作，其结构大概如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">inode_operations</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> * (*<span class="title">lookup</span>) (<span class="keyword">struct</span> <span class="title">inode</span> *,<span class="keyword">struct</span> <span class="title">dentry</span> *, <span class="title">unsigned</span> <span class="title">int</span>);</span></span><br><span class="line"></span><br><span class="line">	... ...</span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> (*create) (<span class="keyword">struct</span> mnt_idmap *, <span class="keyword">struct</span> inode *,<span class="keyword">struct</span> dentry *,</span><br><span class="line">		       <span class="type">umode_t</span>, <span class="type">bool</span>);</span><br><span class="line">	<span class="type">int</span> (*link) (<span class="keyword">struct</span> dentry *,<span class="keyword">struct</span> inode *,<span class="keyword">struct</span> dentry *);</span><br><span class="line">	<span class="type">int</span> (*unlink) (<span class="keyword">struct</span> inode *,<span class="keyword">struct</span> dentry *);</span><br><span class="line"></span><br><span class="line">	... ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  根据父目录的对应的lookup函数，我们可以查找对应的文件inode信息。此外，还有创建删除inode节点的方法，这些方法在文件系统装载的时候实现。</p>
+<br/>
+<br/>
+<h5 id="struct-file-对象">struct file 对象</h5>
+<p>  我们上面讲的struct dentry和struct inode是和对应的文件系统存储的数据是息息相关的。但是实际我们操作文件的第一步是打开文件，对于一个打开的文件，在内核里面使用struct file来标识，其结构如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">path</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vfsmount</span> *<span class="title">mnt</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> *<span class="title">dentry</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * f_&#123;lock,count,pos_lock&#125; members can be highly contended and share</span></span><br><span class="line"><span class="comment"> * the same cacheline. f_&#123;lock,mode&#125; are very frequently used together</span></span><br><span class="line"><span class="comment"> * and so share the same cacheline as well. The read-mostly</span></span><br><span class="line"><span class="comment"> * f_&#123;path,inode,op&#125; are kept on a separate cacheline.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">file</span> &#123;</span></span><br><span class="line">	</span><br><span class="line">	... ...</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">path</span>		<span class="title">f_path</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">inode</span>		*<span class="title">f_inode</span>;</span>	<span class="comment">/* cached value */</span></span><br><span class="line">	<span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span>	*<span class="title">f_op</span>;</span></span><br><span class="line">	</span><br><span class="line">	... ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  对于一个file对象来说，除了上面提到的struct dentry和struct inode关联外，还有一个重要的结构是：struct file_operations，对于这个结构来说，大家应该非常的熟悉，包含了open/close/read/write等等接口：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">module</span> *<span class="title">owner</span>;</span></span><br><span class="line">	<span class="type">loff_t</span> (*llseek) (<span class="keyword">struct</span> file *, <span class="type">loff_t</span>, <span class="type">int</span>);</span><br><span class="line">	<span class="type">ssize_t</span> (*read) (<span class="keyword">struct</span> file *, <span class="type">char</span> __user *, <span class="type">size_t</span>, <span class="type">loff_t</span> *);</span><br><span class="line">	<span class="type">ssize_t</span> (*write) (<span class="keyword">struct</span> file *, <span class="type">const</span> <span class="type">char</span> __user *, <span class="type">size_t</span>, <span class="type">loff_t</span> *);</span><br><span class="line">	</span><br><span class="line">	... ...</span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> (*open) (<span class="keyword">struct</span> inode *, <span class="keyword">struct</span> file *);</span><br><span class="line"></span><br><span class="line">	... ...</span><br></pre></td></tr></table></figure>
+<p>  到这里，其实我们vfs我们常见用到的基本就讲完了，串起来是说就是open一个文件，创建一个struct file对象，关联一个struct dentry和struct inode，这时就可以对文件进行操作了.</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="VFS的深入知识">VFS的深入知识</h3>
+<hr>
+<p>  </p>
+<br/>
+<br/>
+<h5 id="FileSystem-的注册和取消注册">FileSystem 的注册和取消注册</h5>
+<p>  我们前面提到了，vfs最终会对接到实际文件系统本身，那么VFS支持哪些FS呢？在linux的/proc/filesystems文件中，存放了当前注册到vfs的所有支持的FS。</p>
+<p>  下面我们介绍文件系统的注册和取消注册：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Filesystem context for holding the parameters used in the creation or</span></span><br><span class="line"><span class="comment"> * reconfiguration of a superblock.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Superblock creation fills in -&gt;root whereas reconfiguration begins with this</span></span><br><span class="line"><span class="comment"> * already set.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * See Documentation/filesystems/mount_api.rst</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">fs_context</span> &#123;</span></span><br><span class="line">	<span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">fs_context_operations</span> *<span class="title">ops</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mutex</span>		<span class="title">uapi_mutex</span>;</span>	<span class="comment">/* Userspace access mutex */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file_system_type</span>	*<span class="title">fs_type</span>;</span></span><br><span class="line">	<span class="type">void</span>			*fs_private;	<span class="comment">/* The filesystem&#x27;s context */</span></span><br><span class="line">	<span class="type">void</span>			*sget_key;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dentry</span>		*<span class="title">root</span>;</span>		<span class="comment">/* The root and superblock */</span></span><br><span class="line"></span><br><span class="line">	... ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">file_system_type</span> &#123;</span></span><br><span class="line">        <span class="type">const</span> <span class="type">char</span> *name; <span class="comment">//文件系统名字，例如ext4</span></span><br><span class="line">        <span class="type">int</span> fs_flags;</span><br><span class="line">        <span class="type">int</span> (*init_fs_context)(<span class="keyword">struct</span> fs_context *);</span><br><span class="line">        <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">fs_parameter_spec</span> *<span class="title">parameters</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> *(*<span class="title">mount</span>) (<span class="keyword">struct</span> <span class="title">file_system_type</span> *, <span class="title">int</span>,</span></span><br><span class="line"><span class="class">                <span class="title">const</span> <span class="title">char</span> *, <span class="title">void</span> *);</span></span><br><span class="line">        <span class="type">void</span> (*kill_sb) (<span class="keyword">struct</span> super_block *);</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">module</span> *<span class="title">owner</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">file_system_type</span> * <span class="title">next</span>;</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">hlist_head</span> <span class="title">fs_supers</span>;</span></span><br><span class="line">		</span><br><span class="line">		... ...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/fs.h&gt;</span></span></span><br><span class="line"><span class="keyword">extern</span> <span class="type">int</span> <span class="title function_">register_filesystem</span><span class="params">(<span class="keyword">struct</span> file_system_type *)</span>;</span><br><span class="line"><span class="keyword">extern</span> <span class="type">int</span> <span class="title function_">unregister_filesystem</span><span class="params">(<span class="keyword">struct</span> file_system_type *)</span>;</span><br></pre></td></tr></table></figure>
+<p>  在register_filesystem/unregister_filesystem函数里面，主要是对内核里面的file_system_type变量进行链表操作，注册就是增加链表节点，取消注册就是删除链表节点。</p>
+<br/>
+<br/>
+<h5 id="FileSystem的挂载和卸载">FileSystem的挂载和卸载</h5>
+<p>  这里我们先举个例子，对于linux来说，内核启动后第一个挂载的文件系统，也就是挂载在/根目录的文件系统。如果大家观察过一些linux的启动相关信息，有个常见的问题就是：</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Error: root fs cannot be detected。</span><br></pre></td></tr></table></figure>
+<p>  这个问题就是内核没有找到适合的根文件系统来加载，一般来说失败后会自动进入一个叫做initramfs的文件系统，方便进行诊断。</p>
+<p>  对于用户挂载和卸载文件系统来说，一般我们是使用mount/umount命令，其和内核启动后挂载第一个文件系统的操作类似，其实我们执行mount命令的时候，对调用对应的file_system_type的mount函数（看上文中的file_system_type有一个mount函数）来完成挂载的操作。</p>
+<p>  首先我们来看看mount命令是怎么到file_system_type中的mount函数的。我们来看看调用序列：</p>
+<ol>
+<li>mount命令调用userspace 中的mount函数</li>
+<li>接着调用sys_mount</li>
+<li>接着调用do_mount</li>
+<li>接着调用path_mount</li>
+<li>接着调用do_new_mount，在这里我们会根据参数，获取或者创建struct file_system_type对象。(linux kernel v4.20.17)</li>
+<li>接着调用vfs_kern_mount。(linux kernel v4.20.17)</li>
+<li>接着调用mount_fs，在这里面通过struct file_system_type对象调用ext4_mount函数。(linux kernel v4.20.17)</li>
+</ol>
+<p>  上面的操作完毕， 我们得到一个struct vfsmount 和  struct mount 对象，这个对象代表了一个文件系统的挂载基本信息。struct mount 中的mnt_instance指向的是ext4 fs 的root dentry中的super_block存放的链表。意思就是，创建好的一个文件系统，其挂载点信息可以在root dentry中找到。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vfsmount</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> *<span class="title">mnt_root</span>;</span>	<span class="comment">/* root of the mounted tree */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">mnt_sb</span>;</span>	<span class="comment">/* pointer to superblock */</span></span><br><span class="line">	<span class="type">int</span> mnt_flags;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mnt_idmap</span> *<span class="title">mnt_idmap</span>;</span></span><br><span class="line">&#125; __randomize_layout;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">mount</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">hlist_node</span> <span class="title">mnt_hash</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">mount</span> *<span class="title">mnt_parent</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> *<span class="title">mnt_mountpoint</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vfsmount</span> <span class="title">mnt</span>;</span></span><br><span class="line">	... ...</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">mnt_instance</span>;</span>	<span class="comment">/* mount instance on sb-&gt;s_mounts */</span></span><br><span class="line">	... ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  下面我们来讲讲ext4的file_system_type定义中，ext4_mount的调用。</p>
+<p>  注意，file_system_type的mount接口在新的内核版本中被废弃了，因为有新的mount api实现，所以在5.17-rc1中，ext4_mount这个函数无了。下面是linux kernel中这个提交的commit内容：</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">ext4: switch to the new mount api</span><br><span class="line">Add the necessary functions for the fs_context_operations. Convert and</span><br><span class="line">rename ext4_remount() and ext4_fill_super() to ext4_get_tree() and</span><br><span class="line">ext4_reconfigure() respectively and switch the ext4 to use the new api.</span><br><span class="line"></span><br><span class="line">One user facing change is the fact that we no longer have access to the</span><br><span class="line">entire string of mount options provided by mount(2) since the mount api</span><br><span class="line">does not store it anywhere. As a result we can&#x27;t print the options to</span><br><span class="line">the log as we did in the past after the successful mount.</span><br><span class="line"></span><br><span class="line">Signed-off-by: Lukas Czerner &lt;lczerner@redhat.com&gt;</span><br><span class="line">Reviewed-by: Carlos Maiolino &lt;cmaiolino@redhat.com&gt;</span><br><span class="line">Link: https://lore.kernel.org/r/20211027141857.33657-13-lczerner@redhat.com</span><br><span class="line">Signed-off-by: Theodore Ts&#x27;o &lt;tytso@mit.edu&gt;</span><br><span class="line"></span><br><span class="line">commit-id:cebe85d570cf84804e848332d6721bc9e5300e07</span><br></pre></td></tr></table></figure>
+<p>  下面，我们仍用ext4_mount的函数内容来讲解。对于挂载来说，一般会做如下操作(对于磁盘来说)：</p>
+<ul>
+<li>根据mount命令的参数，ext4_mount调用mount_bdev函数。</li>
+<li>根据mount_bdev函数的dev_name获取struct block_device对象。</li>
+<li>通过struct block_device对象，初始化并创建struct super_block对象，将对象放到super_blocks链表中。</li>
+<li>返回此文件系统对于的根dentry的引用（例如ext4fs: 根据block group0中的inode table[2]获取根节点，并创建dentry），这个时候我们就可以解析整个文件系统的所有文件目录了。</li>
+</ul>
+<p>  从上面的说明我们可以知道，一个struct super_block对象，代表一个挂载的文件系统。其定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>	<span class="title">s_list</span>;</span>		<span class="comment">/* Keep this first */</span></span><br><span class="line">	<span class="type">dev_t</span>			s_dev;		<span class="comment">/* search index; _not_ kdev_t */</span></span><br><span class="line">	<span class="type">unsigned</span> <span class="type">char</span>		s_blocksize_bits;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span>		s_blocksize;</span><br><span class="line">	<span class="type">loff_t</span>			s_maxbytes;	<span class="comment">/* Max file size */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file_system_type</span>	*<span class="title">s_type</span>;</span></span><br><span class="line">	<span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">super_operations</span>	*<span class="title">s_op</span>;</span></span><br><span class="line"></span><br><span class="line">	... ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  从上面的结构来看，最重要的就是s_op了，这个代表对一个文件系统的一些基本操作方法。此外，对于s_list来说，很明显的表达了struct super_block会被存储到一个链表里面，在linux里面，是存放在 static LIST_HEAD(super_blocks) 变量中的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">super_operations</span> &#123;</span></span><br><span class="line">   	<span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *(*<span class="title">alloc_inode</span>)(<span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">sb</span>);</span></span><br><span class="line">	<span class="type">void</span> (*destroy_inode)(<span class="keyword">struct</span> inode *);</span><br><span class="line">	<span class="type">void</span> (*free_inode)(<span class="keyword">struct</span> inode *);</span><br><span class="line"></span><br><span class="line">   	<span class="type">void</span> (*dirty_inode) (<span class="keyword">struct</span> inode *, <span class="type">int</span> flags);</span><br><span class="line">	<span class="type">int</span> (*write_inode) (<span class="keyword">struct</span> inode *, <span class="keyword">struct</span> writeback_control *wbc);</span><br><span class="line">	<span class="type">int</span> (*drop_inode) (<span class="keyword">struct</span> inode *);</span><br><span class="line">	<span class="type">void</span> (*evict_inode) (<span class="keyword">struct</span> inode *);</span><br><span class="line"></span><br><span class="line">	... ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="ext4的各种操作实现">ext4的各种操作实现</h5>
+<p>  上面我们提到了struct super_operations、struct inode_operations、struct file_operations这三个重要的操作，对于挂载的ext4fs来说，其实现在ext4中实现，并对应赋值给对应的指针。他们定义分别如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">ext4_file_operations</span> =</span> &#123;</span><br><span class="line">	.llseek		= ext4_llseek,</span><br><span class="line">	.read_iter	= ext4_file_read_iter,</span><br><span class="line">	.write_iter	= ext4_file_write_iter,</span><br><span class="line">	.iopoll		= iocb_bio_iopoll,</span><br><span class="line">	.unlocked_ioctl = ext4_ioctl,</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_COMPAT</span></span><br><span class="line">	.compat_ioctl	= ext4_compat_ioctl,</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">	.mmap		= ext4_file_mmap,</span><br><span class="line">	.mmap_supported_flags = MAP_SYNC,</span><br><span class="line">	.open		= ext4_file_open,</span><br><span class="line">	.release	= ext4_release_file,</span><br><span class="line">	.fsync		= ext4_sync_file,</span><br><span class="line">	.get_unmapped_area = thp_get_unmapped_area,</span><br><span class="line">	.splice_read	= ext4_file_splice_read,</span><br><span class="line">	.splice_write	= iter_file_splice_write,</span><br><span class="line">	.fallocate	= ext4_fallocate,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">inode_operations</span> <span class="title">ext4_file_inode_operations</span> =</span> &#123;</span><br><span class="line">	.setattr	= ext4_setattr,</span><br><span class="line">	.getattr	= ext4_file_getattr,</span><br><span class="line">	.listxattr	= ext4_listxattr,</span><br><span class="line">	.get_inode_acl	= ext4_get_acl,</span><br><span class="line">	.set_acl	= ext4_set_acl,</span><br><span class="line">	.fiemap		= ext4_fiemap,</span><br><span class="line">	.fileattr_get	= ext4_fileattr_get,</span><br><span class="line">	.fileattr_set	= ext4_fileattr_set,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">super_operations</span> <span class="title">ext4_sops</span> =</span> &#123;</span><br><span class="line">	.alloc_inode	= ext4_alloc_inode,</span><br><span class="line">	.free_inode	= ext4_free_in_core_inode,</span><br><span class="line">	.destroy_inode	= ext4_destroy_inode,</span><br><span class="line">	.write_inode	= ext4_write_inode,</span><br><span class="line">	.dirty_inode	= ext4_dirty_inode,</span><br><span class="line">	.drop_inode	= ext4_drop_inode,</span><br><span class="line">	.evict_inode	= ext4_evict_inode,</span><br><span class="line">	.put_super	= ext4_put_super,</span><br><span class="line">	.sync_fs	= ext4_sync_fs,</span><br><span class="line">	.freeze_fs	= ext4_freeze,</span><br><span class="line">	.unfreeze_fs	= ext4_unfreeze,</span><br><span class="line">	.statfs		= ext4_statfs,</span><br><span class="line">	.show_options	= ext4_show_options,</span><br><span class="line">	.shutdown	= ext4_shutdown,</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_QUOTA</span></span><br><span class="line">	.quota_read	= ext4_quota_read,</span><br><span class="line">	.quota_write	= ext4_quota_write,</span><br><span class="line">	.get_dquots	= ext4_get_dquots,</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>  从上面来，还没有挂载的时候，对于一个ext4fs的各种操作就已经实现了，挂载只是将这些操作实现对应赋值而已。</p>
+<p>  这里多说一句，其他的fs也会有对应operations的实现。例如：我们常见的驱动开发的时候，file_operations的填充可以说是基操。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="总结">总结</h3>
+<hr>
+<p>  总的来说，vfs提供了对各种fs的操作的封装。mount命令可以将特定文件系统绑定到vfs。当我们mount一个fs时，可以得到这个fs的root dentry，super_block，mount等结构信息。</p>
+<p>  我们根据一个fs的root dentry信息，可以解析出其目录下的所有文件目录结构，从而达到访问特定文件系统、特定设备的文件的目的。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.kernel.org/doc/html/next/filesystems/vfs.html">https://www.kernel.org/doc/html/next/filesystems/vfs.html</a></li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/04/27/blog_idx_130/" rel="prev" title="Linux 文件系统(一) --- ext4文件系统简介">
+      <i class="fa fa-chevron-left"></i> Linux 文件系统(一) --- ext4文件系统简介
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#VFS%E7%9A%84%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number"></span> <span class="nav-text">VFS的基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Directory-Entry-Cache-dcache"><span class="nav-number"></span> <span class="nav-text">Directory Entry Cache (dcache)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#struct-inode-%E5%AF%B9%E8%B1%A1"><span class="nav-number"></span> <span class="nav-text">struct inode 对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#struct-file-%E5%AF%B9%E8%B1%A1"><span class="nav-number"></span> <span class="nav-text">struct file 对象</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#VFS%E7%9A%84%E6%B7%B1%E5%85%A5%E7%9F%A5%E8%AF%86"><span class="nav-number"></span> <span class="nav-text">VFS的深入知识</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#FileSystem-%E7%9A%84%E6%B3%A8%E5%86%8C%E5%92%8C%E5%8F%96%E6%B6%88%E6%B3%A8%E5%86%8C"><span class="nav-number"></span> <span class="nav-text">FileSystem 的注册和取消注册</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#FileSystem%E7%9A%84%E6%8C%82%E8%BD%BD%E5%92%8C%E5%8D%B8%E8%BD%BD"><span class="nav-number"></span> <span class="nav-text">FileSystem的挂载和卸载</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ext4%E7%9A%84%E5%90%84%E7%A7%8D%E6%93%8D%E4%BD%9C%E5%AE%9E%E7%8E%B0"><span class="nav-number"></span> <span class="nav-text">ext4的各种操作实现</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number"></span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

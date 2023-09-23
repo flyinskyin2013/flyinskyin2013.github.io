@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在linux下面，常见的linux fs就是ext系列，linux里面的vfs也和这个ext fs息息相关。本文主要详解一下ext4 fs的实现原理，并且，从文件操作的角度来看，ext4 fs是怎么实现这一系列工作的。     一些基本知识">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 文件系统(一) --- ext4文件系统简介">
+<meta property="og:url" content="https://e-x.top/2024/04/27/blog_idx_130/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在linux下面，常见的linux fs就是ext系列，linux里面的vfs也和这个ext fs息息相关。本文主要详解一下ext4 fs的实现原理，并且，从文件操作的角度来看，ext4 fs是怎么实现这一系列工作的。     一些基本知识">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/super_block.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/group_descriptor0.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/stat.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/df0.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/df1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2024-04-27T07:39:00.000Z">
+<meta property="article:modified_time" content="2024-05-12T02:34:09.434Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/super_block.png">
+
+<link rel="canonical" href="https://e-x.top/2024/04/27/blog_idx_130/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>Linux 文件系统(一) --- ext4文件系统简介 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2024/04/27/blog_idx_130/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux 文件系统(一) --- ext4文件系统简介
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-04-27 15:39:00" itemprop="dateCreated datePublished" datetime="2024-04-27T15:39:00+08:00">2024-04-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-05-12 10:34:09" itemprop="dateModified" datetime="2024-05-12T10:34:09+08:00">2024-05-12</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>8.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>8 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=130） 
+&emsp;&emsp;本文发布于 2024-04-27 15:39:00             （BlogID=130） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  在linux下面，常见的linux fs就是ext系列，linux里面的vfs也和这个ext fs息息相关。本文主要详解一下ext4 fs的实现原理，并且，从文件操作的角度来看，ext4 fs是怎么实现这一系列工作的。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="一些基本知识">一些基本知识</h3>
+<hr>
+<p>  常见的硬盘有两种类别：</p>
+<ul>
+<li>传统硬盘（HDD，Hard Disk Drive）</li>
+<li>固态硬盘（SSD，Solid State Drive）</li>
+</ul>
+<p>  其实稍微对硬盘有一点了解的人都知道，这两者硬盘的结构和原理是完全不一样的（具体可看很多网上的相关资料）。</p>
+<p>  对于HDD来说，其是有磁头、盘片、马达等构成，盘片概念中又可以得到扇区、柱面的概念。根据这些物理的技术事实，引出了CHS（柱面数（Cylinders）、磁头数（Headers）、扇区数（Sectors））寻址方式。后面经过发展，又有了LBA（Logic Block Address）寻址方式（具体可看很多网上的相关资料））。</p>
+<br/>
+<br/>
+<h5 id="格式化">格式化</h5>
+<p>  这里的格式化有两种：</p>
+<ul>
+<li>低级格式化</li>
+<li>高级格式化</li>
+</ul>
+<p>  对于低级格式化来说，一般是硬盘厂家格式化好的，对磁盘的一些基本参数进行设置。</p>
+<p>  对于高级格式化来说，这就是我们用户普遍开始接触使用硬盘的第一步，我们后续解释ext的文件系统，也是基本是高级格式化来完成的。</p>
+<br/>
+<br/>
+<h5 id="扇区介绍">扇区介绍</h5>
+<p>  对于上层用户来说， 描述一个磁盘的相关属性使用扇区来描述，一个扇区一般是512字节，磁盘总容量是扇区数*512字节。</p>
+<br/>
+<br/>
+<h5 id="什么是文件系统？">什么是文件系统？</h5>
+<p>  文件系统是指通过什么样的结构来组织数据的存储方式。具体来说，就是怎么对某一个文件进行定位和操作。一个基本的fs例子可以参考以前我写的关于FAT文件系统的组织方式（《FAT32 文件系统详解》 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/58049184%EF%BC%89%E3%80%82">https://blog.csdn.net/u011728480/article/details/58049184）。</a></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="EXT4文件系统的组织方式">EXT4文件系统的组织方式</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="ext4-fs的简介与宏观结构">ext4 fs的简介与宏观结构</h5>
+<p>  ext4 fs的基本存储单位是block，一个block可能由多个扇区组成，对于ext4来说，其有以下的一些基本属性：</p>
+<ul>
+<li>一个block的大小可能是：1k-64k，并且其扇区的个数必须是2的指数，其大小是由mkfs来确定的。</li>
+<li>多个block可以组成一个更大的单位，叫做block group。</li>
+<li>一般情况下，一个文件系统可以最多有2^32个block。如果ext4文件系统启用了64位的特性，那么其最多可以有2^64个block。</li>
+</ul>
+<p>  从上面可以知道ext4 fs可以描述的磁盘容量大小和我们创建文件系统时的参数有关，有兴趣可以去看参考小节的文档。</p>
+<p>  ext4 fs的宏观结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>block group 0</th>
+<th>block group 1</th>
+<th>… …</th>
+<th>block group n-1</th>
+<th>block group n</th>
+</tr>
+</thead>
+</table>
+<p>  对于block group 0 来说：</p>
+<table>
+<thead>
+<tr>
+<th>Group 0 Padding</th>
+<th>ext4 Super Block</th>
+<th>Group Descriptors</th>
+<th>Reserved GDT Blocks</th>
+<th>Data Block Bitmap</th>
+<th>inode Bitmap</th>
+<th>inode Table</th>
+<th>Data Blocks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1024 bytes</td>
+<td>1 block</td>
+<td>many blocks</td>
+<td>many blocks</td>
+<td>1 block</td>
+<td>1 block</td>
+<td>many blocks</td>
+<td>many more blocks</td>
+</tr>
+</tbody>
+</table>
+<p>  对于block group n(n != 0) 来说：</p>
+<table>
+<thead>
+<tr>
+<th>ext4 Super Block（可选）</th>
+<th>Group Descriptors（可选）</th>
+<th>Reserved GDT Blocks（可选）</th>
+<th>Data Block Bitmap</th>
+<th>inode Bitmap</th>
+<th>inode Table</th>
+<th>Data Blocks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 block</td>
+<td>many blocks</td>
+<td>many blocks</td>
+<td>1 block</td>
+<td>1 block</td>
+<td>many blocks</td>
+<td>many more blocks</td>
+</tr>
+</tbody>
+</table>
+<p>  从上面的三个表格可以知道，ext4fs是由多个block group构成，其中block group0有一个1k的填充部分，这部分主要是兼容以前老旧的引导分区使用。其他block group并没有这1k的填充部分。</p>
+<p>  下面我们分别详解block group中的具体每个部分是什么内容，以block_size是4k为例。</p>
+<br/>
+<br/>
+<h5 id="ext4-Super-Block">ext4 Super Block</h5>
+<p>  我们先来看看fs/ext4/ext4.h里面定义的内容：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Structure of the super block</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext4_super_block</span> &#123;</span></span><br><span class="line">    __le32	s_inodes_count;		<span class="comment">/* Inodes count */</span></span><br><span class="line">	__le32	s_blocks_count_lo;	<span class="comment">/* Blocks count */</span></span><br><span class="line">    </span><br><span class="line">    ... ...</span><br><span class="line"></span><br><span class="line">    __le32	s_log_block_size;	<span class="comment">/* Block size */</span></span><br><span class="line"></span><br><span class="line">    ... ...</span><br><span class="line"></span><br><span class="line">    __le32	s_blocks_per_group;	<span class="comment">/* # Blocks per group */</span></span><br><span class="line"></span><br><span class="line">    ... ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  从这个定义可以看出，ext4_super_block 包含了很多ext4 fs的meta信息，例如：inode个数，blocks个数，block大小，每个组里面的block大小。我们可以使用dumpfs命令来查看superblock的信息，如下：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/super_block.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  注意看，对于block group n(n != 0)来说，ext4 Super Block、Group Descriptors等重要的结构是可选的，这里就涉及到ext的另外一个概念，通过备份这些重要的数据结构在不同的block group中，当block group 0数据损坏时，可以从其他分区尝试恢复。</p>
+<br/>
+<br/>
+<h5 id="Group-Descriptors">Group Descriptors</h5>
+<p>  组描述符是一个数据结构，其数据是第二个block开始，其定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Structure of a blocks group descriptor</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext4_group_desc</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	__le32	bg_block_bitmap_lo;	<span class="comment">/* Blocks bitmap block */</span></span><br><span class="line">	__le32	bg_inode_bitmap_lo;	<span class="comment">/* Inodes bitmap block */</span></span><br><span class="line">	__le32	bg_inode_table_lo;	<span class="comment">/* Inodes table block */</span></span><br><span class="line">	__le16	bg_free_blocks_count_lo;<span class="comment">/* Free blocks count */</span></span><br><span class="line">	__le16	bg_free_inodes_count_lo;<span class="comment">/* Free inodes count */</span></span><br><span class="line">	__le16	bg_used_dirs_count_lo;	<span class="comment">/* Directories count */</span></span><br><span class="line">	__le16	bg_flags;		<span class="comment">/* EXT4_BG_flags (INODE_UNINIT, etc) */</span></span><br><span class="line">	__le32  bg_exclude_bitmap_lo;   <span class="comment">/* Exclude bitmap for snapshots */</span></span><br><span class="line">	__le16  bg_block_bitmap_csum_lo;<span class="comment">/* crc32c(s_uuid+grp_num+bbitmap) LE */</span></span><br><span class="line">	__le16  bg_inode_bitmap_csum_lo;<span class="comment">/* crc32c(s_uuid+grp_num+ibitmap) LE */</span></span><br><span class="line">	__le16  bg_itable_unused_lo;	<span class="comment">/* Unused inodes count */</span></span><br><span class="line">	__le16  bg_checksum;		<span class="comment">/* crc16(sb_uuid+group+desc) */</span></span><br><span class="line">	__le32	bg_block_bitmap_hi;	<span class="comment">/* Blocks bitmap block MSB */</span></span><br><span class="line">	__le32	bg_inode_bitmap_hi;	<span class="comment">/* Inodes bitmap block MSB */</span></span><br><span class="line">	__le32	bg_inode_table_hi;	<span class="comment">/* Inodes table block MSB */</span></span><br><span class="line">	__le16	bg_free_blocks_count_hi;<span class="comment">/* Free blocks count MSB */</span></span><br><span class="line">	__le16	bg_free_inodes_count_hi;<span class="comment">/* Free inodes count MSB */</span></span><br><span class="line">	__le16	bg_used_dirs_count_hi;	<span class="comment">/* Directories count MSB */</span></span><br><span class="line">	__le16  bg_itable_unused_hi;    <span class="comment">/* Unused inodes count MSB */</span></span><br><span class="line">	__le32  bg_exclude_bitmap_hi;   <span class="comment">/* Exclude bitmap block MSB */</span></span><br><span class="line">	__le16  bg_block_bitmap_csum_hi;<span class="comment">/* crc32c(s_uuid+grp_num+bbitmap) BE */</span></span><br><span class="line">	__le16  bg_inode_bitmap_csum_hi;<span class="comment">/* crc32c(s_uuid+grp_num+ibitmap) BE */</span></span><br><span class="line">	__u32   bg_reserved;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  其实从这里可以看到，根据组描述符，我们可以知道后面三个重要的区块（Data Block Bitmap/inode Bitmap/inode Table）的block号，也就定位到这3个重要的区块了。</p>
+<p>  但是这里有一个问题是需要我们处理的，就是组描述符是一个数组，它描述了多个block group，那么我们怎么知道有多少个组描述呢？那就是直接用superblock里面的s_blocks_count_lo/s_blocks_per_group就得到了有多个group descriptor。</p>
+<p>  同理，我们可以使用dumpfs命令来查看group descriptor 0的信息(block group 0)，如下：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/group_descriptor0.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  注意，上面的Reserved GDT Blocks是用做以后扩充group descriptor使用的（也就是扩充extfs容量）。</p>
+<br/>
+<br/>
+<h5 id="Data-Block-Bitmap">Data Block Bitmap</h5>
+<p>  data block bitmap主要就是使用bitmap描述data block的使用情况。其起始位置是group descriptor中的bg_block_bitmap_lo来确定的。</p>
+<p>  以block_size是4k为例，那么我们能够通过bitmap来描述的block个数为：4 * 1024 * 8 = 32768，通过上面的知识可以看到，恰好对应一个block group的大小。</p>
+<br/>
+<br/>
+<h5 id="inode-Bitmap">inode Bitmap</h5>
+<p>  inode bitmap和data block bitmap类似，用于描述inode的使用情况。其起始位置是group descriptor中的bg_inode_bitmap_lo来确定的。后面我们会关联到这个地方的知识点。</p>
+<p>  以block_size是4k为例，同上，我们最多只能有32768个inode。</p>
+<p>  这里提到的inode概念可以先不管，你可以把一个inode当做一个文件的抽象概念来处理。inode这个概念在linux vfs和ext4 fs都会使用到，而且是相互关联的。</p>
+<br/>
+<br/>
+<h5 id="inode-Table">inode Table</h5>
+<p>  inode Table 是由一个个ext4_inode组成的数组。ext4_inode定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Structure of an inode on the disk</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext4_inode</span> &#123;</span></span><br><span class="line"></span><br><span class="line">    __le16	i_mode;		<span class="comment">/* File mode */</span></span><br><span class="line">	__le16	i_uid;		<span class="comment">/* Low 16 bits of Owner Uid */</span></span><br><span class="line"></span><br><span class="line">    ... ...</span><br><span class="line"></span><br><span class="line">    __le32	i_blocks_lo;	<span class="comment">/* Blocks count */</span></span><br><span class="line"></span><br><span class="line">    ... ... </span><br><span class="line"></span><br><span class="line">    __le32	i_block[EXT4_N_BLOCKS];<span class="comment">/* Pointers to blocks */</span></span><br><span class="line"></span><br><span class="line">    ... ... </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  从上面可以简单知道，这里有一个文件的属性、大小、数据block的指针等等。ext4_inode可以描述一个文件的基本信息，这个结构将会在本系列文章中的vfs里面介绍。linux提供了stat命令来获取这个结构的信息，例如下图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/stat.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  从图中可知，我们可以知道inode的序号、inode包含的blocks的个数，以及文件其他属性等等。</p>
+<p>  此外根据其数据结构可以知道，ext4_inode的文件大小上限由EXT4_N_BLOCKS=15个block决定，从理论上来说，如果大于这个尺寸的ext采取的是通过类似间接寻址的方式。对于ext4 fs来说，对这个间接寻址做了详细介绍，下面我们对这种间接寻址做一点简单说明（以block_size=4k为例）：</p>
+<ul>
+<li>ext4_inode.i_block数组中的0~11数据块，直接填写到这个数组。到这里，我们支持的最大文件大小为12 * block_size。</li>
+<li>当文件大小大于12 * block_size时，那么启用一级映射，ext4_inode.i_block数组的第12个指向的数据块是一个索引数据块，其包含了真实文件数据的block的索引。对于block_size=4k来说，那么可以间接映射block_size/sizeof(__le32)=1024个block。到这里，我们支持的最大文件大小为(12 + block_size/4) * block_size。</li>
+<li>当文件大小大于(12 + block_size/4) * block_size，启用二级映射，ext4_inode.i_block数组的第13个指向的数据块是一级映射数据块，后面规则和一级映射一致。到这里，我们支持的最大文件大小为(12 + block_size/4 + (block_size/4)^2 ) * block_size。</li>
+<li>当文件大小大于(12 + block_size/4 + (block_size/4)^2 ) * block_size，启用三级映射，ext4_inode.i_block数组的第14个指向的数据块是二级映射数据块，后面规则和二级映射一致。到这里，我们支持的最大文件大小为(12 + block_size/4 + (block_size/4)^2  + (block_size/4)^3) * block_size。</li>
+</ul>
+<p>  其实从上面来看，如果我们存储和访问一个大文件，由于机制的原因，效率是非常底下的，因此ext4 fs里面有一个flex_bg特性，可以用更高效的extent tree数据结构来描述大文件。本文不对这个做介绍。</p>
+<p>  此外，ext4 fs预留了一些特殊inode的编号，他们如下图表格：</p>
+<table>
+<thead>
+<tr>
+<th>inode Number</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Doesn’t exist; there is no inode 0.</td>
+</tr>
+<tr>
+<td>1</td>
+<td>List of defective blocks.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Root directory.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>User quota.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Group quota.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Boot loader.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Undelete directory.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Reserved group descriptors inode. (“resize inode”)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Journal inode.</td>
+</tr>
+</tbody>
+</table>
+<p>  这里面对我们来说，最有用的就是inode=2的inode节点，它是代表这个文件系统的根目录。这个根目录在vfs挂载文件系统的时候，有重要作用。</p>
+<p>  对于多个block group来说，其每个inode Table大小是一定的，这个在super block里面就定义了，例如上文图中“Inodes per group:8192”代表每个block group有8192个inode。当我们mkfs.ext4时，inode的数量是固定了，我们可以修改这个参数来适应一些特殊情况，例如：inode满了，但是磁盘空间没有占满，这个是属于优化项了，这里不做讨论。如下图，df -i可以查看fs的inode使用信息，df -h是fs的磁盘容量信息：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/df0.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_130/df1.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  从图中的根目录分区来看，他们的inode占用和容量占用完全不一致，如图来说，可能是容量用完了，但是inode没有用完，可是有另外一种情况，那就是容量没有用完，inode用完了，一般出现在存放很多小文件的ext4fs。</p>
+<p>  这里还有一个重要的信息，我们知道有多个block group，且每个block group一定有Data Block Bitmap、inode Bitmap、inode Table。其中有一个很重要的概念就是每个block group的inode Table里面的inode序号是连续的。</p>
+<br/>
+<br/>
+<h5 id="Data-Blocks">Data Blocks</h5>
+<p>  data blocks就是文件的真实数据块，由ext4_inode来指定。</p>
+<br/>
+<br/>
+<h5 id="目录">目录</h5>
+<p>  就上面我们描述的内容来看，我们可以通过一个inode来描述一个文件了，但是还有一类我们常见的类型：目录，却没有提到。</p>
+<p>  其实对于文件系统来说，目录也是文件，也是通过inode来描述的，在上文，其实我们提到了inode=2的indoe节点，它就是根目录项，也是解析ext4fs的起点。</p>
+<p>  传统来说，对于目录的inode，其指向的block是基于目录项的数组（新的ext4 fs还有hash目录，其在ext3 引入，可以提升目录操作性能, 本文不做介绍），一个对于目录项来说，有两个结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext4_dir_entry</span> &#123;</span></span><br><span class="line">	__le32	inode;			<span class="comment">/* Inode number */</span></span><br><span class="line">	__le16	rec_len;		<span class="comment">/* Directory entry length */</span></span><br><span class="line">	__le16	name_len;		<span class="comment">/* Name length */</span></span><br><span class="line">	<span class="type">char</span>	name[EXT4_NAME_LEN];	<span class="comment">/* File name */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * The new version of the directory entry.  Since EXT4 structures are</span></span><br><span class="line"><span class="comment"> * stored in intel byte order, and the name_len field could never be</span></span><br><span class="line"><span class="comment"> * bigger than 255 chars, it&#x27;s safe to reclaim the extra byte for the</span></span><br><span class="line"><span class="comment"> * file_type field.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext4_dir_entry_2</span> &#123;</span></span><br><span class="line">	__le32	inode;			<span class="comment">/* Inode number */</span></span><br><span class="line">	__le16	rec_len;		<span class="comment">/* Directory entry length */</span></span><br><span class="line">	__u8	name_len;		<span class="comment">/* Name length */</span></span><br><span class="line">	__u8	file_type;		<span class="comment">/* See file type macros EXT4_FT_* below */</span></span><br><span class="line">	<span class="type">char</span>	name[EXT4_NAME_LEN];	<span class="comment">/* File name */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>  对于我们常用的ext4fs系统来说，启用了filetype这个特性，就是用的ext4_dir_entry_2这个结构。注意这个结构和linux用户态的struct dirent有直接关联，后面有缘可以介绍一下rewinddir/readdir等接口的使用。</p>
+<p>  对于目录项来说，除了inode序号外，最重要的就是file_type信息了，他们的典型值如下：</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x0</td>
+<td>Unknown.</td>
+</tr>
+<tr>
+<td>0x1</td>
+<td>Regular file.</td>
+</tr>
+<tr>
+<td>0x2</td>
+<td>Directory.</td>
+</tr>
+<tr>
+<td>0x3</td>
+<td>Character device file.</td>
+</tr>
+<tr>
+<td>0x4</td>
+<td>Block device file.</td>
+</tr>
+<tr>
+<td>0x5</td>
+<td>FIFO.</td>
+</tr>
+<tr>
+<td>0x6</td>
+<td>Socket.</td>
+</tr>
+<tr>
+<td>0x7</td>
+<td>Symbolic link.</td>
+</tr>
+</tbody>
+</table>
+<p>  这里面最重要的type就是1和2，一个代表普通文件，一个代表目录。</p>
+<p>  有了这个数据结构介绍，我们就介绍完了ext4fs的基本组织形式，下面我们通过文件的基本操作来整体感受一下这种组织方式。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="文件的操作与文件系统的组织方式">文件的操作与文件系统的组织方式</h3>
+<hr>
+<p>  其实这里的文件操作与vfs有关联，但是现在我们就当做没有vfs。如果有上面基础的情况下，我们怎么写一个驱动来在ext4fs上操作文件。后面都是一些直白想法，要了解具体细节，移步本文后续系列，关于VFS的一点点资料。</p>
+<p>  对于文件的操作来说，我们第一步要定位这个文件。如果要定位这个文件，那么我们就需要这个文件的绝对路径。下面对于文本文件：/tmp/test.lg，我们看看怎么定位它：</p>
+<ul>
+<li>首先根据ext4 Super Block得到Group Descriptors的属性，然后得到block group0 的 Group Descriptors的属性，最后得到block group0 的inode table/inode bitmap/data blocks bitmap。</li>
+<li>根据block group0中的inode table[2]得到这个文件系统根目录的数据块，然后根据ext4_dir_entry_2来递归的解析出ext4fs的所有文件目录树。</li>
+<li>根据/tmp/test.lg文件的绝对路径信息，结合上面我们的文件目录树，我们首先解析了&quot;/&quot;的目录项数组，得到了tmp目录的目录inode信息。然后根据tmp目录的目录项数组，得到了test.lg的inode信息。到这里，我们成功得到了文件的inode序号。</li>
+<li>根据得到的inode序号，做相关的操作（读、写、创建、删除）。</li>
+</ul>
+<p>  其实上面我们操作一个文件的过程，在真正的linux系统中，由vfs和ext4fs驱动帮我们做了大量工作，具体我们到时候在vfs文章中来做一个文件操作的介绍。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  从本文和本人之前的文章中关于FAT文件系统的介绍来看，其实文件系统的核心在于：给定一个存储的介质，在这个存储介质上是怎么存放文件的，比如建议分组，建立映射等等。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.kernel.org/doc/html/v4.19/filesystems/ext4/ondisk/index.html">https://www.kernel.org/doc/html/v4.19/filesystems/ext4/ondisk/index.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/58049184">https://blog.csdn.net/u011728480/article/details/58049184</a></li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/04/21/blog_idx_129/" rel="prev" title="Linux_aarch64_head.S到main.c的环境建立">
+      <i class="fa fa-chevron-left"></i> Linux_aarch64_head.S到main.c的环境建立
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/05/12/blog_idx_131/" rel="next" title="Linux 文件系统(二) --- vfs简单分析">
+      Linux 文件系统(二) --- vfs简单分析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%9F%BA%E6%9C%AC%E7%9F%A5%E8%AF%86"><span class="nav-number"></span> <span class="nav-text">一些基本知识</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96"><span class="nav-number"></span> <span class="nav-text">格式化</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%89%87%E5%8C%BA%E4%BB%8B%E7%BB%8D"><span class="nav-number"></span> <span class="nav-text">扇区介绍</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%EF%BC%9F"><span class="nav-number"></span> <span class="nav-text">什么是文件系统？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EXT4%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%BB%84%E7%BB%87%E6%96%B9%E5%BC%8F"><span class="nav-number"></span> <span class="nav-text">EXT4文件系统的组织方式</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ext4-fs%E7%9A%84%E7%AE%80%E4%BB%8B%E4%B8%8E%E5%AE%8F%E8%A7%82%E7%BB%93%E6%9E%84"><span class="nav-number"></span> <span class="nav-text">ext4 fs的简介与宏观结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ext4-Super-Block"><span class="nav-number"></span> <span class="nav-text">ext4 Super Block</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Group-Descriptors"><span class="nav-number"></span> <span class="nav-text">Group Descriptors</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Data-Block-Bitmap"><span class="nav-number"></span> <span class="nav-text">Data Block Bitmap</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#inode-Bitmap"><span class="nav-number"></span> <span class="nav-text">inode Bitmap</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#inode-Table"><span class="nav-number"></span> <span class="nav-text">inode Table</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Data-Blocks"><span class="nav-number"></span> <span class="nav-text">Data Blocks</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95"><span class="nav-number"></span> <span class="nav-text">目录</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%9A%84%E6%93%8D%E4%BD%9C%E4%B8%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%BB%84%E7%BB%87%E6%96%B9%E5%BC%8F"><span class="nav-number"></span> <span class="nav-text">文件的操作与文件系统的组织方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

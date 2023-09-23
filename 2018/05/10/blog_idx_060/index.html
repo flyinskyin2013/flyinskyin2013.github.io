@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   MEM:2GB   CPU:Intel® Core™ i5-7400 CPU @ 3.00GHz × 4   SYSTEM:Linux 4.13.0-38-generic #43~16.04.1-Ubuntu SMP Wed Mar 14 17:48:43">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《基础数据结构-排序》之交换排序">
+<meta property="og:url" content="https://e-x.top/2018/05/10/blog_idx_060/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   MEM:2GB   CPU:Intel® Core™ i5-7400 CPU @ 3.00GHz × 4   SYSTEM:Linux 4.13.0-38-generic #43~16.04.1-Ubuntu SMP Wed Mar 14 17:48:43">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_060/bubble_sort.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_060/quick_sort.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2018-05-10T03:21:42.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.782Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_060/bubble_sort.png">
+
+<link rel="canonical" href="https://e-x.top/2018/05/10/blog_idx_060/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>《基础数据结构-排序》之交换排序 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/05/10/blog_idx_060/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《基础数据结构-排序》之交换排序
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-05-10 11:21:42" itemprop="dateCreated datePublished" datetime="2018-05-10T11:21:42+08:00">2018-05-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>5.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>5 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-23 18:59:16
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=060） 
+&emsp;&emsp;本文发布于 2018-05-10 11:21:42，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=060） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  MEM:2GB</p>
+<p>  CPU:Intel® Core™ i5-7400 CPU @ 3.00GHz × 4</p>
+<p>  SYSTEM:Linux 4.13.0-38-generic #43~16.04.1-Ubuntu SMP Wed Mar 14 17:48:43 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux（虚拟机）</p>
+<p>  测试数据（100000条数据，数据范围1-100000）下载链接：<a target="_blank" rel="noopener" href="https://download.csdn.net/download/u011728480/10399194">https://download.csdn.net/download/u011728480/10399194</a></p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  此系列大概会有三类文章，包括我在学校不太掌握的三种类型的相关算法，分别为排序、树、图中的基础算法。这里主要对这些算法进行一个巩固，期望使自己的相关技术有一定的提高。</p>
+<p>  排序算法要解决的问题是：把一系列已存在的数据（乱序），按照一定规律（有序）进行存放。我们常见的就是数字的按照其大小进行排序。排序按照其实现的核心原理分为约4中类型：交换排序、插入排序、选择排序和归并排序。下面依次对这些排序进行说明和总结。</p>
+<p>  ps：上面内容都是扯淡，大佬直接忽略。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="交换排序">交换排序</h3>
+<hr>
+<p>  交换排序有两种常见算法：冒泡排序和快速排序</p>
+<br/>
+<br/>
+<h5 id="冒泡排序">冒泡排序</h5>
+<p>  就是遍历，交换。把符合某规律的数据元素交换到数据顶端（有条件的末端），重复此过程，直到数据序列有序为止。</p>
+<p>  使用上文数据进行排序，结果如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_060/bubble_sort.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  平均时间复杂度：O(n ^ 2)</p>
+<p>  空间复杂度：O(1)</p>
+<p>  实现代码（下面算法是未做任何优化的，一种优化方法为：如果为发生数据交换，则数据有序且退出整个循环）：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">worst time:</span></span><br><span class="line"><span class="comment">surrounding loop=n-1</span></span><br><span class="line"><span class="comment">compare=n(n-1)/2  (等差数列求和，1,2....n-1)</span></span><br><span class="line"><span class="comment">exchange=3n(n-1)/2 (等差数列求和，1,2....n-1,每次交换3次)</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">best time:(针对此代码，未优化)</span></span><br><span class="line"><span class="comment">surrounding loop=n-1</span></span><br><span class="line"><span class="comment">compare=n(n-1)/2</span></span><br><span class="line"><span class="comment">exchange=0</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">average-time:O(n ^ 2)</span></span><br><span class="line"><span class="comment">space:O(1)</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;functional&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> T1&gt;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">bubble_sort</span><span class="params">(T * <span class="type">const</span> head, <span class="type">const</span> T1 &amp;len, std::function&lt;<span class="type">void</span>(T&amp;, T&amp;)&gt; swap_func = <span class="literal">nullptr</span>)</span></span>&#123;</span><br><span class="line"><span class="comment">//int bubble_sort(T * const head, const T1 &amp;len, void (*swap_func)(T&amp;,T&amp;) = nullptr)&#123;</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//data_len data_tmp must init for type deduction</span></span><br><span class="line">	<span class="keyword">auto</span> data_len = len;<span class="comment">//</span></span><br><span class="line">	<span class="keyword">auto</span> data_tmp = *head;<span class="comment">//</span></span><br><span class="line">	<span class="keyword">auto</span> i = len,j = len;</span><br><span class="line">	<span class="comment">//len-1 traverse</span></span><br><span class="line">	<span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; data_len; j ++)&#123;<span class="comment">//n-1</span></span><br><span class="line">		</span><br><span class="line">		<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; data_len -j; i ++)&#123;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> ( <span class="literal">nullptr</span> != swap_func )</span><br><span class="line">				<span class="built_in">swap_func</span>(*(head+i), *(head+i+<span class="number">1</span>));</span><br><span class="line">			<span class="keyword">else</span>&#123;</span><br><span class="line">		</span><br><span class="line">				<span class="keyword">if</span> ( *(head+i) &gt; *(head+i+<span class="number">1</span>) )&#123;</span><br><span class="line">			</span><br><span class="line">					data_tmp = *(head+i);</span><br><span class="line">					*(head+i) = *(head+i+<span class="number">1</span>);</span><br><span class="line">					*(head+i+<span class="number">1</span>) = data_tmp;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; </span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> DATA_LEN 100000</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argv, <span class="type">char</span> * argc[])</span></span>&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="type">long</span> * buffer;</span><br><span class="line">	std::filebuf *pbuf;  </span><br><span class="line">	std::ifstream in;</span><br><span class="line">	std::ofstream out;</span><br><span class="line">	in.<span class="built_in">open</span>(<span class="string">&quot;data.txt&quot;</span>);</span><br><span class="line">	<span class="built_in">assert</span>(in.<span class="built_in">is_open</span>());</span><br><span class="line">	<span class="type">long</span> idx = <span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line">	buffer = <span class="keyword">new</span> <span class="type">long</span>[DATA_LEN];</span><br><span class="line"></span><br><span class="line">	std::string data;</span><br><span class="line">	<span class="keyword">for</span> ( ; idx &lt; DATA_LEN; idx++ )&#123;</span><br><span class="line">			</span><br><span class="line">		<span class="built_in">getline</span>(in, data);	</span><br><span class="line">		*(buffer+idx) = <span class="built_in">atol</span>(data.<span class="built_in">c_str</span>());</span><br><span class="line">	&#125;</span><br><span class="line">	in.<span class="built_in">close</span>();</span><br><span class="line"></span><br><span class="line">	std::chrono::time_point&lt;std::chrono::high_resolution_clock&gt; p0 = std::chrono::high_resolution_clock::<span class="built_in">now</span>();</span><br><span class="line">	<span class="built_in">bubble_sort</span>(buffer, DATA_LEN);</span><br><span class="line"> 	std::chrono::time_point&lt;std::chrono::high_resolution_clock&gt; p1 = std::chrono::high_resolution_clock::<span class="built_in">now</span>();</span><br><span class="line">	std::cout &lt;&lt; <span class="string">&quot;stitch high_resolution_clock time:&quot;</span> &lt;&lt; (<span class="type">float</span>)std::chrono::<span class="built_in">duration_cast</span>&lt;std::chrono::microseconds&gt;(p1 - p0).<span class="built_in">count</span>() / <span class="number">1000</span> &lt;&lt; <span class="string">&quot;ms&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    	</span><br><span class="line">	out.<span class="built_in">open</span>(<span class="string">&quot;bubble_sort.txt&quot;</span>);</span><br><span class="line">	<span class="built_in">assert</span>(out.<span class="built_in">is_open</span>());</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">for</span> (idx = <span class="number">0</span> ; idx &lt; DATA_LEN; idx++ )&#123;</span><br><span class="line">			</span><br><span class="line">		out&lt;&lt;*(buffer+idx);</span><br><span class="line">		out&lt;&lt;<span class="string">&quot;\n&quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	out.<span class="built_in">close</span>();</span><br><span class="line">	</span><br><span class="line">  	<span class="keyword">delete</span> []buffer;  </span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="快速排序">快速排序</h5>
+<p>  选定一个基准数（一般为第一个数），然后把小于此数的数放到其左边，大于此数放到右边，这时，此数组被分为了两组。然后分别对这两组数进行同样的操作，直到数无法继续分组为止。</p>
+<p>  使用上文数据进行排序，结果如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_060/quick_sort.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  平均时间复杂度：O(nlog(n))<br>
+  空间复杂度：O(log(n)~n)<br>
+  实现代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">worst time:O(n^2)</span></span><br><span class="line"><span class="comment">(每次我们指定的分割数是数列里面最大，或者最小，这样导致只会把一个数放到了正确的位置，类似选择排序或者冒泡排序，由于是递归调用，可参考二叉树结构分析)</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">（此时二叉树结构为最不平衡的二叉树，退化为一条线）</span></span><br><span class="line"><span class="comment">compare=n(n-1)/2(第一次比较n-1,第二次比较n-2  ...   1)</span></span><br><span class="line"><span class="comment">exchange=n(n-1)/2</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">best time: nlog(n) (注意，取的是数量级)</span></span><br><span class="line"><span class="comment">(参考平衡二叉树)</span></span><br><span class="line"><span class="comment">tree-deepth=log(n)</span></span><br><span class="line"><span class="comment">compare=(n/2)(1-(0.5^n))/(1-0.5) (等比数列求和,n/2 , n/4, ... n/2^n)</span></span><br><span class="line"><span class="comment">exchange=0</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">average-time:O(nlog(n)) (这里要用什么来证明一下，我搞不清楚原理了)</span></span><br><span class="line"><span class="comment">space:O(log(n)~n)(最坏时间为n(递归深度n)，最优时间为log(n)(递归深度log(n)))</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;functional&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> T1&gt;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">quick_sort</span><span class="params">(T * <span class="type">const</span> head, T1 low, T1 high, std::function&lt;T1(T * <span class="type">const</span>, T1 , T1 )&gt; split_func)</span></span>&#123;</span><br><span class="line"><span class="comment">//int bubble_sort(T * const head, const T1 &amp;len, void (*swap_func)(T&amp;,T&amp;) = nullptr)&#123;</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//split must init for type deduction</span></span><br><span class="line">	<span class="keyword">auto</span> split = low;</span><br><span class="line">	<span class="keyword">if</span> (low &lt; high)&#123;</span><br><span class="line">		</span><br><span class="line">		split =  <span class="built_in">split_func</span>(head, low, high);<span class="comment">//split into two arrary and get split val </span></span><br><span class="line">		<span class="built_in">quick_sort</span>(head, low, split<span class="number">-1</span>, split_func);<span class="comment">//deal &lt; split </span></span><br><span class="line">		<span class="built_in">quick_sort</span>(head, split+<span class="number">1</span>, high, split_func);<span class="comment">//deal &gt; split </span></span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">		</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">long</span> <span class="type">int</span> <span class="title">split_func_imp</span><span class="params">(<span class="type">long</span> <span class="type">int</span> * <span class="type">const</span> head, <span class="type">long</span> <span class="type">int</span> low, <span class="type">long</span> <span class="type">int</span> high)</span></span>&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">auto</span> split_val = head[low];</span><br><span class="line">	<span class="keyword">for</span> (; low &lt; high ;)&#123;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">for</span> ( ; low &lt; high &amp;&amp; head[high] &lt;= split_val ; )</span><br><span class="line">			high--;</span><br><span class="line">		head[low] = head[high];</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">for</span> ( ; low &lt; high &amp;&amp; head[low] &gt;= split_val ; )</span><br><span class="line">			low++;</span><br><span class="line">		head[high] = head[low];</span><br><span class="line">	&#125;</span><br><span class="line">	head[low] = split_val;</span><br><span class="line">	<span class="keyword">return</span> low;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> DATA_LEN 100000</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argv, <span class="type">char</span> * argc[])</span></span>&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="type">long</span> * buffer;</span><br><span class="line">	std::filebuf *pbuf;  </span><br><span class="line">	std::ifstream in;</span><br><span class="line">	std::ofstream out;</span><br><span class="line">	in.<span class="built_in">open</span>(<span class="string">&quot;data.txt&quot;</span>);</span><br><span class="line">	<span class="built_in">assert</span>(in.<span class="built_in">is_open</span>());</span><br><span class="line">	<span class="type">long</span> idx = <span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line">	buffer = <span class="keyword">new</span> <span class="type">long</span>[DATA_LEN];</span><br><span class="line"></span><br><span class="line">	std::string data;</span><br><span class="line">	<span class="keyword">for</span> ( ; idx &lt; DATA_LEN; idx++ )&#123;</span><br><span class="line">			</span><br><span class="line">		<span class="built_in">getline</span>(in, data);	</span><br><span class="line">		*(buffer+idx) = <span class="built_in">atol</span>(data.<span class="built_in">c_str</span>());</span><br><span class="line">	&#125;</span><br><span class="line">	in.<span class="built_in">close</span>();</span><br><span class="line">	<span class="type">long</span> low = <span class="number">0</span>;</span><br><span class="line">	<span class="type">long</span> high = DATA_LEN;</span><br><span class="line">	std::function&lt;<span class="type">long</span> <span class="type">int</span> (<span class="type">long</span> <span class="type">int</span> * <span class="type">const</span>, <span class="type">long</span> <span class="type">int</span> , <span class="type">long</span> <span class="type">int</span> )&gt; func = split_func_imp;</span><br><span class="line">	std::chrono::time_point&lt;std::chrono::high_resolution_clock&gt; p0 = std::chrono::high_resolution_clock::<span class="built_in">now</span>();</span><br><span class="line">	<span class="built_in">quick_sort</span>(buffer, low, high, func);</span><br><span class="line"> 	std::chrono::time_point&lt;std::chrono::high_resolution_clock&gt; p1 = std::chrono::high_resolution_clock::<span class="built_in">now</span>();</span><br><span class="line">	std::cout &lt;&lt; <span class="string">&quot;stitch high_resolution_clock time:&quot;</span> &lt;&lt; (<span class="type">float</span>)std::chrono::<span class="built_in">duration_cast</span>&lt;std::chrono::microseconds&gt;(p1 - p0).<span class="built_in">count</span>() / <span class="number">1000</span> &lt;&lt; <span class="string">&quot;ms&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    	</span><br><span class="line">	out.<span class="built_in">open</span>(<span class="string">&quot;quick_sort.txt&quot;</span>);</span><br><span class="line">	<span class="built_in">assert</span>(out.<span class="built_in">is_open</span>());</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">for</span> (idx = <span class="number">0</span> ; idx &lt; DATA_LEN; idx++ )&#123;</span><br><span class="line">			</span><br><span class="line">		out&lt;&lt;*(buffer+idx);</span><br><span class="line">		out&lt;&lt;<span class="string">&quot;\n&quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	out.<span class="built_in">close</span>();</span><br><span class="line">	</span><br><span class="line">  	<span class="keyword">delete</span> []buffer;  </span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/04/blog_idx_059/" rel="prev" title="关于C++ 多态实现技术的深度解析（vfptr,vftable）">
+      <i class="fa fa-chevron-left"></i> 关于C++ 多态实现技术的深度解析（vfptr,vftable）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/05/11/blog_idx_061/" rel="next" title="FFmpeg 基本操作摘要(一) （转流、解码、编码）">
+      FFmpeg 基本操作摘要(一) （转流、解码、编码） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A4%E6%8D%A2%E6%8E%92%E5%BA%8F"><span class="nav-number"></span> <span class="nav-text">交换排序</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F"><span class="nav-number"></span> <span class="nav-text">冒泡排序</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F"><span class="nav-number"></span> <span class="nav-text">快速排序</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

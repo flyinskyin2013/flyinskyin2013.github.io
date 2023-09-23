@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    无     背景   为啥我会去找这方面的资料总结？因为我写了一篇另外的文章:《Android匿名共享内存(Anonymous Shared Memory) — 瞎折腾记录 (驱动程序篇)》(https:&#x2F;&#x2F;blog.csdn.net&#x2F;u01">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux kernel 中进程间描述符的传递方法及原理">
+<meta property="og:url" content="https://e-x.top/2019/03/18/blog_idx_082/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    无     背景   为啥我会去找这方面的资料总结？因为我写了一篇另外的文章:《Android匿名共享内存(Anonymous Shared Memory) — 瞎折腾记录 (驱动程序篇)》(https:&#x2F;&#x2F;blog.csdn.net&#x2F;u01">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_082/socket.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_082/drv.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_082/drv_send.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2019-03-18T07:09:28.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.841Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_082/socket.png">
+
+<link rel="canonical" href="https://e-x.top/2019/03/18/blog_idx_082/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>linux kernel 中进程间描述符的传递方法及原理 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2019/03/18/blog_idx_082/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux kernel 中进程间描述符的传递方法及原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-03-18 15:09:28" itemprop="dateCreated datePublished" datetime="2019-03-18T15:09:28+08:00">2019-03-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>11 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-31 10:22:44
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=082） 
+&emsp;&emsp;本文发布于 2019-03-18 15:09:28，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=082） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="背景">背景</h3>
+<p>  为啥我会去找这方面的资料总结？因为我写了一篇另外的文章:《Android匿名共享内存(Anonymous Shared Memory) — 瞎折腾记录 (驱动程序篇)》(<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/88420467">https://blog.csdn.net/u011728480/article/details/88420467</a>)，写着写着到了最后，其技术核心就是描述符的进程间传递，导致了我必须得去了解这方面的大致原理。</p>
+<p>  本文也是作为那篇文章的后续补充吧。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="技术大致原理">技术大致原理</h3>
+<hr>
+<p>  这里为啥要用“大致”一词，因为还有另外一种比较特殊的传递描述符的方法，文后将会详细说明。</p>
+<p>  描述符 定义大致可以描述为：一个进程空间中，用一个正整数来代表一个已经被此进程打开的文件，我们可以根据这个正整数来操作这个打开文件。从这里我们可以知道，这个正整数是属于这个进程的，换句话说：不同的进程打开同一个文件的描述符是可能一样的值。</p>
+<p>  此外这里有一个关于linux 虚拟文件系统的知识需要我们知道，一个是struct node 一个是struct file。在内核中，维护了一个所有打开文件的struct file表，这个代表着这个文件当前的操作状态等等。这个struct file指向了struct node，struct node 代表的是实际数据在存储介质上的哪个位置。换句简单的话来说就是：A和B两个进程打开了同一个文件，那么内核中就会存在一个struct file的变量指向这个打开的文件，对于AB两个进程来说，都会得到一个值可能不一致的描述符，但是这两个不同的描述符指向了内核中保存的同一个struct file变量。</p>
+<p>  经过上面的说明，我们可以知道的是，至少传递描述符的其中一种原理就是根据当前进程fd找到内核中的struct file，然后在目标进程中申请一个未使用的描述符，然后把这个申请的描述符和这个struct file 关联起来即可。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="基于kernel内核态的描述符传输">基于kernel内核态的描述符传输</h3>
+<hr>
+<p>  在上面的原理分析中，其中根据当前进程的描述符得到当前的已经打开文件的struct file 变量，以及其他操作，这些手段都只能够在内核态实现。所以合理的方案是开发一个linux 驱动(android里面就是通过binder驱动)，让这个描述符的传递通过一个驱动来完成。这样就可以利用内核态的相关接口来完成我们的事情。下面通过示例的源码来分析一波：</p>
+<br/>
+<br/>
+<h5 id="通过fd获取struct-file-变量">通过fd获取struct file 变量</h5>
+<p>  这里我在网上查到的有两种方案（肯定还有其他方案，因为工作在内核态）：一是通过运行进程的pid和fd。二是通过内核态的文件系统提供的fget（struct file *fget(unsigned int fd)）</p>
+<p>  第一种方案：</p>
+<p>  进程有一个进程控制块，进程控制块中放着一个当前进程打开的描述符表，这个表指向了具体的struct file。</p>
+<p>  linux kernel ： kernel/pid.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">通过以下接口：用pid得到struct pid </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">struct</span> pid *<span class="title function_">find_get_pid</span><span class="params">(<span class="type">pid_t</span> nr)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">pid</span> *<span class="title">pid</span>;</span></span><br><span class="line"></span><br><span class="line">	rcu_read_lock();</span><br><span class="line">	pid = get_pid(find_vpid(nr));</span><br><span class="line">	rcu_read_unlock();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> pid;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">通过以下接口，得到进程的控制块：struct task_struct.  (PIDTYPE_PID)</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">struct</span> task_struct *<span class="title function_">pid_task</span><span class="params">(<span class="keyword">struct</span> pid *pid, <span class="keyword">enum</span> pid_type type)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">result</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">if</span> (pid) &#123;</span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">hlist_node</span> *<span class="title">first</span>;</span></span><br><span class="line">		first = rcu_dereference_check(hlist_first_rcu(&amp;pid-&gt;tasks[type]),</span><br><span class="line">					      lockdep_tasklist_lock_is_held());</span><br><span class="line">		<span class="keyword">if</span> (first)</span><br><span class="line">			result = hlist_entry(first, <span class="keyword">struct</span> task_struct, pids[(type)].node);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//struct task_struct的files域指向一个struct files_struct结构体。</span></span><br><span class="line"><span class="comment">//struct files_struct的fdt域指向了一个struct fdtable。</span></span><br><span class="line"><span class="comment">//struct fdtable的fd域指向了一个已经打开的struct file 数组，通过当前描述符来作为索引。</span></span><br><span class="line"><span class="type">int</span> cur_pid;</span><br><span class="line"><span class="type">int</span> cur_fd;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pid</span> * <span class="title">tmp_pid</span> =</span> find_get_pid(cur_pid);</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> * <span class="title">cur_task</span> =</span> pid_task(tmp_pid , PIDTYPE_PID);</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">files_struct</span> * <span class="title">cur_file_struct</span> =</span> cur_task-&gt;files;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">file</span> * <span class="title">cur_file</span> =</span> cur_file_struct-&gt;fdt-&gt;fd[cur_fd];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  第二种方案：</p>
+<p>  内核态的文件系统提供了一个更简洁的方案：</p>
+<p>  linuxkernel: fs/file.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> file *<span class="title function_">fget</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> fd)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> __fget(fd, FMODE_PATH);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="给目标进程获取一个未使用的描述符">给目标进程获取一个未使用的描述符</h5>
+<p>  linuxkernel:fs/open.c或者fs/file.c（我这里有两个内核，linux kernel和android kernel），位置不一致是kernel版本不一致，了解一下就行了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">get_unused_fd_flags</span><span class="params">(<span class="type">unsigned</span> flags)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> __alloc_fd(current-&gt;files, <span class="number">0</span>, rlimit(RLIMIT_NOFILE), flags);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="把我们获取的未使用的描述符和我们获取的struct-file-关联起来">把我们获取的未使用的描述符和我们获取的struct file 关联起来</h5>
+<p>  linuxkernel:fs/open.c或者fs/file.c（我这里有两个内核，linux kernel和android kernel），位置不一致是kernel版本不一致，了解一下就行了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> fastcall <span class="title function_">fd_install</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> fd, <span class="keyword">struct</span> file * file)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">files_struct</span> *<span class="title">files</span> =</span> current-&gt;files;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">fdtable</span> *<span class="title">fdt</span>;</span></span><br><span class="line">	spin_lock(&amp;files-&gt;file_lock);</span><br><span class="line">	fdt = files_fdtable(files);</span><br><span class="line">	BUG_ON(fdt-&gt;fd[fd] != <span class="literal">NULL</span>);</span><br><span class="line">	rcu_assign_pointer(fdt-&gt;fd[fd], file);</span><br><span class="line">	spin_unlock(&amp;files-&gt;file_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="基于用户态的描述符传输">基于用户态的描述符传输</h3>
+<hr>
+<p>  这个是在AUPE中发现的。貌似以前设计内核的人就预留了这个功能，利用unix的本地socket的一个特殊功能即可。这里用到的调用是以下两个：</p>
+<p>  就是建立一个本地socket(AF_LOCAL,AF_UNIX)，然后通过以下两个接口的特殊功能即可完成描述符的特殊转换。这里我不做过多介绍，有兴趣的看文后的实例。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ssize_t</span> <span class="title function_">sendmsg</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> <span class="keyword">struct</span> msghdr *msg, <span class="type">int</span> flags)</span>;</span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">recvmsg</span><span class="params">(<span class="type">int</span> sockfd, <span class="keyword">struct</span> msghdr *msg, <span class="type">int</span> flags)</span>;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="实例分析">实例分析</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="用户态实例">用户态实例</h5>
+<p>  userspace_way1_send.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/un.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span>          <span class="comment">/* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> <span class="title">addr</span>, <span class="title">addr1</span>;</span></span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> fd;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (fd = socket(AF_LOCAL, SOCK_STREAM, <span class="number">0</span>)) )&#123;</span><br><span class="line"></span><br><span class="line">		perror(<span class="string">&quot;socket()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	unlink(<span class="string">&quot;tmp.tmp&quot;</span>);</span><br><span class="line"></span><br><span class="line">	bzero(&amp;addr, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> sockaddr_un));</span><br><span class="line">	bzero(&amp;addr1, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> sockaddr_un));</span><br><span class="line"></span><br><span class="line">	addr.sun_family = AF_LOCAL;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">strncpy</span>(addr.sun_path, <span class="string">&quot;tmp.tmp&quot;</span>, <span class="keyword">sizeof</span>(addr.sun_path)<span class="number">-1</span>);</span><br><span class="line">	</span><br><span class="line">	<span class="type">socklen_t</span> addr_len = <span class="keyword">sizeof</span>(<span class="keyword">struct</span> sockaddr_un);</span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> ret;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (ret = bind(fd, (<span class="keyword">struct</span> sockaddr *) &amp; addr, addr_len )))&#123;</span><br><span class="line"></span><br><span class="line">		perror(<span class="string">&quot;bind()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;	</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (ret = listen(fd, <span class="number">3</span>)) )&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;listen()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="type">socklen_t</span> addr1_len = <span class="keyword">sizeof</span>(<span class="keyword">struct</span> sockaddr_un);</span><br><span class="line">	</span><br><span class="line">	<span class="type">int</span> ret_fd;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; ( ret_fd = accept(fd, (<span class="keyword">struct</span> sockaddr *)&amp;addr1, &amp;addr1_len)))&#123;</span><br><span class="line"></span><br><span class="line">		perror(<span class="string">&quot;accept()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="type">int</span> open_file_fd;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (open_file_fd = open(<span class="string">&quot;test.txt&quot;</span>, O_RDWR)))&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;open()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="type">char</span> file_content [<span class="number">100</span>] = &#123;<span class="number">0x00</span>&#125;;</span><br><span class="line">	<span class="type">int</span> read_bytes_num = read(open_file_fd, file_content, <span class="number">99</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;read file content: %s\n&quot;</span>, file_content);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="type">char</span> * flags = <span class="string">&quot;@!@&quot;</span>;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> <span class="title">iov</span> =</span> &#123;</span><br><span class="line">	</span><br><span class="line">		.iov_base = flags,</span><br><span class="line">		.iov_len = <span class="number">3</span></span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">	<span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">		</span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> <span class="title">cm</span>;</span></span><br><span class="line">		<span class="type">char</span> control[CMSG_SPACE(<span class="keyword">sizeof</span>(<span class="type">int</span>))];</span><br><span class="line"></span><br><span class="line">	&#125;control_un;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">msghdr</span> <span class="title">msg</span> =</span> &#123;</span><br><span class="line">		</span><br><span class="line">		.msg_name = <span class="literal">NULL</span>,</span><br><span class="line">		.msg_namelen = <span class="number">0</span>,</span><br><span class="line">		.msg_iov = &amp;iov,</span><br><span class="line">		.msg_iovlen = <span class="number">1</span>,</span><br><span class="line">		.msg_flags = <span class="number">0</span>,</span><br><span class="line">		.msg_control = control_un.control,</span><br><span class="line">		.msg_controllen = <span class="keyword">sizeof</span>(control_un.control)</span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> *<span class="title">cmsg</span> =</span> CMSG_FIRSTHDR(&amp;msg);</span><br><span class="line"></span><br><span class="line">	cmsg-&gt;cmsg_len = CMSG_LEN(<span class="keyword">sizeof</span>(<span class="type">int</span>));</span><br><span class="line">	cmsg-&gt;cmsg_level = SOL_SOCKET;</span><br><span class="line">	cmsg-&gt;cmsg_type = SCM_RIGHTS;</span><br><span class="line"></span><br><span class="line">	*((<span class="type">int</span>*)CMSG_DATA(cmsg)) = open_file_fd;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (ret = sendmsg(ret_fd, &amp;msg, <span class="number">0</span>)))&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;sendmsg()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	close(open_file_fd);</span><br><span class="line">	close(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  userspace_way1_recv.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/un.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span>          <span class="comment">/* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> <span class="title">addr</span>, <span class="title">addr1</span>;</span></span><br><span class="line">	</span><br><span class="line">	bzero(&amp;addr, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> sockaddr_un));</span><br><span class="line"></span><br><span class="line">	addr.sun_family = AF_LOCAL;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">strncpy</span>(addr.sun_path, <span class="string">&quot;tmp.tmp&quot;</span>, <span class="keyword">sizeof</span>(addr.sun_path)<span class="number">-1</span>);</span><br><span class="line">	</span><br><span class="line">	<span class="type">socklen_t</span> addr_len = <span class="keyword">sizeof</span>(<span class="keyword">struct</span> sockaddr_un);</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	<span class="type">int</span> fd = socket(AF_LOCAL, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> ( fd &lt; <span class="number">0</span> ) &#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;socket() error&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;	</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="type">int</span> con_ret = connect(fd, (<span class="keyword">struct</span> sockaddr *)&amp;addr, addr_len);</span><br><span class="line">	<span class="keyword">if</span> ( con_ret &lt; <span class="number">0</span> ) &#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;connect() error&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//char * flags = &quot;@!@&quot;;</span></span><br><span class="line">	<span class="type">char</span>  flags[<span class="number">3</span>] ;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> <span class="title">iov</span> =</span> &#123;</span><br><span class="line">	</span><br><span class="line">		.iov_base = flags,</span><br><span class="line">		.iov_len = <span class="number">3</span></span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">	<span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">		</span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> <span class="title">cm</span>;</span></span><br><span class="line">		<span class="type">char</span> control[CMSG_SPACE(<span class="keyword">sizeof</span>(<span class="type">int</span>))];</span><br><span class="line"></span><br><span class="line">	&#125;control_un;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">msghdr</span> <span class="title">msg</span> =</span> &#123;</span><br><span class="line">		</span><br><span class="line">		.msg_name = <span class="literal">NULL</span>,</span><br><span class="line">		.msg_namelen = <span class="number">0</span>,</span><br><span class="line">		.msg_iov = &amp;iov,</span><br><span class="line">		.msg_iovlen = <span class="number">1</span>,</span><br><span class="line">		.msg_flags = <span class="number">0</span>,</span><br><span class="line">		.msg_control = control_un.control,</span><br><span class="line">		.msg_controllen = <span class="keyword">sizeof</span>(control_un.control)</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> *<span class="title">cmsg</span> =</span> CMSG_FIRSTHDR(&amp;msg);</span><br><span class="line"></span><br><span class="line">	cmsg-&gt;cmsg_len = CMSG_LEN(<span class="keyword">sizeof</span>(<span class="type">int</span>));</span><br><span class="line">	cmsg-&gt;cmsg_level = SOL_SOCKET;</span><br><span class="line">	cmsg-&gt;cmsg_type = SCM_RIGHTS;</span><br><span class="line"></span><br><span class="line">	*((<span class="type">int</span>*)CMSG_DATA(cmsg)) = <span class="number">-1</span>;</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> ret_recv;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span>  &gt; (ret_recv = recvmsg(fd, &amp;msg, <span class="number">0</span>) ))&#123;</span><br><span class="line"></span><br><span class="line">		perror(<span class="string">&quot;recvmsg()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> open_file_fd = *((<span class="type">int</span>*)CMSG_DATA(cmsg));</span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> ret = lseek(open_file_fd, <span class="number">0</span>, SEEK_SET);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; ret )&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;lseek()&quot;</span>);</span><br><span class="line">	&#125;	</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="type">char</span> file_content [<span class="number">100</span>] = &#123;<span class="number">0x00</span>&#125;;</span><br><span class="line">	<span class="type">int</span> read_bytes_num;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (read_bytes_num = read(open_file_fd, file_content, <span class="number">99</span>) ))&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;read()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> ( <span class="number">0</span> == read_bytes_num )&#123;</span><br><span class="line">		</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;read EOF\n&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;read file content: %s, fd is %d \n&quot;</span>, file_content, open_file_fd);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	close(open_file_fd);</span><br><span class="line">	close(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  运行截图：(send_way1 发送，recv_way1接收，注意文件指针的重置，否则接收者打印的内容为空)</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_082/socket.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<br/>
+<br/>
+<h5 id="内核态实例">内核态实例</h5>
+<p>  建立一个trans_fd_drv驱动，然后操作驱动完成不同进程间描述符的转换。</p>
+<p>  测试环境：</p>
+<ul>
+<li>Ubuntu 18.04</li>
+<li>Linux 4.15.0-46-generic #49-Ubuntu SMP Wed Feb 6 09:33:07 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux</li>
+</ul>
+<p>  驱动源码</p>
+<p>  transmisson_fd_driver.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/init.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/kernel.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/cdev.h&gt;</span> <span class="comment">//struct cdev</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/fs.h&gt;</span><span class="comment">//struct file_operations </span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/device.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;asm/uaccess.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/file.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="keyword">class</span> * <span class="title">ptr_cur_class</span>;</span></span><br><span class="line"></span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">cdev</span>  _<span class="title">cur_cdev</span>;</span></span><br><span class="line"><span class="type">static</span> <span class="type">dev_t</span> _cur_dev; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">file</span> * <span class="title">ptr_trans_file</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">drv_open</span><span class="params">(<span class="keyword">struct</span> inode *inode, <span class="keyword">struct</span> file *filp)</span>&#123;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">drv_release</span><span class="params">(<span class="keyword">struct</span> inode *inode, <span class="keyword">struct</span> file *filp)</span>&#123;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">long</span> <span class="title function_">drv_ioctl</span><span class="params">(<span class="keyword">struct</span> file *filp, <span class="type">unsigned</span> <span class="type">int</span> cmd, <span class="type">unsigned</span> <span class="type">long</span> arg)</span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">switch</span>(cmd)&#123;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">case</span> <span class="number">0</span>:&#123;<span class="comment">//get data</span></span><br><span class="line"></span><br><span class="line">			<span class="type">int</span> get_fd = arg;</span><br><span class="line"></span><br><span class="line">			ptr_trans_file = fget(get_fd);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;		</span><br><span class="line">		<span class="keyword">case</span> <span class="number">1</span>:&#123;<span class="comment">//set data</span></span><br><span class="line">			</span><br><span class="line">			<span class="type">int</span> unused_fd = get_unused_fd_flags(<span class="number">0</span>);</span><br><span class="line">			fd_install(unused_fd, ptr_trans_file);</span><br><span class="line">			__put_user(unused_fd, (<span class="type">int</span> __user *)arg);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			printk(KERN_ERR <span class="string">&quot;drv_ioctl cmd error ......&quot;</span>);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">fops</span> =</span> &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	.owner = THIS_MODULE,</span><br><span class="line">	.open  = drv_open,</span><br><span class="line">	.release = drv_release,</span><br><span class="line">	.unlocked_ioctl = drv_ioctl</span><br><span class="line">&#125;; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> __init <span class="title function_">trans_fd_drv_init</span><span class="params">(<span class="type">void</span>)</span> </span><br><span class="line">&#123; </span><br><span class="line"></span><br><span class="line">    printk(KERN_ERR <span class="string">&quot;trans_fd_drv initing ......&quot;</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//void cdev_init(struct cdev *p, const struct file_operations *p);　</span></span><br><span class="line">    cdev_init(&amp;_cur_cdev, &amp;fops);</span><br><span class="line"></span><br><span class="line"><span class="comment">//int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const char *name);</span></span><br><span class="line">    <span class="type">int</span> ret = alloc_chrdev_region((<span class="type">dev_t</span> *)&amp;_cur_dev, <span class="number">0</span>, <span class="number">1</span>, <span class="string">&quot;trans_fd_drv&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> ( ret &lt; <span class="number">0</span> )&#123;</span><br><span class="line">	</span><br><span class="line">	printk(KERN_ERR <span class="string">&quot;alloc_chrdev_region error&quot;</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//int cdev_add(struct cdev *p, dev_t dev, unsigned count);</span></span><br><span class="line">    <span class="type">dev_t</span> major = MAJOR(_cur_dev);</span><br><span class="line">    ret = cdev_add(&amp;_cur_cdev, _cur_dev, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ( ret &lt; <span class="number">0</span> )&#123;</span><br><span class="line">	</span><br><span class="line">	printk(KERN_ERR <span class="string">&quot;cdev_add error&quot;</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ptr_cur_class = class_create(THIS_MODULE, <span class="string">&quot;trans_fd_drv&quot;</span>);</span><br><span class="line">    device_create(ptr_cur_class, <span class="literal">NULL</span>, _cur_dev, <span class="literal">NULL</span>, <span class="string">&quot;trans_fd_drv&quot;</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> __exit <span class="title function_">trans_fd_drv_exit</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//void device_destroy(struct class *cls, dev_t devt);</span></span><br><span class="line">	device_destroy(ptr_cur_class, _cur_dev);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//void class_destroy(struct class *cls); </span></span><br><span class="line">	class_destroy(ptr_cur_class);  </span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">    <span class="comment">//get command and pid</span></span><br><span class="line">    printk(KERN_ERR <span class="string">&quot;trans_fd_drv exiting ......&quot;</span>);</span><br><span class="line"><span class="comment">//void unregister_chrdev_region(dev_t from, unsigned count);</span></span><br><span class="line">    unregister_chrdev_region(_cur_dev, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//void cdev_del(struct cdev *p);</span></span><br><span class="line">    cdev_del(&amp;_cur_cdev);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(trans_fd_drv_init);</span><br><span class="line">module_exit(trans_fd_drv_exit);</span><br></pre></td></tr></table></figure>
+<p>  操作驱动源码</p>
+<p>  send_fd_from_drv.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span>&#123;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	<span class="type">int</span> fd;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (fd = open(<span class="string">&quot;/dev/trans_fd_drv&quot;</span>, O_RDWR)) )&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;open()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="type">int</span> show_file_fd;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (show_file_fd = open(<span class="string">&quot;test.txt&quot;</span>, O_RDWR)) )&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;open()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="type">char</span> file_content [<span class="number">100</span>] = &#123;<span class="number">0x00</span>&#125;;</span><br><span class="line">	<span class="type">int</span> read_bytes_num = read(show_file_fd, file_content, <span class="number">99</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;read file content: %s\n&quot;</span>, file_content);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (ret = ioctl(fd, <span class="number">0</span>, show_file_fd)) )&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;ioctl()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	close(fd);</span><br><span class="line">	close(show_file_fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  recv_fd_from_drv.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span>&#123;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	<span class="type">int</span> fd;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (fd = open(<span class="string">&quot;/dev/trans_fd_drv&quot;</span>, O_RDWR)) )&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;open()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="type">int</span> show_file_fd;</span><br><span class="line">	<span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; (ret = ioctl(fd, <span class="number">1</span>, &amp;show_file_fd)) )&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;ioctl()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> ret = lseek(show_file_fd, <span class="number">0</span>, SEEK_SET);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> ( <span class="number">0</span> &gt; ret )&#123;</span><br><span class="line">		</span><br><span class="line">		perror(<span class="string">&quot;lseek()&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;	</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="type">char</span> file_content [<span class="number">100</span>] = &#123;<span class="number">0x00</span>&#125;;</span><br><span class="line">	<span class="type">int</span> read_bytes_num = read(show_file_fd, file_content, <span class="number">99</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;read file content: %s\n&quot;</span>, file_content);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	close(fd);</span><br><span class="line">	close(show_file_fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  测试截图</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_082/drv.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_082/drv_send.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  总结</p>
+<ol>
+<li>使自己对用户态和内核态的理解更加的深刻。</li>
+<li>通过实现一个驱动的方式来直接操作内核态内容，这是一个不错的idea。</li>
+<li>我发现，很多时候只有亲自动手来试试，才能实际体会到成就感。</li>
+<li>不折腾，怎么能够进步。</li>
+</ol>
+<p>  注意：这里关于描述符的转换可以是任意描述符，不一定要是文件描述符（网络描述符等等都可以转换，因为linux的设计原则是：一切皆是文件。有vfs的存在，很多操作都被接口化了。）。</p>
+<p>  如果有需求：本文所有测试代码可在这里下载（不建议下载，除了makefile我都把代码全部贴出来了的，csdn的积分我没有找到怎么编辑，默认要5分）：<a target="_blank" rel="noopener" href="https://download.csdn.net/download/u011728480/11033121">https://download.csdn.net/download/u011728480/11033121</a></p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/03/12/blog_idx_081/" rel="prev" title="Android匿名共享内存(Anonymous Shared Memory) --- 瞎折腾记录 (驱动程序篇)">
+      <i class="fa fa-chevron-left"></i> Android匿名共享内存(Anonymous Shared Memory) --- 瞎折腾记录 (驱动程序篇)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/04/28/blog_idx_083/" rel="next" title="一种OSD 简单实现 (文字反色---opencv、字体切换---freetype2(中文、空格))">
+      一种OSD 简单实现 (文字反色---opencv、字体切换---freetype2(中文、空格)) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number"></span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E5%A4%A7%E8%87%B4%E5%8E%9F%E7%90%86"><span class="nav-number"></span> <span class="nav-text">技术大致原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8Ekernel%E5%86%85%E6%A0%B8%E6%80%81%E7%9A%84%E6%8F%8F%E8%BF%B0%E7%AC%A6%E4%BC%A0%E8%BE%93"><span class="nav-number"></span> <span class="nav-text">基于kernel内核态的描述符传输</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%80%9A%E8%BF%87fd%E8%8E%B7%E5%8F%96struct-file-%E5%8F%98%E9%87%8F"><span class="nav-number"></span> <span class="nav-text">通过fd获取struct file 变量</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BB%99%E7%9B%AE%E6%A0%87%E8%BF%9B%E7%A8%8B%E8%8E%B7%E5%8F%96%E4%B8%80%E4%B8%AA%E6%9C%AA%E4%BD%BF%E7%94%A8%E7%9A%84%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="nav-number"></span> <span class="nav-text">给目标进程获取一个未使用的描述符</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%8A%8A%E6%88%91%E4%BB%AC%E8%8E%B7%E5%8F%96%E7%9A%84%E6%9C%AA%E4%BD%BF%E7%94%A8%E7%9A%84%E6%8F%8F%E8%BF%B0%E7%AC%A6%E5%92%8C%E6%88%91%E4%BB%AC%E8%8E%B7%E5%8F%96%E7%9A%84struct-file-%E5%85%B3%E8%81%94%E8%B5%B7%E6%9D%A5"><span class="nav-number"></span> <span class="nav-text">把我们获取的未使用的描述符和我们获取的struct file 关联起来</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E7%94%A8%E6%88%B7%E6%80%81%E7%9A%84%E6%8F%8F%E8%BF%B0%E7%AC%A6%E4%BC%A0%E8%BE%93"><span class="nav-number"></span> <span class="nav-text">基于用户态的描述符传输</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90"><span class="nav-number"></span> <span class="nav-text">实例分析</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E6%80%81%E5%AE%9E%E4%BE%8B"><span class="nav-number"></span> <span class="nav-text">用户态实例</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E6%80%81%E5%AE%9E%E4%BE%8B"><span class="nav-number"></span> <span class="nav-text">内核态实例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

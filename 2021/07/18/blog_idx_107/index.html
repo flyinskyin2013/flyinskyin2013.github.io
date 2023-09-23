@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Windows 10 VSCode Python 3.8.10 Pytorch 1.8.1 Cuda 10.2  前言    在前文中，我们已经接触了两种回归模型，也接触了深度学习中的一些常见的概念。其中有趣的信息是，我们在《DL基础补全计划(二)—Softm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DL基础补全计划(三)---模型选择、欠拟合、过拟合">
+<meta property="og:url" content="https://e-x.top/2021/07/18/blog_idx_107/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Windows 10 VSCode Python 3.8.10 Pytorch 1.8.1 Cuda 10.2  前言    在前文中，我们已经接触了两种回归模型，也接触了深度学习中的一些常见的概念。其中有趣的信息是，我们在《DL基础补全计划(二)—Softm">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_107/normal_train.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_107/underfitting_train.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_107/overfitting_train_nor.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_107/overfitting_train_abnor.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-07-18T10:39:57.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.893Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_107/normal_train.png">
+
+<link rel="canonical" href="https://e-x.top/2021/07/18/blog_idx_107/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>DL基础补全计划(三)---模型选择、欠拟合、过拟合 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/07/18/blog_idx_107/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DL基础补全计划(三)---模型选择、欠拟合、过拟合
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-18 18:39:57" itemprop="dateCreated datePublished" datetime="2021-07-18T18:39:57+08:00">2021-07-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>8.9k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>8 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:09:38
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=107）
+&emsp;&emsp;本文发布于 2021-07-18 18:39:57      （BlogID=107）
+-->
+<h6 id="环境说明">环境说明</h6>
+<ul>
+<li>Windows 10</li>
+<li>VSCode</li>
+<li>Python 3.8.10</li>
+<li>Pytorch 1.8.1</li>
+<li>Cuda 10.2</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  在前文中，我们已经接触了两种回归模型，也接触了深度学习中的一些常见的概念。其中有趣的信息是，我们在《DL基础补全计划(二)—Softmax回归及示例（Pytorch，交叉熵损失）》中已经发现了，在softmax回归的时候，我们使用一个线性的隐藏层在其数据集上都能够达到不错的不错的准确率，这里的不错是指瞎猜和我们的模型推测的准确率，一个是10%，一个是80%左右。这至少说明了我们这个分类模型是有效的。其实后续我们就会更换线性隐藏层为其他层来实现我们的模型，比如：CNN、RNN等等，不同的隐藏层是后续我们要接触和学习的内容，这里不先做详解。</p>
+<p>  我们假设我们已经设计出了许多的不同隐藏层的模型，这个时候有一个重要的问题就是选择哪一个模型为我们实际的要应用的模型，本文将会介绍一些方法来实现怎么选择模型的问题。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="一些基本概念简介">一些基本概念简介</h3>
+<hr>
+<p>  基本概念简介：</p>
+<ul>
+<li>
+<p>训练误差 是指模型在参数更新后，在训练集上做一次测试，算出的和真实值的误差。</p>
+</li>
+<li>
+<p>泛化误差 是指模型在真实数据分布下，算出的和真实值的误差，但是一般情况下数据是无穷多的，我们只能够采集一些真实数据，并算出泛化误差。常见的情况是我们构造一个测试集来计算泛化误差。</p>
+</li>
+<li>
+<p>欠拟合 模型拟合能力差，训练误差和泛化误差差异小，但是两个误差都比较大，一般来说，就是模型基本没有学习到我们需要学习的规律和特征。</p>
+</li>
+<li>
+<p>过拟合 训练误差小，泛化误差大。一般来说就是在训练集上学习的太过分了，类似强行记住了训练集上的所有规律和特征，导致泛化能力太弱了。</p>
+</li>
+</ul>
+<p>  一般来说欠拟合的话，就是换网络，加深加大网络等解决问题，欠拟合其实很明显，解决方向比较明确。</p>
+<p>  其实我们更多是遇到过拟合，因为随着发展，我们的模型越来越深和宽，但是我们能够收集到的数据是有限的，导致了我们的模型可能出现‘死记硬背’下我们的训练集，然后泛化能力就令人担忧，为了缓解这个问题，后续我们将会介绍几种缓解过拟合的方法。</p>
+<p>  下面我们将会通过一个实例来体会一下正常拟合、欠拟合、过拟合。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="一个正常拟合、过拟合、欠拟合的实例">一个正常拟合、过拟合、欠拟合的实例</h3>
+<hr>
+<p>  这里我们通过pytorch的高级API来设计一个线性规划的实例。</p>
+<p>  首先通过如下的代码生成$Y=(X^3/3!)*W1 + (X^2/2!)<em>W2 + X</em>W3 + b + \epsilon, \epsilon=N(0, 0.1^2)$的特征和标签。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">synthetic_data</span>(<span class="params">w, num_examples</span>): <span class="comment">#@save</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;⽣成y = (X1^3/3!)*W1 + (X2^2/2!)*W1 + X3*W3 + b + 噪声。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    X = np.random.normal(<span class="number">0</span>, <span class="number">1</span>, (num_examples, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">    y = np.dot(X**<span class="number">3</span>/np.math.factorial(<span class="number">3</span>), w[<span class="number">0</span>]) + np.dot(X**<span class="number">2</span>/np.math.factorial(<span class="number">2</span>), w[<span class="number">1</span>]) + np.dot(X/np.math.factorial(<span class="number">1</span>), w[<span class="number">2</span>]) + w[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 噪声</span></span><br><span class="line">    y += np.random.normal(<span class="number">0</span>, <span class="number">0.1</span>, y.shape)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> X, y.reshape((-<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>
+<p>  然后通过自定义Pytorch层，通过传入参数N，计算N项多项式的结果。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">TestLayer</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, n, **kwargs</span>):</span><br><span class="line">        <span class="built_in">super</span>(TestLayer, self).__init__(**kwargs)</span><br><span class="line">        self.n = n</span><br><span class="line">        self.w_array = nn.Parameter(torch.tensor( np.random.normal(<span class="number">0</span>, <span class="number">0.1</span>, (<span class="number">1</span>, n))).reshape(-<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line">        self.b = nn.Parameter(torch.tensor(np.random.normal(<span class="number">0</span>, <span class="number">0.1</span>, <span class="number">1</span>)))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">cal</span>(<span class="params">self, X, n</span>):</span><br><span class="line">        X = X.reshape(batch_size, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">        Y = self.b</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">            <span class="comment"># print(X.shape)</span></span><br><span class="line">            <span class="comment"># print(self.w_array.shape)</span></span><br><span class="line">            <span class="comment"># print(Y.shape)</span></span><br><span class="line"></span><br><span class="line">            Y  = Y + torch.matmul(X**(i + <span class="number">1</span>)/torch.tensor(np.math.factorial(i + <span class="number">1</span>)), self.w_array[i])</span><br><span class="line">        <span class="keyword">return</span> Y</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">return</span> self.cal(x, self.n)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TestNet</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, n</span>):</span><br><span class="line">        <span class="built_in">super</span>(TestNet, self).__init__()</span><br><span class="line">        self.test_net = nn.Sequential(</span><br><span class="line">            TestLayer(n)</span><br><span class="line">        )   </span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">return</span> self.test_net(x)</span><br></pre></td></tr></table></figure>
+<p>  最终完整代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">from</span> torch <span class="keyword">import</span> nn</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> torch.utils <span class="keyword">import</span> data</span><br><span class="line"><span class="keyword">from</span> matplotlib.pyplot <span class="keyword">import</span> MultipleLocator</span><br><span class="line"></span><br><span class="line">fig, ax = plt.subplots()</span><br><span class="line">xdata0, ydata0 = [], []</span><br><span class="line">xdata1, ydata1 = [], []</span><br><span class="line">line0, = ax.plot([], [], <span class="string">&#x27;r-&#x27;</span>, label=<span class="string">&#x27;TrainError&#x27;</span>)</span><br><span class="line">line1, = ax.plot([], [], <span class="string">&#x27;b-&#x27;</span>, label=<span class="string">&#x27;TestError&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">init_and_show</span>():</span><br><span class="line">    ax.set_xlabel(<span class="string">&#x27;epoch&#x27;</span>)</span><br><span class="line">    ax.set_ylabel(<span class="string">&#x27;loss&#x27;</span>)</span><br><span class="line">    ax.set_title(<span class="string">&#x27;Train/Test Loss&#x27;</span>)</span><br><span class="line">    ax.set_xlim(<span class="number">0</span>, epochs)</span><br><span class="line">    ax.set_ylim(<span class="number">0.05</span>, <span class="number">100</span>)</span><br><span class="line">    ax.set_yscale(<span class="string">&#x27;log&#x27;</span>)</span><br><span class="line">    <span class="comment"># y_locator = MultipleLocator(0.1)</span></span><br><span class="line">    <span class="comment"># ax.yaxis.set_major_locator(y_locator)</span></span><br><span class="line">    ax.legend([line0, line1], (<span class="string">&#x27;TrainError&#x27;</span>, <span class="string">&#x27;TestError&#x27;</span>))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># ax.legend([line1], (&#x27;TestError&#x27;, ))</span></span><br><span class="line">    line0.set_data(xdata0, ydata0)</span><br><span class="line">    line1.set_data(xdata1, ydata1)</span><br><span class="line"></span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">synthetic_data</span>(<span class="params">w, num_examples</span>): <span class="comment">#@save</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;⽣成y = X1^3*W1 + X2^2*W1 + X3*W3 + b + 噪声。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    X = np.random.normal(<span class="number">0</span>, <span class="number">1</span>, (num_examples, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">    y = np.dot(X**<span class="number">3</span>/np.math.factorial(<span class="number">3</span>), w[<span class="number">0</span>]) + np.dot(X**<span class="number">2</span>/np.math.factorial(<span class="number">2</span>), w[<span class="number">1</span>]) + np.dot(X/np.math.factorial(<span class="number">1</span>), w[<span class="number">2</span>]) + w[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 噪声</span></span><br><span class="line">    y += np.random.normal(<span class="number">0</span>, <span class="number">0.1</span>, y.shape)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> X, y.reshape((-<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TestLayer</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, n, **kwargs</span>):</span><br><span class="line">        <span class="built_in">super</span>(TestLayer, self).__init__(**kwargs)</span><br><span class="line">        self.n = n</span><br><span class="line">        self.w_array = nn.Parameter(torch.tensor( np.random.normal(<span class="number">0</span>, <span class="number">0.1</span>, (<span class="number">1</span>, n))).reshape(-<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line">        self.b = nn.Parameter(torch.tensor(np.random.normal(<span class="number">0</span>, <span class="number">0.1</span>, <span class="number">1</span>)))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">cal</span>(<span class="params">self, X, n</span>):</span><br><span class="line">        X = X.reshape(batch_size, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">        Y = self.b</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">            <span class="comment"># print(X.shape)</span></span><br><span class="line">            <span class="comment"># print(self.w_array.shape)</span></span><br><span class="line">            <span class="comment"># print(Y.shape)</span></span><br><span class="line"></span><br><span class="line">            Y  = Y + torch.matmul(X**(i + <span class="number">1</span>)/torch.tensor(np.math.factorial(i + <span class="number">1</span>)), self.w_array[i])</span><br><span class="line">        <span class="keyword">return</span> Y</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">return</span> self.cal(x, self.n)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TestNet</span>(nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, n</span>):</span><br><span class="line">        <span class="built_in">super</span>(TestNet, self).__init__()</span><br><span class="line">        self.test_net = nn.Sequential(</span><br><span class="line">            TestLayer(n)</span><br><span class="line">        )   </span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="keyword">return</span> self.test_net(x)</span><br><span class="line"></span><br><span class="line"><span class="comment"># copy from d2l/torch.py</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">load_array</span>(<span class="params">data_arrays, batch_size, is_train=<span class="literal">True</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Construct a PyTorch data iterator.&quot;&quot;&quot;</span></span><br><span class="line">    dataset = data.TensorDataset(*data_arrays)</span><br><span class="line">    <span class="keyword">return</span> data.DataLoader(dataset, batch_size, shuffle=is_train)</span><br><span class="line"></span><br><span class="line"><span class="comment"># def data_loader(batch_size, features, labels):</span></span><br><span class="line"><span class="comment">#     num_examples = len(features)</span></span><br><span class="line"><span class="comment">#     indices = list(range(num_examples))</span></span><br><span class="line"><span class="comment">#     np.random.shuffle(indices) # 样本的读取顺序是随机的</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#     for i in range(0, num_examples, batch_size):</span></span><br><span class="line"><span class="comment">#         j = np.array(indices[i: min(i + batch_size, num_examples)])</span></span><br><span class="line"><span class="comment">#         yield torch.tensor(features.take(j, 0)), torch.tensor(labels.take(j)) # take函数根据索引返回对应元素</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">train</span>(<span class="params">dataloader, model, loss_fn, optimizer</span>):</span><br><span class="line">    size = train_examples</span><br><span class="line">    num_batches = train_examples / batch_size</span><br><span class="line">    train_loss_sum = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> batch, (X, y) <span class="keyword">in</span> <span class="built_in">enumerate</span>(dataloader):</span><br><span class="line">        <span class="comment"># move X, y to gpu</span></span><br><span class="line">        <span class="keyword">if</span> torch.cuda.is_available():</span><br><span class="line">            X = X.to(<span class="string">&#x27;cuda&#x27;</span>)</span><br><span class="line">            y = y.to(<span class="string">&#x27;cuda&#x27;</span>)</span><br><span class="line">        <span class="comment"># Compute prediction and loss</span></span><br><span class="line">        pred = model(X)</span><br><span class="line">        loss = loss_fn(pred, y)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Backpropagation</span></span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        loss.backward()</span><br><span class="line">        optimizer.step()</span><br><span class="line"></span><br><span class="line">        train_loss_sum += loss.item()</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> batch % <span class="number">5</span> == <span class="number">0</span>:</span><br><span class="line">            loss, current = loss.item(), batch * <span class="built_in">len</span>(X)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;loss: <span class="subst">&#123;loss:&gt;7f&#125;</span>  [<span class="subst">&#123;current:&gt;5d&#125;</span>/<span class="subst">&#123;size:&gt;5d&#125;</span>]&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Train Error: \n Avg loss: <span class="subst">&#123;train_loss_sum/num_batches:&gt;8f&#125;</span> \n&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> train_loss_sum/num_batches</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test</span>(<span class="params">dataloader, model, loss_fn</span>):</span><br><span class="line">    num_batches = test_examples / batch_size</span><br><span class="line">    test_loss = <span class="number">0</span></span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        <span class="keyword">for</span> X, y <span class="keyword">in</span> dataloader:</span><br><span class="line">            <span class="comment"># move X, y to gpu</span></span><br><span class="line">            <span class="keyword">if</span> torch.cuda.is_available():</span><br><span class="line">                X = X.to(<span class="string">&#x27;cuda&#x27;</span>)</span><br><span class="line">                y = y.to(<span class="string">&#x27;cuda&#x27;</span>)</span><br><span class="line">            pred = model(X)</span><br><span class="line">            test_loss += loss_fn(pred, y).item()</span><br><span class="line"></span><br><span class="line">    test_loss /= num_batches</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Test Error: \n Avg loss: <span class="subst">&#123;test_loss:&gt;8f&#125;</span> \n&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> test_loss</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    device = <span class="string">&#x27;cuda&#x27;</span> <span class="keyword">if</span> torch.cuda.is_available() <span class="keyword">else</span> <span class="string">&#x27;cpu&#x27;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Using &#123;&#125; device&#x27;</span>.<span class="built_in">format</span>(device))</span><br><span class="line">    </span><br><span class="line">    true_w1 = [<span class="number">1.65</span>]</span><br><span class="line"></span><br><span class="line">    true_w2 = [-<span class="number">2.46</span>]</span><br><span class="line"></span><br><span class="line">    true_w3 = [<span class="number">3.54</span>]</span><br><span class="line"></span><br><span class="line">    true_b = <span class="number">0.78</span>    </span><br><span class="line"></span><br><span class="line">    test_examples = <span class="number">100</span></span><br><span class="line">    train_examples = <span class="number">100</span></span><br><span class="line">    </span><br><span class="line">    num_examples = test_examples + train_examples</span><br><span class="line"></span><br><span class="line">    f1, labels = synthetic_data([true_w1, true_w2, true_w3, true_b], num_examples)</span><br><span class="line">    <span class="built_in">print</span>(f1.shape)</span><br><span class="line">    <span class="built_in">print</span>(labels.shape)</span><br><span class="line"></span><br><span class="line">    num_weight = <span class="number">3</span></span><br><span class="line"></span><br><span class="line">    l1_loss_fn = torch.nn.MSELoss()</span><br><span class="line">    </span><br><span class="line">    learning_rate = <span class="number">0.01</span></span><br><span class="line"></span><br><span class="line">    model = TestNet(num_weight)</span><br><span class="line"></span><br><span class="line">    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)</span><br><span class="line"></span><br><span class="line">    model = model.to(device)</span><br><span class="line">    <span class="built_in">print</span>(model)</span><br><span class="line"></span><br><span class="line">    epochs = <span class="number">1500</span></span><br><span class="line"></span><br><span class="line">    model.train()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    batch_size = <span class="number">10</span></span><br><span class="line"></span><br><span class="line">    train_data = (torch.tensor(f1[:train_examples,]), torch.tensor(labels[:train_examples,]))</span><br><span class="line">    test_data = (torch.tensor(f1[train_examples:,]), torch.tensor(labels[train_examples:,]))</span><br><span class="line"></span><br><span class="line">    train_dataloader = load_array(train_data ,batch_size, <span class="literal">True</span>)</span><br><span class="line">    test_dataloader = load_array(test_data ,batch_size, <span class="literal">True</span>)</span><br><span class="line">    <span class="comment"># verify dataloader</span></span><br><span class="line">    <span class="comment"># for x,y in train_dataloader:</span></span><br><span class="line">    <span class="comment">#     print(x.shape)</span></span><br><span class="line">    <span class="comment">#     print(y.shape)</span></span><br><span class="line">    <span class="comment">#     print(torch.matmul(x**3, torch.tensor(true_w1, dtype=torch.double)) + torch.matmul(x**2, torch.tensor(true_w2, dtype=torch.double)) + torch.matmul(x, torch.tensor(true_w3, dtype=torch.double)) + true_b)</span></span><br><span class="line">    <span class="comment">#     print(y)</span></span><br><span class="line">    <span class="comment">#     break</span></span><br><span class="line"></span><br><span class="line">    model.train()</span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(epochs):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Epoch <span class="subst">&#123;t+<span class="number">1</span>&#125;</span>\n-------------------------------&quot;</span>)</span><br><span class="line">        train_l = train(train_dataloader, model, l1_loss_fn, optimizer)</span><br><span class="line">        test_l = test(test_dataloader, model, l1_loss_fn)</span><br><span class="line">        ydata0.append(train_l*<span class="number">10</span>)</span><br><span class="line">        ydata1.append(test_l*<span class="number">10</span>)</span><br><span class="line">        xdata0.append(t)</span><br><span class="line">        xdata1.append(t)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Done!&quot;</span>)</span><br><span class="line"></span><br><span class="line">    init_and_show()</span><br><span class="line"></span><br><span class="line">    param_iter = model.parameters()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;W = &#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">next</span>(param_iter)[: num_weight, :])</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;b = &#x27;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">next</span>(param_iter))</span><br></pre></td></tr></table></figure>
+<p>  注意，此最终代码首先生成了100个训练集和100个测试集。通过num_weight可以控制参与训练的多项式个数，话句话说，可以控制参与拟合训练的参数个数。下面通过三个说明我们来看看，不同num_weight下，TrainErr和TestErr和迭代次数，参与拟合训练的参数的关系。</p>
+<br/>
+<br/>
+<h5 id="正常拟合-num-weight-3">正常拟合(num_weight = 3)</h5>
+<p>  当num_weight = 3时，运行我们的训练脚本，我们可以清楚的看到，我们拟合出来的结果和我们的真实参数是几乎一样的。同时我们也可以看到TrainErr和TestErr快速的收敛接近0而且差别不是很大。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_107/normal_train.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<br/>
+<br/>
+<h5 id="欠拟合-num-weight-1">欠拟合(num_weight = 1)</h5>
+<p>  当num_weight = 1时，运行我们的训练脚本，我们可以清楚的看到，损失图像到了一定程度就不下降了，不能够收敛。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_107/underfitting_train.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<h5 id="过拟合-num-weight-20">过拟合(num_weight = 20)</h5>
+<p>  当num_weight = 20时，按照我们的猜测，我们的模型应该会出现过拟合。</p>
+<p>  正常过拟合现象, 注意观察最终输出前面3项的w和b和真实w和b存在差异。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_107/overfitting_train_nor.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  从我多次的实验的结果来看，除了上面的真实出现的过拟合情况，还有一些情况是，不会出现过拟合现象，如下图。注意观察最终输出前面3项的w和b和真实w和b。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_107/overfitting_train_abnor.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  我们通过观察，发现了w的4到20项参数接近于0，前面3项的w和b和真实w和b是比较接近的，因此我们猜测没有出现过拟合的原因是w的4到20项的权重在整个表达式中占比非常小，因此不会过拟合。可以直接理解为w的4到20项的权重为0。</p>
+<p>  注意过拟合这个例子，需要多次运行才会出现过拟合现象，其是波动的，其实就是我们初始化的参数充满了随机性，导致了不容易收敛。而欠拟合和正常拟合的例子不管你怎么运行，都能稳定的得到结果。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  这里我们从模型选择的角度出发，发现了我们训练的过程中会出现的3种现象，欠拟合，正常拟合，过拟合。其中正常拟合状态下的模型是我们需要的。</p>
+<p>  对于欠拟合来说，就是参与训练的参数少了，换句话说我们的模型太简单了，不能够代表我们要学习的特征，导致完全不能够收敛。</p>
+<p>  对于过拟合来说，远不止我们看到的这么简单和清晰。在这里我们只是看到了一个主要的导致训练出现大波动的原因就是参数过多，这种情况下会出现过拟合现象。由于在后面的模型中，参数都是成百上千，我们不可能一个个尝试，因此在后续，我们还会学习一些手段来抑制过拟合现象。</p>
+<p>  这里我们也要引出一个问题，我们知道模型的复杂度（参数个数）在一个特定数据集上可能会导致过拟合，那么我们除了控制模型复杂度之外，还有其他的方案可以选择吗?</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/d2l-ai/d2l-zh/releases">https://github.com/d2l-ai/d2l-zh/releases</a> (V1.0.0)</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/d2l-ai/d2l-zh/releases">https://github.com/d2l-ai/d2l-zh/releases</a> (V2.0.0 alpha1)</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/11/blog_idx_106/" rel="prev" title="DL基础补全计划(二)---Softmax回归及示例（Pytorch，交叉熵损失）">
+      <i class="fa fa-chevron-left"></i> DL基础补全计划(二)---Softmax回归及示例（Pytorch，交叉熵损失）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/01/blog_idx_108/" rel="next" title="DL基础补全计划(四)---对抗过拟合：权重衰减、Dropout">
+      DL基础补全计划(四)---对抗过拟合：权重衰减、Dropout <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">一些基本概念简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E6%AD%A3%E5%B8%B8%E6%8B%9F%E5%90%88%E3%80%81%E8%BF%87%E6%8B%9F%E5%90%88%E3%80%81%E6%AC%A0%E6%8B%9F%E5%90%88%E7%9A%84%E5%AE%9E%E4%BE%8B"><span class="nav-number"></span> <span class="nav-text">一个正常拟合、过拟合、欠拟合的实例</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%AD%A3%E5%B8%B8%E6%8B%9F%E5%90%88-num-weight-3"><span class="nav-number"></span> <span class="nav-text">正常拟合(num_weight &#x3D; 3)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%AC%A0%E6%8B%9F%E5%90%88-num-weight-1"><span class="nav-number"></span> <span class="nav-text">欠拟合(num_weight &#x3D; 1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%BF%87%E6%8B%9F%E5%90%88-num-weight-20"><span class="nav-number"></span> <span class="nav-text">过拟合(num_weight &#x3D; 20)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

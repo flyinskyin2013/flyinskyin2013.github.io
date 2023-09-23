@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    软件开发，水很深。   做了两年有余的攻城狮，做了代码开发，技术框架搭建，环境搭建，项目管理，用户沟通等工作，我从代码开发者的角度来看，我们的写的内容到用户实际使用往往中间有许多的内容的，作为开发者，千万别人为自己写的代码就是整个项目周期的全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="软件开发、持续集成（CI）、持续交付(CD)、持续部署（CD） 和 版本管理(Version Control) 的理解和思考">
+<meta property="og:url" content="https://e-x.top/2019/12/20/blog_idx_090/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    软件开发，水很深。   做了两年有余的攻城狮，做了代码开发，技术框架搭建，环境搭建，项目管理，用户沟通等工作，我从代码开发者的角度来看，我们的写的内容到用户实际使用往往中间有许多的内容的，作为开发者，千万别人为自己写的代码就是整个项目周期的全">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2019-12-20T08:52:54.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.861Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://e-x.top/2019/12/20/blog_idx_090/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>软件开发、持续集成（CI）、持续交付(CD)、持续部署（CD） 和 版本管理(Version Control) 的理解和思考 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2019/12/20/blog_idx_090/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          软件开发、持续集成（CI）、持续交付(CD)、持续部署（CD） 和 版本管理(Version Control) 的理解和思考
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-12-20 16:52:54" itemprop="dateCreated datePublished" datetime="2019-12-20T16:52:54+08:00">2019-12-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-31 10:39:57
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=090） 
+&emsp;&emsp;本文发布于 2019-12-20 16:52:54，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=090） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  软件开发，水很深。</p>
+<p>  做了两年有余的攻城狮，做了代码开发，技术框架搭建，环境搭建，项目管理，用户沟通等工作，我从代码开发者的角度来看，我们的写的内容到用户实际使用往往中间有许多的内容的，作为开发者，千万别人为自己写的代码就是整个项目周期的全部，其实code部分只占很少的时间，从code后到交付给用户使用的中间部分才是非常大的一个时间占比。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="软件开发思考">软件开发思考</h3>
+<hr>
+<p>  在学校里面，当我们学习软件工程这门课时，教授的内容是比较传统的软件开发流程，它们大概是如下的流程：</p>
+<ol>
+<li>获取到大致项目需求</li>
+<li>需求评估</li>
+<li>需求文档整理</li>
+<li>概要设计（技术框架设计）</li>
+<li>编码</li>
+<li>测试</li>
+<li>交付</li>
+</ol>
+<p>  当交付给用户后，实际情况是不可能一次性交付成功的，都会涉及到相关的需求细化和变更，于是又要重复5-7的步骤。</p>
+<p>  到了实际工作中后，会出现一种现象，项目交付的时间尽可能短，项目需求变更和交付时间也需要尽可能的短，于是就出现了传统按部就班的开发模式不能够完成相关的项目，于是出现了一些快速开发的方法，如敏捷开发。</p>
+<p>  在实际过程中，敏捷开发只是加速开发迭代部分，如果没有控制好，就会出现开发速度加快了，但是测试，交付会出现问题，为啥会出现呢？其实很简单，就是都是独立串行的，这会导致从整体看，项目开发时间拖长。</p>
+<p>  为了解决类似的问题，又提出了类似Devops的说法，就是大家都坐一起，相互依赖的做事，因为都是站在整体考虑的，所以可以对整个流程（开发、测试、交付）的情况进行协调，效率会比较好。</p>
+<p>  为了把上述的问题处理好，我们必须要引入一些工具（VCS,CI,CD,CD）来帮助我们做事，否则是处理不好的这些事的，就会出现：要不效率低，能完成。要不效率高，就是容易出错。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="版本管理系统（Version-Control-System）">版本管理系统（Version Control System）</h3>
+<hr>
+<p>  版本管理系统，这个不用介绍了，大家平常工作中都会用，常用的有svn和git，如果没有接触过，有兴趣的可以多去网上找找资料学习学习，它们可以提供代码管理、溯源等功能。</p>
+<p>  版本管理系统除了本身的属性外，它自身带的一些特性可以用来做一些其他的事情，比如它的push事件可以用来触发一些其他的工作。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="持续集成（Continuous-Integration）">持续集成（Continuous Integration）</h3>
+<hr>
+<p>  持续集成其实对于开发者来说，是很简单的一件事情。就相当于你code完，然后手动编译，测试这样的一个流程。平常比如你用vs写了一个程序，然后你右键编译，然后f5运行测试，最后到相应的目录去打包发布程序。这种方式在软件规模比较小的时候，完全可以采用，流程可控的，当软件规模过大，而且需要持续维护修改时，这种方式会让人炸裂的。</p>
+<p>  所以持续集成简单的归纳为通过一些工具来自动化编译，单元测试，并生成相关的报告。至于什么时候自动开始编译，这里就是上文说的VCS的相关事件来触发就行。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="持续交付（Continuous-Delivery）">持续交付（Continuous Delivery）</h3>
+<hr>
+<p>  持续交付其实由相关QA质量保证团队来手动或者自动的方式，检测刚刚持续集成的程序版本，在模拟生产环境下，是否能够正常工作。</p>
+<p>  这里强调的还是内部测试，只是相关测试更贴近于实际生产环境。注意这里没有部署到生产环境。对于很多公司来说，其实QA软件部门是等于没有的。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="持续部署（Continuous-Deployment）">持续部署（Continuous Deployment）</h3>
+<hr>
+<p>  持续部署就是通过一些工具，自动化的把经过单元测试，QA测试后，打包，自动化部署到生产环境这么一个过程。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="关于ci，cd，cd，vcs的说明">关于ci，cd，cd，vcs的说明</h3>
+<hr>
+<p>  其实就以上而言，你可以直接认为就是，使用工具，自动化从vcs拉取代码，自动化编译测试程序，（半）自动化QA保证，自动化部署程序到生产环境这么一个过程。这里借助了很多自动化工具，大大节约了程序多次迭代的时间。所以对于软件开发来说，哪怕是敏捷开发，devops等模式都可以很好的建立起来。</p>
+<p>  但是不是说以上的就是最好的呢？因为在软件第一次发布的时候，如果借用以上的自动化流程，需要一个人或者团队来建立这个自动化逻辑，这是比较烦的一件事情，所以如果软件迭代次数少，规模不大，不要硬搬硬套上述整个流程，实在是不合适。但是里面的vcs，我还是希望每个项目都能够用起来，真的很不错。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Jenkins-，-Travis-，Github-Action-等ci，cd工具说明">Jenkins ， Travis  ，Github Action 等ci，cd工具说明</h3>
+<hr>
+<p>  这些工具是我用过的，世界上还有许多这样的工具，看个人喜好了。这里要对这些工具分一个类，按照他们的部署位置分一下，一种是需要自己搭建相关服务的，并完成cicd的事情，一种是自己提供相关配置文件（yml），由云端给你解析这个配置文件并完成相关功能。</p>
+<p>  这里Jenkins是属于需要自己搭建服务的，需要自己定义相关的流程并完成cicd的事情。</p>
+<p>  Travis，GitHub Action这种是输入云端的功能，基本上算是属于SaaS，你只需要提供遵循相关语法的配置文件，它们就会自动完成你定义的流程。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  总结</p>
+<p>  合适的事情，选择合适的工具。不是所有的情况都能够把上面的整套给怼到团队中去，但是整个软件开发的流程和内容还是值得我们大家思考和借鉴的。</p>
+<p>  比如我们的团队就引入了git和jenkins就够了，能够做简单的版本管理和基本的软件集成测试。其他的手动介入性价比比较好。</p>
+<p>  比如我自己封装的一些开源小功能，我引入git，travis， github action就已经足够了。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/11/04/blog_idx_089/" rel="prev" title="大端(big endian) 小端(little endian) --- 在多字节存储 和 多字节通信中的含义（我还是太年轻了）">
+      <i class="fa fa-chevron-left"></i> 大端(big endian) 小端(little endian) --- 在多字节存储 和 多字节通信中的含义（我还是太年轻了）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/01/09/blog_idx_091/" rel="next" title="C++ 调用 Python 总结(一)">
+      C++ 调用 Python 总结(一) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E6%80%9D%E8%80%83"><span class="nav-number"></span> <span class="nav-text">软件开发思考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F%EF%BC%88Version-Control-System%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">版本管理系统（Version Control System）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%EF%BC%88Continuous-Integration%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">持续集成（Continuous Integration）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%81%E7%BB%AD%E4%BA%A4%E4%BB%98%EF%BC%88Continuous-Delivery%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">持续交付（Continuous Delivery）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%81%E7%BB%AD%E9%83%A8%E7%BD%B2%EF%BC%88Continuous-Deployment%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">持续部署（Continuous Deployment）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E4%BA%8Eci%EF%BC%8Ccd%EF%BC%8Ccd%EF%BC%8Cvcs%E7%9A%84%E8%AF%B4%E6%98%8E"><span class="nav-number"></span> <span class="nav-text">关于ci，cd，cd，vcs的说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Jenkins-%EF%BC%8C-Travis-%EF%BC%8CGithub-Action-%E7%AD%89ci%EF%BC%8Ccd%E5%B7%A5%E5%85%B7%E8%AF%B4%E6%98%8E"><span class="nav-number"></span> <span class="nav-text">Jenkins ， Travis  ，Github Action 等ci，cd工具说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

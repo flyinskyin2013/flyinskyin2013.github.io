@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  MLU220 开发板 Ubuntu18.04 + MLU270开发主机一台 aarch64-linux-gnu-gcc 6.x 交叉编译环境  前言    阅读本文前，请务必须知以下前置文章概念：  《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本">
+<meta property="og:type" content="article">
+<meta property="og:title" content="寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析">
+<meta property="og:url" content="https://e-x.top/2021/11/28/blog_idx_114/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  MLU220 开发板 Ubuntu18.04 + MLU270开发主机一台 aarch64-linux-gnu-gcc 6.x 交叉编译环境  前言    阅读本文前，请务必须知以下前置文章概念：  《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/no_dev.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/insmod_drv.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/test_seg.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-11-28T11:01:17.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.911Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/no_dev.png">
+
+<link rel="canonical" href="https://e-x.top/2021/11/28/blog_idx_114/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/11/28/blog_idx_114/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-11-28 19:01:17" itemprop="dateCreated datePublished" datetime="2021-11-28T19:01:17+08:00">2021-11-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>8.5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>8 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:14:43
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=114） 
+&emsp;&emsp;本文发布于 2021-11-28 19:01:17     （BlogID=114）
+-->
+<h6 id="环境说明">环境说明</h6>
+<ul>
+<li>MLU220 开发板</li>
+<li>Ubuntu18.04 + MLU270开发主机一台</li>
+<li>aarch64-linux-gnu-gcc 6.x 交叉编译环境</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  阅读本文前，请务必须知以下前置文章概念：</p>
+<ul>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</li>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</li>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121456789">https://blog.csdn.net/u011728480/article/details/121456789</a> ）</li>
+</ul>
+<p>  这里再次回顾一下《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》的内容，寒武纪加速卡是一个硬件平台，是最底层的存在，在硬件平台之上，有驱动，在驱动之上，有运行时。本文的离线模型就是基于运行时的api进行调用和处理，得到模型结果。</p>
+<p>  本文作为本系列的终篇，将会从上文的离线模型开始，从头开始搭建我们的离线模型推理代码结构，经过合理的部署，能够在MLU220开发板正常的运行。</p>
+<p>  若文中引用部分存在侵权，请及时联系我删除。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="离线模型推理前置须知">离线模型推理前置须知</h3>
+<hr>
+<p>  经过前文相关的介绍，我们可以知道我们主要调用的是运行时相关的api。这里存在两套api可以使用，一个是cnrt，一个是easydk。easydk是基于cnrt封装的api，大大简化了离线模型推理的开发流程。但是我们的开发主线是一致的，就是初始化mlu设备，加载模型，预处理，模型推理，后处理，处理结果。</p>
+<p>  此外，寒武纪还提供了CNStream程序框架，基于EasyDk开发，以pipeline+observer的方式，提供了一个简单易用的框架，如果有兴趣，请查看其官网 <a target="_blank" rel="noopener" href="https://github.com/Cambricon/CNStream">https://github.com/Cambricon/CNStream</a> 。</p>
+<p>  我们其实要用的是EasyDK+CNRT的这种开发方式，构造一个类似CNStream这样的程序。</p>
+<br/>
+<br/>
+<h5 id="EasyDK简介与编译">EasyDK简介与编译</h5>
+<p>  首先其官网是：<a target="_blank" rel="noopener" href="https://github.com/Cambricon/easydk%E3%80%82">https://github.com/Cambricon/easydk。</a></p>
+<p>  其除了CNToolKit的依赖（neuware）之外，还依赖于glog,gflags,opencv，这些需要提前安装好。至于CNToolKit x86的版本的相关介绍已经在模型移植环境部分介绍过了。</p>
+<p>  由于我们要开发边缘端离线模型推理程序，一般来说，我们主要还是使用到EasyDK里面的EasyInfer部分的内容。其编译流程的话就如其官方介绍：</p>
+<ul>
+<li>cmake …</li>
+<li>make</li>
+</ul>
+<p>  如果熟悉cmake的编译流程的话，其实就知道上面的流程是非常普遍的。对于EasyDK的编译来说，在x86下面进行编译是很简单的，但是如果要进行交叉编译的话，最好只生成核心库，其他的sample和test都关闭。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="完成离线模型在MLU270上的运行">完成离线模型在MLU270上的运行</h3>
+<hr>
+<p>  还记得在《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》一文中，我们可以看到，通过torch_mlu.core.mlu_model.set_core_version(‘MLU220’)，我们可以调整生成的离线模型运行的平台，可以是边缘端MLU220，可以是服务器部署端的MLU270。对的，没有看错，MLU270既可以做模型移植，也可以做离线模型的部署，就如同本系列的开篇所讲，这几个平台仅仅是部署场景的差异。</p>
+<p>  为什么我们需要在MLU270上调试离线模型呢？因为方便。因为MLU220一般来说都需要交叉编译，特别是相关的依赖库的生成比较麻烦，如果MLU220的板卡也方便调试的话，那也可以直接基于MLU220进行开发和调试。</p>
+<p>  由于我这边是EasyDK+CNRT混合调用的形式，因此我主要根据其官方的CNRT推理代码进行注释和介绍，并在相关位置标注哪些内容是EasyDK可以一步到位的。这里简单的回答几个疑问。为什么需要EasyDK这个库呢？为什么不直接基于CNRT进行开发？我的回答是根据项目推进的需要做出的选择。关于这种程序的最终形态，其实我还是期待直接基于CNRT开发，因为其有效，但是代价是你必须很熟悉的了解相关的内容。</p>
+<p>  下面是官方推理代码介绍（可能会在顺序上做一些变更，其官方代码未处理一些返回值，自己编写的时候需要注意,此外,官方的代码有些遗漏的地方,我进行了修改）：</p>
+ <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Copyright (C) [2019] by Cambricon, Inc. */</span></span><br><span class="line"> <span class="comment">/* offline_test */</span></span><br><span class="line"> <span class="comment">/*</span></span><br><span class="line"><span class="comment">  * A test which shows how to load and run an offline model.</span></span><br><span class="line"><span class="comment">  * This test consists of one operation --mlp.</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * This example is used for MLU270 and MLU220.</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="keyword">include</span> <span class="string">&quot;cnrt.h&quot;</span></span></span><br><span class="line"> <span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"> <span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"> <span class="type">int</span> <span class="title function_">offline_test</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name)</span> &#123;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// This example is used for MLU270 and MLU220. You need to choose the corresponding offline model.</span></span><br><span class="line">   <span class="comment">// when generating an offline model, u need cnml and cnrt both</span></span><br><span class="line">   <span class="comment">// when running an offline model, u need cnrt only</span></span><br><span class="line">   <span class="comment">// 第一步，你必须调用cnrtInit()初始化运行时环境</span></span><br><span class="line">   cnrtInit(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第二步， 就是检查MLU设备，并设定当前设备，这一步其实是为多设备推理准备的</span></span><br><span class="line">   cnrtDev_t dev;</span><br><span class="line">   cnrtGetDeviceHandle(&amp;dev, <span class="number">0</span>);</span><br><span class="line">   cnrtSetCurrentDevice(dev);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 这里的第一二步其实可能创建一个EasyInfer对象就完成了，而且具备了完整的错误检查。</span></span><br><span class="line"></span><br><span class="line">   <span class="comment">// </span></span><br><span class="line">   <span class="comment">// prepare model name</span></span><br><span class="line">   <span class="comment">// load model</span></span><br><span class="line">   <span class="comment">// 第三步，就是加载模型</span></span><br><span class="line">   cnrtModel_t model;</span><br><span class="line">   cnrtLoadModel(&amp;model, <span class="string">&quot;test.cambricon&quot;</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// get model total memory</span></span><br><span class="line">   <span class="comment">// 第四步，就是获取模型的一些属性，比如内存占用，并行性这些，这一步是可选的。</span></span><br><span class="line">   <span class="type">int64_t</span> totalMem;</span><br><span class="line">   cnrtGetModelMemUsed(model, &amp;totalMem);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;total memory used: %ld Bytes\n&quot;</span>, totalMem);</span><br><span class="line">   <span class="comment">// get model parallelism</span></span><br><span class="line">   <span class="type">int</span> model_parallelism;</span><br><span class="line">   cnrtQueryModelParallelism(model, &amp;model_parallelism);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;model parallelism: %d.\n&quot;</span>, model_parallelism);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第五步，是建立推理逻辑流，这一步就是根据离线模型，在内存中动态生成模型推理结构。这里的&quot;subnet0&quot;是一个 kernel-func 名字，非固定，但是常见的名字都是subnet0，</span></span><br><span class="line">   <span class="comment">// 在.cambricon_twins配套文件中有相关定义。</span></span><br><span class="line">   <span class="comment">// 他这个和cuda编程其实比较类似，我们刚刚生成的模型推理结构其实被当做一个内核函数，函数名就是这个。</span></span><br><span class="line">   <span class="comment">// load extract function</span></span><br><span class="line">   cnrtFunction_t function;</span><br><span class="line">   cnrtCreateFunction(&amp;function);</span><br><span class="line">   cnrtExtractFunction(&amp;function, model, <span class="string">&quot;subnet0&quot;</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第六步，获取输入输出节点个数和输入输出数据size。注意许多网络中有多个输入，也可能有多个输出。在次注意这个概念，后续的操作都在多个输入和多个输出的基础上设计的。</span></span><br><span class="line">   <span class="type">int</span> inputNum, outputNum;</span><br><span class="line">   <span class="type">int64_t</span> *inputSizeS, *outputSizeS;</span><br><span class="line">   cnrtGetInputDataSize(&amp;inputSizeS, &amp;inputNum, function);</span><br><span class="line">   cnrtGetOutputDataSize(&amp;outputSizeS, &amp;outputNum, function);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// prepare data on cpu</span></span><br><span class="line">   <span class="comment">// 第7步，申请cpu上的输入输出内存，这里是二维指针哈，代表多个输入输出</span></span><br><span class="line">   <span class="type">void</span> **inputCpuPtrS = (<span class="type">void</span> **)<span class="built_in">malloc</span>(inputNum * <span class="keyword">sizeof</span>(<span class="type">void</span> *));</span><br><span class="line">   <span class="type">void</span> **outputCpuPtrS = (<span class="type">void</span> **)<span class="built_in">malloc</span>(outputNum * <span class="keyword">sizeof</span>(<span class="type">void</span> *));</span><br><span class="line"></span><br><span class="line">   <span class="comment">// allocate I/O data memory on MLU</span></span><br><span class="line">   <span class="comment">// 第8步，申请mlu上的输入输出内存，这里是二维指针哈，代表多个输入输出。</span></span><br><span class="line">   <span class="comment">// 此时还未真正申请数据内存，只是申请了数据节点的句柄（指针）</span></span><br><span class="line">   <span class="type">void</span> **inputMluPtrS = (<span class="type">void</span> **)<span class="built_in">malloc</span>(inputNum * <span class="keyword">sizeof</span>(<span class="type">void</span> *));</span><br><span class="line">   <span class="type">void</span> **outputMluPtrS = (<span class="type">void</span> **)<span class="built_in">malloc</span>(outputNum * <span class="keyword">sizeof</span>(<span class="type">void</span> *));</span><br><span class="line"></span><br><span class="line">   <span class="comment">// prepare input buffer</span></span><br><span class="line">   <span class="comment">// 第9步，分别对第8步的数据节点句柄申请真正的内存空间。这里的inputCpuPtrS和inputMluPtrS是一一对应的，这是内存地址不一样，内存管理者不一样。对输出也是同理。</span></span><br><span class="line">   <span class="comment">// malloc是标准c申请堆内存接口</span></span><br><span class="line">   <span class="comment">// cnrtMalloc是申请mlu所管理的内存接口,类比cuda的话,可以直接理解为申请显存</span></span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; inputNum; i++) &#123;</span><br><span class="line">         <span class="comment">// converts data format when using new interface model</span></span><br><span class="line">         inputCpuPtrS[i] = <span class="built_in">malloc</span>(inputSizeS[i]);</span><br><span class="line">         <span class="comment">// malloc mlu memory</span></span><br><span class="line">         cnrtMalloc(&amp;(inputMluPtrS[i]), inputSizeS[i]);</span><br><span class="line">         cnrtMemcpy(inputMluPtrS[i], inputCpuPtrS[i], inputSizeS[i], CNRT_MEM_TRANS_DIR_HOST2DEV);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// prepare output buffer</span></span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; outputNum; i++) &#123;</span><br><span class="line">         outputCpuPtrS[i] = <span class="built_in">malloc</span>(outputSizeS[i]);</span><br><span class="line">         <span class="comment">// malloc mlu memory</span></span><br><span class="line">         cnrtMalloc(&amp;(outputMluPtrS[i]), outputSizeS[i]);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   </span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第10步,首先将预处理好的图像数据填充inputCpuPtrS, 拷贝cpu输入数据内存到mlu输入数据内存</span></span><br><span class="line">   cv::Mat _in_img;</span><br><span class="line">   _in_img = cv::imread(<span class="string">&quot;test.jpg&quot;</span>);</span><br><span class="line">   _in_img.convertTo(_in_img, CV_32FC3);</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; inputNum; i++) &#123;</span><br><span class="line"></span><br><span class="line">       <span class="comment">// 注意这里的memcpy是我添加的，一般来说，模型的数据输入都是fp16或者fp32，但是一般我们的opencv生成的uint8。需要转换成fp32，或者fp16。</span></span><br><span class="line">       <span class="comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span></span><br><span class="line">       <span class="comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span></span><br><span class="line">       <span class="comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span></span><br><span class="line">       ::<span class="built_in">memcpy</span>( inputCpuPtrS[i], _in_img.data, inputSizeS[i]);</span><br><span class="line">       cnrtMemcpy(inputMluPtrS[i], inputCpuPtrS[i], inputSizeS[i], CNRT_MEM_TRANS_DIR_HOST2DEV);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第10步，主要就是图像预处理，将图像数据传输到mlu上面去。</span></span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第11步，主要是开始设置推理参数</span></span><br><span class="line">   <span class="comment">// prepare parameters for cnrtInvokeRuntimeContext</span></span><br><span class="line">   <span class="type">void</span> **param = (<span class="type">void</span> **)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="type">void</span> *) * (inputNum + outputNum));</span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; inputNum; ++i) &#123;</span><br><span class="line">         param[i] = inputMluPtrS[i];</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; outputNum; ++i) &#123;</span><br><span class="line">         param[inputNum + i] = outputMluPtrS[i];</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第12步，绑定设备和设置推理context</span></span><br><span class="line">   <span class="comment">// setup runtime ctx</span></span><br><span class="line">   cnrtRuntimeContext_t ctx;</span><br><span class="line">   cnrtCreateRuntimeContext(&amp;ctx, function, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// compute offline</span></span><br><span class="line">   cnrtQueue_t <span class="built_in">queue</span>;</span><br><span class="line">   cnrtRuntimeContextCreateQueue(ctx, &amp;<span class="built_in">queue</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// bind device</span></span><br><span class="line">   cnrtSetRuntimeContextDeviceId(ctx, <span class="number">0</span>);</span><br><span class="line">   cnrtInitRuntimeContext(ctx, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第13步，推理并等待推理结束。</span></span><br><span class="line">   <span class="comment">// invoke</span></span><br><span class="line">   cnrtInvokeRuntimeContext(ctx, param, <span class="built_in">queue</span>, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// sync</span></span><br><span class="line">   cnrtSyncQueue(<span class="built_in">queue</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第14步，将数据从mlu拷贝回cpu，然后进行后续的后处理</span></span><br><span class="line">   <span class="comment">// copy mlu result to cpu</span></span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; outputNum; i++) &#123;</span><br><span class="line">         cnrtMemcpy(outputCpuPtrS[i], outputMluPtrS[i], outputSizeS[i], CNRT_MEM_TRANS_DIR_DEV2HOST);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 第15步，清理环境。</span></span><br><span class="line">   <span class="comment">// free memory space</span></span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; inputNum; i++) &#123;</span><br><span class="line">         <span class="built_in">free</span>(inputCpuPtrS[i]);</span><br><span class="line">         cnrtFree(inputMluPtrS[i]);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; outputNum; i++) &#123;</span><br><span class="line">         <span class="built_in">free</span>(outputCpuPtrS[i]);</span><br><span class="line">         cnrtFree(outputMluPtrS[i]);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="built_in">free</span>(inputCpuPtrS);</span><br><span class="line">   <span class="built_in">free</span>(outputCpuPtrS);</span><br><span class="line">   <span class="built_in">free</span>(param);</span><br><span class="line"></span><br><span class="line">   cnrtDestroyQueue(<span class="built_in">queue</span>);</span><br><span class="line">   cnrtDestroyRuntimeContext(ctx);</span><br><span class="line">   cnrtDestroyFunction(function);</span><br><span class="line">   cnrtUnloadModel(model);</span><br><span class="line">   cnrtDestroy();</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;mlp offline test\n&quot;</span>);</span><br><span class="line">   offline_test(<span class="string">&quot;mlp&quot;</span>);</span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>   下面我简单列出一些EasyDK的操作顺序：</p>
+<ul>
+<li>上文的第三四五步其实对应的是EasyInfer下面的ModelLoader模块，当初始化ModelLoader模块，并传参给EasyInfer实例，就完成了三四五步的内容。其实前面这些内容都是固定形式的，并不是重点。重点是后面的数据输入、推理、数据输出部分。</li>
+<li>上文的第6,7,8,9步其实都是在为模型在cpu和mlu上申请相关的内存空间。在EasyDk中有对应的接口直接完成内存申请。</li>
+<li>注意上文的第10步，是比较重要的一步，包含了图像数据预处理，到图像数据类型转换，再到图像数据输入到mlu内存。</li>
+<li>上文的第11,12步是为推理准备参数</li>
+<li>上文的第13步开始推理</li>
+<li>上文的第14步从mlu内存中拷贝出推理结果到cpu内存，然后进行后处理。</li>
+<li>上文的第15步，清理环境。</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="离线模型在MLU220上的部署">离线模型在MLU220上的部署</h3>
+<hr>
+<p>  前一小节，主要还是完成离线模型推理的程序开发，并在MLU270上运行测试。本小节的主要内容是怎么将我们调好的程序部署到MLU220。</p>
+<p>  部署到MLU220，我们面临的第一个问题就是交叉编译生成AARCH64的程序。这里包含3个部分依赖，CNToolkit-aarch64，easydk-aarch64，其他第三方库如opencv-aarch64等。这时，我们得到了aarch64的离线推理程序，并配合之前我们转换得到的mlu220版本的离线模型。</p>
+<p>  当我们把生成好的程序放到mlu220板卡，这个时候，可能程序还是无法跑起来，因为可能驱动未加载，这个时候，建议找到驱动和固件，让mlu220运行起来。然后运行程序即可。</p>
+<p>  下面是无mlu设备的报错示例：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/no_dev.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  下面是加载驱动的最后日志：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/insmod_drv.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  下面是运行程序的输出：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/test_seg.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  对于RK3399pro和寒武纪MLU220平台来说，一些出来时间较为长久的模型，由于优化的比较到位，速度相较于RK3399pro可能有个300%+的性能提升。但是对于一些新的模型和一些非经典（非大众）的模型，由于自带的优化或者网络结构的原因，可能只有30%+的性能提升，但是这也是令人高兴的事情，毕竟硬件升级之后，好多事情可以达到准实时。</p>
+<p>  本系列的基本介绍就这些了，完结撒花~~~ ~~~。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</li>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</li>
+<li>《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121456789">https://blog.csdn.net/u011728480/article/details/121456789</a> ）</li>
+<li><a target="_blank" rel="noopener" href="https://www.cambricon.com/">https://www.cambricon.com/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/cnrt/user_guide_html/example/offline_mode.html">https://www.cambricon.com/docs/cnrt/user_guide_html/example/offline_mode.html</a></li>
+<li>其他相关保密资料。</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/11/21/blog_idx_113/" rel="prev" title="寒武纪加速平台(MLU200系列) 摸鱼指南（三）--- 模型移植-分割网络实例">
+      <i class="fa fa-chevron-left"></i> 寒武纪加速平台(MLU200系列) 摸鱼指南（三）--- 模型移植-分割网络实例
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/26/blog_idx_115/" rel="next" title="一种实用性较强的求IOU的算法（任意多边形之间的IOU）">
+      一种实用性较强的求IOU的算法（任意多边形之间的IOU） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A6%BB%E7%BA%BF%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%E5%89%8D%E7%BD%AE%E9%A1%BB%E7%9F%A5"><span class="nav-number"></span> <span class="nav-text">离线模型推理前置须知</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#EasyDK%E7%AE%80%E4%BB%8B%E4%B8%8E%E7%BC%96%E8%AF%91"><span class="nav-number"></span> <span class="nav-text">EasyDK简介与编译</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8C%E6%88%90%E7%A6%BB%E7%BA%BF%E6%A8%A1%E5%9E%8B%E5%9C%A8MLU270%E4%B8%8A%E7%9A%84%E8%BF%90%E8%A1%8C"><span class="nav-number"></span> <span class="nav-text">完成离线模型在MLU270上的运行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A6%BB%E7%BA%BF%E6%A8%A1%E5%9E%8B%E5%9C%A8MLU220%E4%B8%8A%E7%9A%84%E9%83%A8%E7%BD%B2"><span class="nav-number"></span> <span class="nav-text">离线模型在MLU220上的部署</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

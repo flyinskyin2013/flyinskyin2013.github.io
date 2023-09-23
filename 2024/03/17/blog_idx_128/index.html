@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    最近为了实现在android linux kernel上，是的bionic c和glibc的sem_相关的信号量接口能够相互调用的功能（例如：用bionic c wait，用glibc awake），需要去深度阅读相关c库关于sem_ pos">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于进程同步与互斥的一些概念（锁、cas、futex）">
+<meta property="og:url" content="https://e-x.top/2024/03/17/blog_idx_128/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    最近为了实现在android linux kernel上，是的bionic c和glibc的sem_相关的信号量接口能够相互调用的功能（例如：用bionic c wait，用glibc awake），需要去深度阅读相关c库关于sem_ pos">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2024-03-17T11:43:00.000Z">
+<meta property="article:modified_time" content="2024-04-21T09:06:07.911Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://e-x.top/2024/03/17/blog_idx_128/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+  <title>关于进程同步与互斥的一些概念（锁、cas、futex） | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2024/03/17/blog_idx_128/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关于进程同步与互斥的一些概念（锁、cas、futex）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-03-17 19:43:00" itemprop="dateCreated datePublished" datetime="2024-03-17T19:43:00+08:00">2024-03-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-21 17:06:07" itemprop="dateModified" datetime="2024-04-21T17:06:07+08:00">2024-04-21</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>5.6k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>5 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=128） 
+&emsp;&emsp;本文发布于 2024-03-17 19:43:00             （BlogID=128） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  最近为了实现在android linux kernel上，是的bionic c和glibc的sem_<em>相关的信号量接口能够相互调用的功能（例如：用bionic c wait，用glibc awake），需要去深度阅读相关c库关于sem_</em> posix api的实现。</p>
+<p>  最终的最终，发现主要要解决futex的问题就行。因此将其相关的概念进行了总结。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="进程同步与互斥的一些基本概念">进程同步与互斥的一些基本概念</h3>
+<hr>
+<p>  进程：</p>
+<ul>
+<li>是操作系统调度的基本单位。</li>
+</ul>
+<p>  进程状态：</p>
+<ul>
+<li>三态模型：运行、就绪、等待（阻塞/睡眠）</li>
+<li>五态模型：运行、就绪、等待（阻塞/睡眠） + 新建、终止</li>
+</ul>
+<p>  进程调度：</p>
+<ul>
+<li>因某些原因（io等待，自己睡眠，调度公平等等），一个或者多个进程需要进行状态切换。</li>
+</ul>
+<p>  进程工作特性分类：</p>
+<ul>
+<li>计算密集型：进程的主要工作是计算某些事情。</li>
+<li>IO密集型：进程的主要工作是加载IO并进行处理。</li>
+</ul>
+<p>  并发：</p>
+<ul>
+<li>是指多个进程同时运行，并完成一定任务。</li>
+</ul>
+<p>  临界区：</p>
+<ul>
+<li>是指多个进程同时运行时，同一时刻访问相同的代码和数据。</li>
+</ul>
+<p>  同步：</p>
+<ul>
+<li>强调的是进程间的执行需要按照某种先后顺序，即进程运行的时间是有序的。</li>
+</ul>
+<p>  互斥：</p>
+<ul>
+<li>强调的是对于某些共享资源的访问不能同时进行，同一时间只能有一定数量的进程访问这些共享资源。</li>
+</ul>
+<p>  进程常见的同步机制：</p>
+<ul>
+<li>信号量：解决了同步问题。</li>
+<li>互斥量：解决了互斥问题。是信号量的一种特例，只具备0，1两种值。</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="锁">锁</h3>
+<hr>
+<p>  锁：</p>
+<ul>
+<li>既可以解决同步问题，也可以解决互斥问题。</li>
+</ul>
+<p>  死锁：</p>
+<ul>
+<li>指多个进程同时获取锁，且由于某些原因，此锁永远不会被空闲。</li>
+</ul>
+<p>  两种基本锁：</p>
+<ul>
+<li>互斥锁：加锁失败后，线程会释放 CPU ，给其他线程；</li>
+<li>自旋锁：加锁失败后，线程会忙等待，直到它拿到锁；</li>
+</ul>
+<p>  读写锁：</p>
+<ul>
+<li>读锁：当「写锁」没有被线程持有时，多个线程能够并发地持有读锁，这大大提高了共享资源的访问效率，因为「读锁」是用于读取共享资源的场景，所以多个线程同时持有读锁也不会破坏共享资源的数据。</li>
+<li>写锁：一旦「写锁」被线程持有后，读线程的获取读锁的操作会被阻塞，而且其他写线程的获取写锁的操作也会被阻塞</li>
+<li>特征：读写锁在读多写少的场景，能发挥出优势。读写锁可以分为「读优先锁」和「写优先锁」</li>
+</ul>
+<p>  乐观锁：</p>
+<ul>
+<li>如果多线程同时修改共享资源的概率比较低</li>
+</ul>
+<p>  悲观锁：</p>
+<ul>
+<li>认为多线程同时修改共享资源的概率比较高，于是很容易出现冲突，所以访问共享资源前，先要上锁。</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="CAS-Compare-And-Swap">CAS(Compare And Swap)</h3>
+<hr>
+<p>  CAS是一种无锁同步算法，主要用于多线程环境下面，高效的对多个线程进行同步。</p>
+<p>  首先CAS有3个重要的参数：目标地址(P)、期望值(E)、新值(N)，然后其工作原理是：</p>
+<ul>
+<li>读取目标地址（P）的值</li>
+<li>对比目标地址（P）的值与期望值（E）</li>
+<li>如果P==E，则写入新值（N），如果P!=E，则不做任何操作并返回。</li>
+</ul>
+<p>  可以乍一看，这里有3步操作，会让我们对这个算法难以理解，所以这里还有一个重要的概念：CAS的这几步操作是原子的，一次性完成的，此外，这些特性是硬件提供的。因此，在实际使用上面，这些原子操作被编译器封装成相关的接口来使用这些硬件特性。例如gcc里面：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html</span></span><br><span class="line"><span class="comment">// 注意，原来的__sync_*系列函数的__atomic系列替代了</span></span><br><span class="line"><span class="type">bool</span> __atomic_compare_exchange (type *ptr, type *expected, type *desired, <span class="type">bool</span> weak, <span class="type">int</span> success_memorder, <span class="type">int</span> failure_memorder)</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="futex-系统调用">futex 系统调用</h3>
+<hr>
+<p>  futex是linux下用来实现各种同步机制的一个系统调用，我们先来学习看看其api：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/futex.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">futex</span><span class="params">(<span class="type">int</span> *uaddr, <span class="type">int</span> futex_op, <span class="type">int</span> val, <span class="type">const</span> <span class="keyword">struct</span> timespec *timeout,   <span class="comment">/* or: uint32_t val2 */</span></span></span><br><span class="line"><span class="params">            <span class="type">int</span> *uaddr2, <span class="type">int</span> val3)</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  注意这里的看到这个api有许多的参数，但是我们常用的也是前面4个，一般来说，我们会将futex分为常用的两类，是futex_op参数指定的，分别是：FUTEX_WAIT、FUTEX_WAKE（注意，还有其他很多op类型），其他的参数根据不同的类型，有不同的一些含义：</p>
+<ul>
+<li>对于FUTEX_WAIT来说：如果uaddr的值等于期待值（val），则将线程挂起。timeout如果是NULL，则无限等待，或者等待timeout时间。</li>
+<li>对于FUTEX_WAKE来说：指定唤醒uaddr关联的并被挂起的val个线程。timeout参数忽略。</li>
+</ul>
+<p>  上面我们简单说明了这个系统调用的一些用法，现在我们来看看这个系统调用的内核简单实现，然后我们就基本理解了这个系统调用的工作原理：</p>
+<p>首先来看看FUTEX_WAIT的内核部分源码，如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//linux kernel v4.6 kernel/futex.c</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span> <span class="title function_">queue_me</span><span class="params">(<span class="keyword">struct</span> futex_q *q, <span class="keyword">struct</span> futex_hash_bucket *hb)</span></span><br><span class="line">	__<span class="title function_">releases</span><span class="params">(&amp;hb-&gt;lock)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> prio;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line"></span><br><span class="line">	plist_node_init(&amp;q-&gt;<span class="built_in">list</span>, prio);</span><br><span class="line">	plist_add(&amp;q-&gt;<span class="built_in">list</span>, &amp;hb-&gt;chain);</span><br><span class="line">	q-&gt;task = current;</span><br><span class="line">	spin_unlock(&amp;hb-&gt;lock);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">futex_wait_queue_me</span><span class="params">(<span class="keyword">struct</span> futex_hash_bucket *hb, <span class="keyword">struct</span> futex_q *q,</span></span><br><span class="line"><span class="params">				<span class="keyword">struct</span> hrtimer_sleeper *timeout)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line">	set_current_state(TASK_INTERRUPTIBLE);<span class="comment">//挂起</span></span><br><span class="line">	queue_me(q, hb);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">futex_wait_setup</span><span class="params">(u32 __user *uaddr, u32 val, <span class="type">unsigned</span> <span class="type">int</span> flags,</span></span><br><span class="line"><span class="params">			   <span class="keyword">struct</span> futex_q *q, <span class="keyword">struct</span> futex_hash_bucket **hb)</span></span><br><span class="line">&#123;</span><br><span class="line">	u32 uval;</span><br><span class="line">	<span class="type">int</span> ret;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line">    </span><br><span class="line">retry:</span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line">    ret = get_futex_value_locked(&amp;uval, uaddr);</span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line"></span><br><span class="line">	ret = get_futex_key(uaddr, flags &amp; FLAGS_SHARED, &amp;q-&gt;key, VERIFY_READ);</span><br><span class="line">	<span class="keyword">if</span> (unlikely(ret != <span class="number">0</span>))</span><br><span class="line">		<span class="keyword">return</span> ret;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (uval != val) &#123;<span class="comment">//判断值是否是期望值，并做后续操作</span></span><br><span class="line">		queue_unlock(*hb);</span><br><span class="line">		ret = -EWOULDBLOCK;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">futex_wait</span><span class="params">(u32 __user *uaddr, <span class="type">unsigned</span> <span class="type">int</span> flags, u32 val,</span></span><br><span class="line"><span class="params">		      <span class="type">ktime_t</span> *abs_time, u32 <span class="built_in">bitset</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">hrtimer_sleeper</span> <span class="title">timeout</span>, *<span class="title">to</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">restart_block</span> *<span class="title">restart</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">futex_hash_bucket</span> *<span class="title">hb</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">futex_q</span> <span class="title">q</span> =</span> futex_q_init;</span><br><span class="line">	<span class="type">int</span> ret;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line"></span><br><span class="line">retry:</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	 * Prepare to wait on uaddr. On success, holds hb lock and increments</span></span><br><span class="line"><span class="comment">	 * q.key refs.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	ret = futex_wait_setup(uaddr, val, flags, &amp;q, &amp;hb);</span><br><span class="line">	<span class="keyword">if</span> (ret)</span><br><span class="line">		<span class="keyword">goto</span> out;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* queue_me and wait for wakeup, timeout, or a signal. */</span></span><br><span class="line">	futex_wait_queue_me(hb, &amp;q, to);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line"></span><br><span class="line">out:</span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  其实我们这里可以看到，关键是通过get_futex_key来根据传入的uaddr获取一个key，然后根据key，来构造一个hash list(注意，这时这个hash list被一个hash数据结构维护了，可通过key查询)，并将当前线程插入到这个list，并将线程/进程挂起。在这个过程中，还会检查*uaddr 是否等于val，否则做相关操作。</p>
+<p>  现在，其实我们基本上也可以猜到FUTEX_WAKE的实现是什么样子，现在我们先来看看其源码节选：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//linux kernel v4.6 kernel/futex.c</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">int</span> <span class="title function_">match_futex</span><span class="params">(<span class="keyword">union</span> futex_key *key1, <span class="keyword">union</span> futex_key *key2)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> (key1 &amp;&amp; key2</span><br><span class="line">		&amp;&amp; key1-&gt;both.word == key2-&gt;both.word</span><br><span class="line">		&amp;&amp; key1-&gt;both.ptr == key2-&gt;both.ptr</span><br><span class="line">		&amp;&amp; key1-&gt;both.offset == key2-&gt;both.offset);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span></span><br><span class="line"><span class="title function_">futex_wake_op</span><span class="params">(u32 __user *uaddr1, <span class="type">unsigned</span> <span class="type">int</span> flags, u32 __user *uaddr2,</span></span><br><span class="line"><span class="params">	      <span class="type">int</span> nr_wake, <span class="type">int</span> nr_wake2, <span class="type">int</span> op)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">union</span> <span class="title">futex_key</span> <span class="title">key1</span> =</span> FUTEX_KEY_INIT, key2 = FUTEX_KEY_INIT;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">futex_hash_bucket</span> *<span class="title">hb1</span>, *<span class="title">hb2</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">futex_q</span> *<span class="title">this</span>, *<span class="title">next</span>;</span></span><br><span class="line">	<span class="type">int</span> ret, op_ret;</span><br><span class="line">	WAKE_Q(wake_q);</span><br><span class="line"></span><br><span class="line">retry:</span><br><span class="line">	ret = get_futex_key(uaddr1, flags &amp; FLAGS_SHARED, &amp;key1, VERIFY_READ);<span class="comment">//根据uaddr获取key</span></span><br><span class="line">	<span class="keyword">if</span> (unlikely(ret != <span class="number">0</span>))</span><br><span class="line">		<span class="keyword">goto</span> out;</span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line"></span><br><span class="line">	hb1 = hash_futex(&amp;key1);<span class="comment">//根据key获取hash对象</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// ... ... 省略</span></span><br><span class="line"></span><br><span class="line">retry_private:</span><br><span class="line">	<span class="comment">// ... ... 省略</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	plist_for_each_entry_safe(this, next, &amp;hb1-&gt;chain, <span class="built_in">list</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (match_futex (&amp;this-&gt;key, &amp;key1)) &#123;<span class="comment">//匹配符合条件的key</span></span><br><span class="line">			<span class="keyword">if</span> (this-&gt;pi_state || this-&gt;rt_waiter) &#123;</span><br><span class="line">				ret = -EINVAL;</span><br><span class="line">				<span class="keyword">goto</span> out_unlock;</span><br><span class="line">			&#125;</span><br><span class="line">			mark_wake_futex(&amp;wake_q, this);<span class="comment">//将符合条件的对象放入到队列wake_q</span></span><br><span class="line">			<span class="keyword">if</span> (++ret &gt;= nr_wake)</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ... ... 省略</span></span><br><span class="line"></span><br><span class="line">out_unlock:</span><br><span class="line">	double_unlock_hb(hb1, hb2);</span><br><span class="line">	wake_up_q(&amp;wake_q); <span class="comment">//唤醒线程/进程，wake_up_q在kernel/sched/core.c中定义</span></span><br><span class="line">out_put_keys:</span><br><span class="line">	put_futex_key(&amp;key2);</span><br><span class="line">out_put_key1:</span><br><span class="line">	put_futex_key(&amp;key1);</span><br><span class="line">out:</span><br><span class="line">	<span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  从这里我们可以看到，首先我们根据uaddr获取了key，然后通过hash_futex获取key对象，这个时候我们就获取了和uaddr相关的线程/进程list。然后我们遍历list，将符合条件的线程/进程放到wake_q队列中去，最后通过wake_up_q来设置TASK_WAKING，并唤醒线程/进程。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  从这里我们可以看到，这些概念是为了解决前置问题逐步引入的：</p>
+<ul>
+<li>进程具备一定的状态（运行、就绪、等待（阻塞/睡眠） + 新建、终止）。</li>
+<li>进程是OS调度的基本单位，调度就是调整进程的状态。</li>
+<li>为了高效完成一个任务，我们需要并发，这时我们需要同步，需要信号量。</li>
+<li>因为有了并发，我们需要注意临界区。</li>
+<li>有了临界区，我们需要互斥量（锁）。</li>
+<li>最后，CAS和futex可以实现各种信号量和锁。</li>
+</ul>
+<p>  完结散花。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/futex.2.html">https://man7.org/linux/man-pages/man2/futex.2.html</a></li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/03/16/blog_idx_127/" rel="prev" title="常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）">
+      <i class="fa fa-chevron-left"></i> 常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/04/21/blog_idx_129/" rel="next" title="Linux_aarch64_head.S到main.c的环境建立">
+      Linux_aarch64_head.S到main.c的环境建立 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B8%8E%E4%BA%92%E6%96%A5%E7%9A%84%E4%B8%80%E4%BA%9B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number"></span> <span class="nav-text">进程同步与互斥的一些基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%81"><span class="nav-number"></span> <span class="nav-text">锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CAS-Compare-And-Swap"><span class="nav-number"></span> <span class="nav-text">CAS(Compare And Swap)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#futex-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="nav-number"></span> <span class="nav-text">futex 系统调用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">598k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">9:03</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
