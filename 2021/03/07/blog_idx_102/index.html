@@ -1,0 +1,1963 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="keywords" content="Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb), Sky&#39;s Blogs">
+    <meta name="description" content=" 
+PS：要转载请注明出处，本人版权所有。
+PS: 这个只是基于《我自己》的理解，如果和你的原则及想法相冲突，请谅解，勿喷。
+
+环境说明
+
+
+Ubuntu 18.04
+
+
+gcc version 7.5.0 (Ubuntu 7.5.0-3u">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+    gtag('config', 'G-80RLMJ8DQP');
+</script>
+
+
+    <title>Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb) | Sky&#39;s Blogs</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    
+
+
+    <!-- bg-cover style     -->
+
+
+
+<link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+<link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+<link rel="stylesheet" type="text/css" href="/css/matery.css">
+<link rel="stylesheet" type="text/css" href="/css/my.css">
+<link rel="stylesheet" type="text/css" href="/css/dark.css" media="none" onload="if(media!='all')media='all'">
+
+
+
+
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+    <link rel="stylesheet" href="/css/post.css">
+
+
+
+
+    
+        <link rel="stylesheet" type="text/css" href="/css/reward.css">
+    
+
+
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.jpg" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Sky&#39;s Blogs</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+  <li>
+    <a href="javascript:;" class="waves-effect waves-light" onclick="switchNightMode()" title="深色/浅色模式" >
+      <i id="sum-moon-icon" class="fas fa-sun" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.jpg" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Sky&#39;s Blogs</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/flyinskyin2013" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Follow Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/flyinskyin2013" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Follow Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/16.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/linux/">
+                                <span class="chip bg-color">linux</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%86%85%E6%A0%B8/">
+                                <span class="chip bg-color">内核</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/" class="post-category">
+                                常识
+                            </a>
+                        
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/C-CPP/" class="post-category">
+                                C&CPP
+                            </a>
+                        
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/C-CPP/linux%E5%BC%80%E5%8F%91/" class="post-category">
+                                linux开发
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2021-03-07
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.min.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:04:42
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=102）
+&emsp;&emsp;本文发布于 2021-03-07 17:39:44     （BlogID=102） -->
+<h6 id="环境说明">环境说明</h6>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>Ubuntu 18.04</p>
+</li>
+<li class="lvl-2">
+<p>gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04)</p>
+</li>
+<li class="lvl-2">
+<p>Bochs 2.6</p>
+</li>
+<li class="lvl-2">
+<p>As86 version: 0.16.17</p>
+</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  自从我近段时间开始温习一些基础知识以来，其中觉得以前学的很浅的就是OS原理。为啥这样说呢？因为就是浅，知道一些琐碎的知识。以前我自负的认为OS就是硬件的抽象，然后把这些硬件资源合理的分配给用户使用就完了，因为我觉得合理的整合这些硬件资源是非常‘简单’的。</p>
+<p>  由于我本身对底层是非常着迷的。带着觉得OS很简单的想法，想着去看看LinuxKernel的源码。在以前，我对LinuxKernel的认知很肤浅，就知道一些驱动移植的事情。如果硬要说一件我在LinuxKernel中玩的很深的事情，那就是自己理解并实现了一个类似Anonymous Shared Memory的Linux驱动，详见以下两篇文章。</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>《Android匿名共享内存(Anonymous Shared Memory) — 瞎折腾记录 (驱动程序篇)》 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/88420467">https://blog.csdn.net/u011728480/article/details/88420467</a></p>
+</li>
+<li class="lvl-2">
+<p>《linux kernel 中进程间描述符的传递方法及原理》 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/88553602">https://blog.csdn.net/u011728480/article/details/88553602</a></p>
+</li>
+</ul>
+<p>  带着这样的想法其实已经很久了，由于现在的LinuxKernel太大了，对新手不友好。我就想着去找一个老一点的版本内核看看。结果去网上一找，就发现了前人已经做了许多许多了，比如这个之前就有了解的《linux 0.11内核完全注释》，还比如其他许许多多前人种的‘树’，看到了许多，最终我决定跟着国内现在比较好和新的资料从‘远古’开始学习它。它就是《Linux内核完全注释(PDF) v5.0 by 赵炯.pdf》。它是基于LinuxKernel0.12 讲述的，它是我在ubuntu1804上编译通过LinuxKernel0.12的主要参考和学习资料，同时也是我在Bochs上运行成功的主要参考和学习资料。</p>
+<p>  好的多说无益，直接看运行效果。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/result.png" alt="result_img"/></center>
+    </div>
+</div>    
+<p>  说来也惭愧，利用断断续续的时间，我花了约2月，把LinuxKernel0.12在Ubuntu1804上编译通过，并在1804上通过Bochs运行成功。而且要命的事情是我其实只加了一些打印调试函数，和根据实际的调试情况修改了一些代码，却花了那么久的时间，搞得我很不自信了QAQ。</p>
+<p>  我修改好的源码已经开源，立即想要源码的请直接去文末两个rep clone即可。</p>
+<p>  本文主要还是简单介绍LinuxKernel从上电到进入sh的中间的简要流程。这些流程网上已经有很多了，可能我会挑选一些我觉得比较重要的来说。</p>
+<p>  本文适用于：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>会编译和使用bochs的人。不会可以去网上找找，很多这方面的资料。</p>
+</li>
+<li class="lvl-2">
+<p>对Intel AT&amp;T 汇编有点了解的人。</p>
+</li>
+<li class="lvl-2">
+<p>会GDB调试的人。</p>
+</li>
+<li class="lvl-2">
+<p>知道C语言常识的人。</p>
+</li>
+<li class="lvl-2">
+<p>对LinuxKernel感兴趣的人。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="搭环境">搭环境</h3>
+<hr>
+<p>  工欲善其事必先利其器。本文主要是在Ubuntu1804上编译生成LinuxKernel，然后用Bochs运行我们的内核。</p>
+<br/>
+<br/>
+<h5 id="Ubuntu18-04环境安装">Ubuntu18.04环境安装</h5>
+<p>我们应该首先安装make,gcc,gcc-multilib,bin86。</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>sudo apt install build-essential cmake make gcc-multilib g+±multilib module-assistant bin86</p>
+</li>
+</ul>
+<p>然后进入源码目录。</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>cd my_src</p>
+</li>
+<li class="lvl-2">
+<p>make disk</p>
+</li>
+</ul>
+<p>更多的详情信息查看开源的rep。</p>
+<br/>
+<br/>
+<h5 id="编译两个bochs版本备用">编译两个bochs版本备用</h5>
+<p>  我们首先就得把Linux0.12的运行环境搭建起来，方便我们调试。我们使用的是Bochs2.6 和 GDB远程调试。并编译出两个bochs版本，一个是带本身调试功能（命名为：bochs），一个是和gdb联调（命名为：bochsdbg）。bochs 主要是调试在init/main()函数之前的内容以及查看更多的x86寄存器。 bochsdbg主要是调试进入init/main()函数之后到sh成功执行的事情。</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>通过 ./configure  --enable-debugger 生成bochs。</p>
+</li>
+<li class="lvl-2">
+<p>通过 ./configure  --enable-gdb-stub 生成bochsdbg。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<h5 id="运行我们编译的内核">运行我们编译的内核</h5>
+<p>  通过本文介绍生成的文件是Linux内核镜像，稍微懂点行的人都知道还差一个RootFS。这个文件系统我们在网上下载的例如： <a target="_blank" rel="noopener" href="http://oldlinux.org/Linux.old/bochs/linux-0.12-080324.zip">http://oldlinux.org/Linux.old/bochs/linux-0.12-080324.zip</a> 。本文生成的Linux内核镜像使用的是rootimage-0.12-hd这个文件系统。</p>
+<p>  我建议这里自己配置两个.bxrc文件，一个对应bochs，一个对应bochsdbg远程调试。这样在遇到问题的时候我们可以很方便的调试。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="LinuxKernel启动简介">LinuxKernel启动简介</h3>
+<hr>
+<p>  本节简述LinuxKernel的启动流程。根据我近段时间的学习来看，这里包含了许多的历史性的东西，大家不要去细究为啥是这样，很多都是为了兼容。</p>
+<p>  此外在整个学习期间，由于涉及到许多的x86 硬件体系知识，除了参考上文我说的文档以外，还必须参考以下Intel官方文档：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>Intel® 64 and IA-32 architectures software developer’s manual combined volumes 2A, 2B, 2C, and 2D:Instruction set reference, A-Z</p>
+</li>
+<li class="lvl-2">
+<p>Intel® 64 and IA-32 architectures software developer’s manual combined volumes 3A,<br>
+3B, 3C, and 3D: System programming guide</p>
+</li>
+<li class="lvl-2">
+<p>《Linux内核完全注释(PDF) v5.0 by 赵炯.pdf》 第4章，全篇精华。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<h5 id="boot-bootsect-S-阶段">boot/bootsect.S 阶段</h5>
+<p>  当我们的计算机上电以后，IntelCPU进入实模式，并且PC指向了0xfff0整个地址，如下图。什么意思呢？就是开机的时候执行的第一句指令放在0xffff0这个地方，通常这里有一个很重要的东西叫做BIOS。我们可以看到下图，cs=0xf000,base=0xffff0000,在实模式下面，cs:pc 就是真实的指向地址0xffff0。到了这里不知道大家发现没有，这里还差一个东西，那就是bios本来是放在rom里面的，怎么被指向了内存地址0xffff0的地方呢？是谁在之前自动搬运的吗？经过查询后发现，大部分人说开机的时候，对特殊地址的访问会被仲裁器件指向BIOS-ROM器件。仲裁器还可以把地址翻译并指向我们熟悉的MEM和IO。所以这里我理解对0xffff0的访问就是对BIOS-ROM器件的直接访问和执行。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/poweron.png" alt="poweron_img"/></center>
+    </div>
+</div>    
+<p>  BIOS主要是做自检，并且在物理地址0x0开始初始化BIOS的中断向量，同时通过BIOS访问存储设备的中断，将可启动设备的第一个扇区512字节给搬运到绝对地址0x7c00(31k)处。然后跳转到0x7c00继续执行，这里被搬运的512字节就是bootsect.S生成的指令。这一段没啥营养，都是一些约定好的，到了CPU执行到绝对地址0x7c00的时候，才是真正的我们能控制的地方。其实这里也能够看到，我们的bootsect.S生成的指令最大只能够512字节，超过了就会出问题。下图为我们的0x7c00处的开始几句指令和bootsect.S的几句指令,同时也能够看到BIOS初始化和自检打印的一些内容：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/7c00.png" alt="7c00_img"/></center>
+    </div>
+</div>   
+&emsp;&emsp;在上图的图中，我打印了0x7c00开始的一部分反汇编代码。可以看到和下面的bootsect.S的代码是一致的。
+<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">entry start
+start:
+! start at 0x07c0:0
+! add by sky
+	mov ax,#BOOTSEG
+	mov es,ax
+	mov	bp,#msg2	  ! sky-notes: src-str is es:bp
+	mov	si,#15        ! sky-notes: src-str-len is cx
+	call pirnt_str
+! add by sky
+
+	mov	ax,#BOOTSEG
+	mov	ds,ax
+	mov	ax,#INITSEG
+	mov	es,ax
+	mov	cx,#256
+	sub	si,si
+	sub	di,di
+	rep
+	movw
+	jmpi	go,INITSEG<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  从0x7c00开始，就是我们自己的可以编程的领域了，也开始有了一些我自己特有的内容。主要是各种方法实现的print语句。这种调试方法简直不要太好。</p>
+<p>  下面简要说明一下bootsect.S的功能：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>首先用rep movw把自己从0x7c00搬运到0x90000，并跳转cs=0x9000, pc=go 标号的地址。继续执行剩下的内容。</p>
+</li>
+<li class="lvl-2">
+<p>通过读取0x1E号中断向量位置的软驱参数（由BIOS初始化时候通过BIOS中断读取的）到内存，然后修改其中的最大扇区数，并重新写回到0x1E中断向量位置绝对地址0x78去。最后重置软驱，使其加载最新的参数。</p>
+</li>
+<li class="lvl-2">
+<p>使用BIOS INT 0x13的2号功能，将第一个软盘第2，3，4，5扇区读取到0x90200开始的位置。这里读取的就是setup.S的指令内容，最大共2k（4*512）。0x90000-0x90200存放的是bootsect.S， 0x90200-0x90A00 为setup.S。</p>
+</li>
+<li class="lvl-2">
+<p>使用BIOS INT 0x13的8号功能，读取磁盘参数：每磁道扇区数。并保存到变量sectors中。</p>
+</li>
+<li class="lvl-2">
+<p>使用BIOS INT 0x13的2号功能，使用刚刚的参数，读取system模块到0x10000，我们的bootsect.S放在0x90000,所以我们system模块最大只能够占用0x10000~0x8ffff。这里的system模块就是除了bootsect和setup模块之外的所有内核代码。</p>
+</li>
+<li class="lvl-2">
+<p>判断bootsect模块第508，509字节是否为0，来判断我们是否指定根文件系统的设备号。我们的内核定义为0x0301，代表第一个磁盘第一个分区为我们的根文件系统。</p>
+</li>
+<li class="lvl-2">
+<p>然后通过jmpi 0:9020跳转到cs=0x9020，pc=0的地方去执行setup.S的代码。</p>
+</li>
+</ul>
+<p>  在我的bootsect模块，我定义了一个打印字符串的函数，主要是通过使用BIOS INT 0x10的0x13号功能实现。主要还是为了调试，注意，这里不能够随意添加代码，因为生成的代码超过512byte后，链接器会报错。只能够少量的添加我们的调试代码。</p>
+<p>  至此，我们就执行完了bootsect模块。本模块的主要内容还是加载setup和system到指定位置。bootsect执行的一些调试日志如下图（在0x90200下断点）：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/bootsect_log.png" alt="bootsect_log_img"/></center>
+    </div>
+</div>   
+注意：图中话框的部分就是我们上文贴出的call pirnt_str打印的。
+<br/>
+<br/>
+<h5 id="boot-setup-S-阶段">boot/setup.S 阶段</h5>
+<p>  首先我们还是来看一下0x90200的位置是否是setup.S，换句话来说是否加载好了setup模块。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/90200.png" alt="90200_img"/></center>
+    </div>
+</div>   
+&emsp;&emsp;这里和bootsect一样，我也弄了一个prtstr函数，这个prtstr和bootsect里面的是一样的，原理也是一致的。
+<p>  刚刚我们提到，setup是从0x90200开始存放的。那么0x90000~0x901ff中的bootsect已经无用了，于是我们setup中，用这里的内存存放一些参数。下面简要说明一下setup.S的功能：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>用BIOS INT 0x15功能号0x88取系统所含扩展内存大小并保存在内存0x90002~0x90003处。共两个字节。</p>
+</li>
+<li class="lvl-2">
+<p>用BIOS INT 0x10功能号0x12读取显卡参数，0x9000A 显存大小，0x9000B 显卡类型（单色/彩色）,0x9000C显卡特性参数。</p>
+</li>
+<li class="lvl-2">
+<p>用BIOS中断读取屏幕的行列存放到0x9000E 0x9000F</p>
+</li>
+<li class="lvl-2">
+<p>用BIOS INT 0x10功能号0x03读取当前光标位置存放到0x90000 0x90001</p>
+</li>
+<li class="lvl-2">
+<p>用BIOS INT 0x10功能号0x0f读取当前显示页，显示模式，字符列数。 0x90004~0x90005 存放当前显示页。 0x90006 显示模式， 0x90007 字符列数。</p>
+</li>
+<li class="lvl-2">
+<p>读取第一个硬盘参数表和第二个硬盘参数表，并放到0x90080 0x90090。每个表共16byte。注意，这里和之前的软盘参数一样，在BIOS自检过程中，就被放到了中断向量0x41 0x46 的位置。</p>
+</li>
+<li class="lvl-2">
+<p>用BIOS INT 0x13功能号0x15读取当前硬盘设备情况，如果硬盘2不存在，则把0x90090之后的16byte清零。</p>
+</li>
+</ul>
+<p>  下面我们将使CPU从实模式变更为保护模式，下面继续说明一下setup.S的功能：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>禁用中断。</p>
+</li>
+<li class="lvl-2">
+<p>然后我们把system模块0x10000~0x8ffff整体下移到0x0开始的位置。就是把最大0x80000(512k)的system模块向下移动0x10000(64k)。</p>
+</li>
+<li class="lvl-2">
+<p>首先加载LDT和GDT。</p>
+</li>
+<li class="lvl-2">
+<p>开启A20地址线，支持1M以上的内存。</p>
+</li>
+<li class="lvl-2">
+<p>初始化两个8259A中断控制器。</p>
+</li>
+<li class="lvl-2">
+<p>通过lmsw 设置cr0最低位位1，进入保护模式。</p>
+</li>
+<li class="lvl-2">
+<p>通过jmpi 0:0x8跳转到绝对地址0x0开始执行system的代码。system是从boot/head.s开始的。</p>
+</li>
+</ul>
+<p>  这里需要说明几个事情：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>我们在下移system模块的时候，覆盖了BIOS中断向量表。所以通过BIOS中断打印字符串是行不通的。</p>
+</li>
+<li class="lvl-2">
+<p>在实模式中，cs:pc就是真实执行的地址。但是在保护模式中，cs是一个选择符号，根据选择符号值不同，分表在GDT或者LDT中查找对应的CS段描述符，其中最重要的就是base地址，当未开启分页的时候，这里的base+pc就是我们真实的执行地址。上面我们加载了LDT和GDT。这里的LDT是空，GDT有3项，第零项是空，第一项是代码段描述符，第二项是数据段描述符，他们的基地址都是0x0。当cs=0x08,ds=0x10时，分别指向这里的第一项和第二项。</p>
+</li>
+</ul>
+<p>  刚刚说了，system下移导致BIOS中断向量表被冲掉了，于是我们不能够通过BIOS打印字符串，于是这里我们使用的是直接操作显存内存地址显示字符，这个原理和LinuxKernel tty显示原理差别不是很大。</p>
+<p>  这里我们设计了print_str函数，通过直接操控显存然后写入字符进行显示，这里还使用到了刚刚我们保存的当前光标位置（0x90000 0x90001）。写这个主要还是为了调试。</p>
+<p>  到此，我们已经开始去执行system的内容，其中head.s是入口。下图是在0x0下断点得到的setup模块的一些打印日志。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/setup_log.png" alt="setup_log_img"/></center>
+    </div>
+</div>   
+&emsp;&emsp;这里我们可以看到，红框还是BIOS中断打印的，黄框是通过直接操纵显存显示的。注意，我这里设计的直接操作显存的函数，是通过循环在当前显存页显示的，并不是我们常见的整页上移的方式。
+<br/>
+<br/>
+<h5 id="boot-head-s-阶段">boot/head.s 阶段</h5>
+<p>  首先我们还是来看一下0x0的位置是否是head.s，换句话来说是否加载好了system模块。并且，从这里开始，我们就是进入了真正的LinuxKernel的世界，前面都是做一些环境初始化，都是一些固定的内容。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/head_start.png" alt="head_start_img"/></center>
+    </div>
+</div>   
+<p>  这里我们需要说明的是，bootsect.S和setup.S用的是intel汇编，而从head.s开始，我们用的都是AT&amp;T汇编。同理，这里我也弄了一个safe_mode_print_str_no_page，打印字符串，为了调试，还是用的直接操作显存的方式。</p>
+<p>  从这里开始，CPU开始工作于保护模式，下面简要介绍一下工作流程：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>刚刚我们通过jmpi切换到0x0开始执行，这时cs=0x8,根据setup设置好的GDT，base为0x0，同理我们设置其他段寄存器。</p>
+</li>
+<li class="lvl-2">
+<p>设置堆栈为stack_start，这个就是内核堆栈。此符号定义于kernel/sched.c中，如下文。</p>
+</li>
+</ul>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">long</span> user_stack <span class="token punctuation">[</span> PAGE_SIZE<span class="token operator">>></span><span class="token number">2</span> <span class="token punctuation">]</span> <span class="token punctuation">;</span>
+
+<span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">long</span> <span class="token operator">*</span> a<span class="token punctuation">;</span>
+	<span class="token keyword">short</span> b<span class="token punctuation">;</span>
+	<span class="token comment">// &#125; stack_start = &#123; &amp; user_stack [PAGE_SIZE>>2] , 0x10 &#125;;</span>
+	<span class="token punctuation">&#125;</span> stack_start <span class="token operator">=</span> <span class="token punctuation">&#123;</span> <span class="token operator">&amp;</span> user_stack <span class="token punctuation">,</span> <span class="token number">0x10</span> <span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>设置IDT，所有的中断向量指向ignore_int，一个预定义的中断服务程序。共256项，每项8byte。</p>
+</li>
+<li class="lvl-2">
+<p>重新设置GDT。共256项，每项8byte。重新设置GDT的原因是setup的GDT可能会被冲掉，于是把GDT设置到合理的内存位置。这里设置好的GDT有4个。和setup中类似。第0，3个为0.第1，2项为cs和ds的段描述符。</p>
+</li>
+<li class="lvl-2">
+<p>检查A20是否开通，主要是通过判断0x100000 和 0x0值是否相等。</p>
+</li>
+<li class="lvl-2">
+<p>检查数学协处理器是否存在。</p>
+</li>
+</ul>
+<p>  到这里，我们就开始准备正式进入到init/main.c中的main函数了，但是还差最后一个重要的事情，那就是启用分页机制，下面继续介绍其工作流程：</p>
+<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">after_page_tables:
+	# sky print
+	push %ebp
+	lea msg5, %ebp
+	call safe_mode_print_str_no_page
+	pop %ebp	
+	#
+	pushl $0		# These are the parameters to main :-)
+	pushl $0
+	pushl $0
+	pushl $L6		# return address for main, if it decides to.
+	pushl $main
+	jmp setup_paging<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>从上面的代码我们可只，我们在启用分页前，把init/main.c中的main函数地址设置到了堆栈中。</p>
+</li>
+<li class="lvl-2">
+<p>首先我们把从0x0开始的5页内存清零。每页4096字节。其中第一页为页表目录，第2-5页为页表。</p>
+</li>
+<li class="lvl-2">
+<p>设置页表目录的前4项为第2-5页页表地址。注意页表目录为1024项，每项4字节。</p>
+</li>
+<li class="lvl-2">
+<p>倒序设置每一个页表的每一项内容，第5页最后一项为0xfff000。映射之后，2-5页分别映射好了16MB内存的空间。</p>
+</li>
+<li class="lvl-2">
+<p>操作cr0，开启分页</p>
+</li>
+<li class="lvl-2">
+<p>通过ret指令，从堆栈中把main地址弹出去执行。</p>
+</li>
+</ul>
+<p>  到这里，我们正式进入到init/main.c中的main函数中，进入c语言相关代码的地界。下面是进入main之前的一些日志输出。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/head_log.png" alt="head_log_img"/></center>
+    </div>
+</div>   
+<br/>
+<br/>
+<h5 id="init-main-c-到进入shell">init/main.c 到进入shell</h5>
+<p>  这里我们进入了init/main.c中的main函数，可从下图看到。从这里开始，也是我们大家都熟知的Linux内核部分。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/init_main.png" alt="init_main_img"/></center>
+    </div>
+</div>   
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>		<span class="token comment">/* This really IS void, no error here. */</span>
+<span class="token punctuation">&#123;</span>			<span class="token comment">/* The startup routine assumes (well, ...) this */</span>
+<span class="token comment">/*
+ * Interrupts are still disabled. Do necessary setups, then
+ * enable them
+ */</span>
+	<span class="token keyword">char</span> _my_msg_buf<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+	<span class="token function">sprintf</span><span class="token punctuation">(</span>_my_msg_buf<span class="token punctuation">,</span> <span class="token string">"kernel main() start, root_dev=%x, swap_dev=%x ... ...\0"</span><span class="token punctuation">,</span> ORIG_ROOT_DEV<span class="token punctuation">,</span> ORIG_SWAP_DEV<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">__asm__</span> <span class="token punctuation">(</span>
+	<span class="token string">"push %%ebp\n\t"</span>
+	<span class="token string">"mov %0, %%ebp\n\t"</span>
+	<span class="token string">"call safe_mode_print_str_after_page\n\t"</span> 
+	<span class="token string">"pop %%ebp\n\t"</span>
+	<span class="token operator">:</span>
+	<span class="token operator">:</span><span class="token string">"p"</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>_my_msg_buf<span class="token punctuation">)</span>
+	<span class="token operator">:</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+
+ 	ROOT_DEV <span class="token operator">=</span> ORIG_ROOT_DEV<span class="token punctuation">;</span>
+ 	SWAP_DEV <span class="token operator">=</span> ORIG_SWAP_DEV<span class="token punctuation">;</span>
+
+	<span class="token function">sprintf</span><span class="token punctuation">(</span>term<span class="token punctuation">,</span> <span class="token string">"TERM=con%dx%d"</span><span class="token punctuation">,</span> CON_COLS<span class="token punctuation">,</span> CON_ROWS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	envp<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> term<span class="token punctuation">;</span>	
+	envp_rc<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> term<span class="token punctuation">;</span>
+ 	drive_info <span class="token operator">=</span> DRIVE_INFO<span class="token punctuation">;</span>
+
+	memory_end <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token operator">&lt;&lt;</span><span class="token number">20</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token punctuation">(</span>EXT_MEM_K<span class="token operator">&lt;&lt;</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	memory_end <span class="token operator">&amp;=</span> <span class="token number">0xfffff000</span><span class="token punctuation">;</span><span class="token comment">//align 4k</span>
+
+
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>memory_end <span class="token operator">></span> <span class="token number">16</span><span class="token operator">*</span><span class="token number">1024</span><span class="token operator">*</span><span class="token number">1024</span><span class="token punctuation">)</span><span class="token comment">//if memory_end > 16MB, set it to be 16 MB</span>
+		memory_end <span class="token operator">=</span> <span class="token number">16</span><span class="token operator">*</span><span class="token number">1024</span><span class="token operator">*</span><span class="token number">1024</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>memory_end <span class="token operator">></span> <span class="token number">12</span><span class="token operator">*</span><span class="token number">1024</span><span class="token operator">*</span><span class="token number">1024</span><span class="token punctuation">)</span> 
+		buffer_memory_end <span class="token operator">=</span> <span class="token number">4</span><span class="token operator">*</span><span class="token number">1024</span><span class="token operator">*</span><span class="token number">1024</span><span class="token punctuation">;</span>
+	<span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>memory_end <span class="token operator">></span> <span class="token number">6</span><span class="token operator">*</span><span class="token number">1024</span><span class="token operator">*</span><span class="token number">1024</span><span class="token punctuation">)</span>
+		buffer_memory_end <span class="token operator">=</span> <span class="token number">2</span><span class="token operator">*</span><span class="token number">1024</span><span class="token operator">*</span><span class="token number">1024</span><span class="token punctuation">;</span>
+	<span class="token keyword">else</span>
+		buffer_memory_end <span class="token operator">=</span> <span class="token number">1</span><span class="token operator">*</span><span class="token number">1024</span><span class="token operator">*</span><span class="token number">1024</span><span class="token punctuation">;</span>
+
+	main_memory_start <span class="token operator">=</span> buffer_memory_end<span class="token punctuation">;</span>
+
+	<span class="token function">sprintf</span><span class="token punctuation">(</span>_my_msg_buf<span class="token punctuation">,</span> <span class="token string">"Mem size is %x, buf-mem size is %x, main-mem start %x ... ...\0"</span><span class="token punctuation">,</span> memory_end<span class="token punctuation">,</span> main_memory_start<span class="token punctuation">,</span> buffer_memory_end<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">__asm__</span> <span class="token punctuation">(</span>
+	<span class="token string">"push %%ebp\n\t"</span>
+	<span class="token string">"mov %0, %%ebp\n\t"</span>
+	<span class="token string">"call safe_mode_print_str_after_page\n\t"</span> 
+	<span class="token string">"pop %%ebp\n\t"</span>
+	<span class="token operator">:</span>
+	<span class="token operator">:</span><span class="token string">"p"</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>_my_msg_buf<span class="token punctuation">)</span>
+	<span class="token operator">:</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">RAMDISK</span></span>
+	<span class="token function">sprintf</span><span class="token punctuation">(</span>_my_msg_buf<span class="token punctuation">,</span> <span class="token string">"ramdisk init ... ...\0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">__asm__</span> <span class="token punctuation">(</span>
+	<span class="token string">"push %%ebp\n\t"</span>
+	<span class="token string">"mov %0, %%ebp\n\t"</span>
+	<span class="token string">"call safe_mode_print_str_after_page\n\t"</span> 
+	<span class="token string">"pop %%ebp\n\t"</span>
+	<span class="token operator">:</span>
+	<span class="token operator">:</span><span class="token string">"p"</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>_my_msg_buf<span class="token punctuation">)</span>
+	<span class="token operator">:</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	main_memory_start <span class="token operator">+=</span> <span class="token function">rd_init</span><span class="token punctuation">(</span>main_memory_start<span class="token punctuation">,</span> RAMDISK<span class="token operator">*</span><span class="token number">1024</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+
+	<span class="token function">sprintf</span><span class="token punctuation">(</span>_my_msg_buf<span class="token punctuation">,</span> <span class="token string">"memory init ... ...\0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">__asm__</span> <span class="token punctuation">(</span>
+	<span class="token string">"push %%ebp\n\t"</span>
+	<span class="token string">"mov %0, %%ebp\n\t"</span>
+	<span class="token string">"call safe_mode_print_str_after_page\n\t"</span> 
+	<span class="token string">"pop %%ebp\n\t"</span>
+	<span class="token operator">:</span>
+	<span class="token operator">:</span><span class="token string">"p"</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>_my_msg_buf<span class="token punctuation">)</span>
+	<span class="token operator">:</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">mem_init</span><span class="token punctuation">(</span>main_memory_start<span class="token punctuation">,</span>memory_end<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">sprintf</span><span class="token punctuation">(</span>_my_msg_buf<span class="token punctuation">,</span> <span class="token string">"trap init ... ...\0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">__asm__</span> <span class="token punctuation">(</span>
+	<span class="token string">"push %%ebp\n\t"</span>
+	<span class="token string">"mov %0, %%ebp\n\t"</span>
+	<span class="token string">"call safe_mode_print_str_after_page\n\t"</span> 
+	<span class="token string">"pop %%ebp\n\t"</span>
+	<span class="token operator">:</span>
+	<span class="token operator">:</span><span class="token string">"p"</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>_my_msg_buf<span class="token punctuation">)</span>
+	<span class="token operator">:</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">trap_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">sprintf</span><span class="token punctuation">(</span>_my_msg_buf<span class="token punctuation">,</span> <span class="token string">"blk init ... ...\0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">__asm__</span> <span class="token punctuation">(</span>
+	<span class="token string">"push %%ebp\n\t"</span>
+	<span class="token string">"mov %0, %%ebp\n\t"</span>
+	<span class="token string">"call safe_mode_print_str_after_page\n\t"</span> 
+	<span class="token string">"pop %%ebp\n\t"</span>
+	<span class="token operator">:</span>
+	<span class="token operator">:</span><span class="token string">"p"</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>_my_msg_buf<span class="token punctuation">)</span>
+	<span class="token operator">:</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">blk_dev_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">sprintf</span><span class="token punctuation">(</span>_my_msg_buf<span class="token punctuation">,</span> <span class="token string">"chr init ... ...\0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">__asm__</span> <span class="token punctuation">(</span>
+	<span class="token string">"push %%ebp\n\t"</span>
+	<span class="token string">"mov %0, %%ebp\n\t"</span>
+	<span class="token string">"call safe_mode_print_str_after_page\n\t"</span> 
+	<span class="token string">"pop %%ebp\n\t"</span>
+	<span class="token operator">:</span>
+	<span class="token operator">:</span><span class="token string">"p"</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>_my_msg_buf<span class="token punctuation">)</span>
+	<span class="token operator">:</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">chr_dev_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">sprintf</span><span class="token punctuation">(</span>_my_msg_buf<span class="token punctuation">,</span> <span class="token string">"tty init ... ...\0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">__asm__</span> <span class="token punctuation">(</span>
+	<span class="token string">"push %%ebp\n\t"</span>
+	<span class="token string">"mov %0, %%ebp\n\t"</span>
+	<span class="token string">"call safe_mode_print_str_after_page\n\t"</span> 
+	<span class="token string">"pop %%ebp\n\t"</span>
+	<span class="token operator">:</span>
+	<span class="token operator">:</span><span class="token string">"p"</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>_my_msg_buf<span class="token punctuation">)</span>
+	<span class="token operator">:</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">tty_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printk</span><span class="token punctuation">(</span><span class="token string">"time init ... ...\n\r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">time_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printk</span><span class="token punctuation">(</span><span class="token string">"sched init ... ...\n\r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">sched_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token comment">/*
+	After sched_init()
+
+	gdt[0] = NULL
+	gdt[1] = kernel cs
+	gdt[2] = kernel ds
+	gdt[3] = NULL
+	
+	gdt[4] = task0.tss
+	gdt[5] = task0.ldt
+
+	tr=task0.tss
+	ldtr=task0.ldt
+	*/</span>
+
+	<span class="token function">printk</span><span class="token punctuation">(</span><span class="token string">"buffer init ... ...\n\r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">buffer_init</span><span class="token punctuation">(</span>buffer_memory_end<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printk</span><span class="token punctuation">(</span><span class="token string">"hd init ... ...\n\r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">hd_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printk</span><span class="token punctuation">(</span><span class="token string">"floppy init ... ...\n\r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">floppy_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printk</span><span class="token punctuation">(</span><span class="token string">"enable interrupts ... ...\n\r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">sti</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printk</span><span class="token punctuation">(</span><span class="token string">"go to user mode ... ...\n\r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token comment">/*
+	movl %%esp,%%eax
+	pushl $0x17
+	pushl %%eax
+	pushfl
+	pushl $0x0f
+	pushl $1f
+	iret
+	1:
+	movl $0x17,%%eax
+	mov %%ax,%%ds
+	mov %%ax,%%es
+	mov %%ax,%%fs
+	mov %%ax,%%gs
+
+	iret instruction will do follow op:
+	popl eip
+	popl cs
+	popl eflag
+	popl esp
+	popl ss
+	*/</span>
+	<span class="token function">move_to_user_mode</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"user_mode: fork() task0 ... ..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">fork</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>		<span class="token comment">/* we count on this going ok */</span>
+
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"user_mode: task1 call init ... ..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token function">init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token comment">/*
+ *   NOTE!!   For any other task 'pause()' would mean we have to get a
+ * signal to awaken, but task0 is the sole exception (see 'schedule()')
+ * as task 0 gets activated at every idle moment (when no other tasks
+ * can run). For task0 'pause()' just means we go check if some other
+ * task can run, and if not we return here.
+ */</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"user_mode: task0 call sys_pause() in while ... ..."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token punctuation">;</span><span class="token punctuation">;</span><span class="token punctuation">)</span>
+		<span class="token function">__asm__</span><span class="token punctuation">(</span><span class="token string">"int $0x80"</span><span class="token operator">::</span><span class="token string">"a"</span> <span class="token punctuation">(</span>__NR_pause<span class="token punctuation">)</span><span class="token operator">:</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  注意，这里我们仍然设计了一个函数为safe_mode_print_str_after_page，通过直接操作显存进行显示字符串，知道tty_init之后，我们才能够调用printk类似的函数进行打印。</p>
+<p>  下面简要介绍一下main函数主要做的事情：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>根据我们在setup中保存到内存中的内存参数初始化高速缓冲区和主存的位置。</p>
+</li>
+<li class="lvl-2">
+<p>然后就是我们常见的初始化mm模块。</p>
+</li>
+<li class="lvl-2">
+<p>初始化中断向量。</p>
+</li>
+<li class="lvl-2">
+<p>初始化块设备。</p>
+</li>
+<li class="lvl-2">
+<p>初始化字符串设备。</p>
+</li>
+<li class="lvl-2">
+<p>初始化tty设备。</p>
+</li>
+<li class="lvl-2">
+<p>初始化时间。</p>
+</li>
+<li class="lvl-2">
+<p>初始化调度模块。</p>
+</li>
+<li class="lvl-2">
+<p>初始化缓冲区。</p>
+</li>
+<li class="lvl-2">
+<p>初始化硬盘。</p>
+</li>
+<li class="lvl-2">
+<p>初始化软盘。</p>
+</li>
+<li class="lvl-2">
+<p>开启中断。</p>
+</li>
+<li class="lvl-2">
+<p>把当前任务切换到用户态。</p>
+</li>
+</ul>
+<p>  当我们切换到用户态之后，并且当前我们的进程是0号进程，我们内核的一些重要初始化基本设置完毕。然后就像我们常见的linux编程那样，通过fork，创建我们的1号进程。然后我们继续进行下面的事情：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>task0在fork出task1之后，就循环调用sys_pause, 这里主要还是执行schedule()开始执行进程调度。</p>
+</li>
+<li class="lvl-2">
+<p>task1成功创建后，调用setup，开始加载根文件系统。然后task1 通过fork创建了task2。</p>
+</li>
+<li class="lvl-2">
+<p>task2通过execve开始运行/bin/sh，进入shell。后续就是一些其他的事情。</p>
+</li>
+</ul>
+<p>  到这里，我们已经把kernel跑起来了。在我调试的过程中，主要还是mm模块和schedule模块有些问题，可能和编译器版本有关系，反正我生成的代码，总会报错。哪怕到现在，我开源出来的我修改的内核，也非常的不稳定，经常崩溃。但是好在正常工作了。</p>
+<p>  下面给出两种不同打印的日志：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/main_log0.png" alt="main_log0_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_102/main_log1.png" alt="main_log1_img"/></center>
+    </div>
+</div>   
+<br/>
+<br/>
+<h5 id="tool-build-c">tool/build.c</h5>
+<p>  此工具是生成LinuxKernel镜像的手段。但是我们在Ubuntu上生成的内核，由于gcc版本变更的原因，需要做一些变更。主要还是把生成的elf格式system模块通过objcopy 生成二进制内存镜像。主要原因就是elf格式需要一个elf加载器进行各个段的重定位，但是由于我们是内核，所以没有。详情，请查看tool/build.c 及 Makefile。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="开源">开源</h3>
+<hr>
+<p>  <a target="_blank" rel="noopener" href="https://github.com/flyinskyin2013/LinuxKernel-src0.12">https://github.com/flyinskyin2013/LinuxKernel-src0.12</a></p>
+<p>  <a target="_blank" rel="noopener" href="https://gitee.com/sky-X/LinuxKernel-src0.12">https://gitee.com/sky-X/LinuxKernel-src0.12</a> （镜像）</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  为啥想要在ubuntu1804环境下弄这个东西呢？一方面是想学习一下，通过踩坑的方式加深自己的理解。另一方面还是太懒了，我只想在我的ubuntu1804上编译内核，不想安装其他虚拟机了，我的电脑太卡了（毕竟8年的电脑了QAQ）。</p>
+<p>  经过了这一波调试，我对LinuxKernel有了更深的认知，我觉得很不错，如果以后有必要，我还可以分别对这些模块进行详细的查看，在这里，我只是简单的说明了init/main中的内容，其实，还有许多其他的内容是运行在背后的。比如system_call,sys_table等等内容。还有do_fork do_execve等等内容都是我在调试过程中踩过的坑。</p>
+<p>  这里还是要说明，深入调试学习这个的原因还是想看看OS是怎么运行起来，虽然不能说已经100%的熟知，但是也可管中窥豹。</p>
+<p>  注意，这个版本的内核和现代的2.0，4.0，5.0还缺了一些主要的知识，比如网络栈，VFS等。但是其他的一些内容，在现在的最新内核中，多多少少都能够看到这个版本的一些影子。这也是学习这个内核的原因之一。</p>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Sky</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://e-x.top/2021/03/07/blog_idx_102/">https://e-x.top/2021/03/07/blog_idx_102/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Sky</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/linux/">
+                                    <span class="chip bg-color">linux</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%86%85%E6%A0%B8/">
+                                    <span class="chip bg-color">内核</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+
+
+
+            
+                <div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.jpg" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+
+
+            
+                <div class="card" data-aos="fade-up">
+    <div id="utteranc-container" class="card-content">
+        <script src="https://utteranc.es/client.js"
+        repo="flyinskyin2013/blog_issues_rep"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+        </script>
+    </div>
+</div>
+
+            
+
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2021/04/18/blog_idx_103/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/3.jpg" class="responsive-img" alt="Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel)">
+                        
+                        <span class="card-title">Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel)</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2021-04-18
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/C-CPP/" class="post-category">
+                                    C&CPP
+                                </a>
+                            
+                            <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/" class="post-category">
+                                    嵌入式
+                                </a>
+                            
+                            <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/" class="post-category">
+                                    DL
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/CPP/">
+                        <span class="chip bg-color">CPP</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">深度学习</span>
+                    </a>
+                    
+                    <a href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
+                        <span class="chip bg-color">神经网络</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2020/10/20/blog_idx_101/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/18.jpg" class="responsive-img" alt="字符集、字符编码、国际化、本地化简要总结(UNICODE/UTF/ASCII/GB2312/GBK/GB18030)">
+                        
+                        <span class="card-title">字符集、字符编码、国际化、本地化简要总结(UNICODE/UTF/ASCII/GB2312/GBK/GB18030)</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2020-10-20
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/" class="post-category">
+                                    常识
+                                </a>
+                            
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/C-CPP/" class="post-category">
+                                    C&CPP
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E4%B9%B1%E7%A0%81/">
+                        <span class="chip bg-color">乱码</span>
+                    </a>
+                    
+                    <a href="/tags/UNICODE/">
+                        <span class="chip bg-color">UNICODE</span>
+                    </a>
+                    
+                    <a href="/tags/GB%E7%B3%BB%E5%88%97/">
+                        <span class="chip bg-color">GB系列</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+<script>
+    $('#articleContent').on('copy', function (e) {
+        // IE8 or earlier browser is 'undefined'
+        if (typeof window.getSelection === 'undefined') return;
+
+        var selection = window.getSelection();
+        // if the selection is short let's not annoy our users.
+        if (('' + selection).length < Number.parseInt('20')) {
+            return;
+        }
+
+        // create a div outside of the visible area and fill it with the selected text.
+        var bodyElement = document.getElementsByTagName('body')[0];
+        var newdiv = document.createElement('div');
+        newdiv.style.position = 'absolute';
+        newdiv.style.left = '-99999px';
+        bodyElement.appendChild(newdiv);
+        newdiv.appendChild(selection.getRangeAt(0).cloneContents());
+
+        // we need a <pre> tag workaround.
+        // otherwise the text inside "pre" loses all the line breaks!
+        if (selection.getRangeAt(0).commonAncestorContainer.nodeName === 'PRE' || selection.getRangeAt(0).commonAncestorContainer.nodeName === 'CODE') {
+            newdiv.innerHTML = "<pre>" + newdiv.innerHTML + "</pre>";
+        }
+
+        var url = document.location.href;
+        newdiv.innerHTML += '<br />'
+            + '来源: Sky&#39;s Blogs<br />'
+            + '文章作者: Sky<br />'
+            + '文章链接: <a href="' + url + '">' + url + '</a><br />'
+            + '本文章著作权归作者所有，任何形式的转载都请注明出处。';
+
+        selection.selectAllChildren(newdiv);
+        window.setTimeout(function () {bodyElement.removeChild(newdiv);}, 200);
+    });
+</script>
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+
+  <!-- 是否加载使用自带的 prismjs. -->
+  <script type="text/javascript" src="/libs/prism/prism.min.js"></script>
+
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="song"
+                   id="26545309"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="/libs/aplayer/Meting.min.js"></script>
+
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2014-2025</span>
+            
+            <a href="/about" target="_blank">Sky</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            
+            <br>
+            
+            
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2014";
+                        var startMonth = "7";
+                        var startDate = "3";
+                        var startHour = "20";
+                        var startMinute = "45";
+                        var startSecond = "27";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link ">
+    <a href="https://github.com/flyinskyin2013" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 白天和黑夜主题 -->
+<div class="stars-con">
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>  
+</div>
+
+<script>
+    function switchNightMode() {
+        $('<div class="Cuteen_DarkSky"><div class="Cuteen_DarkPlanet"></div></div>').appendTo($('body')),
+        setTimeout(function () {
+            $('body').hasClass('DarkMode') 
+            ? ($('body').removeClass('DarkMode'), localStorage.setItem('isDark', '0'), $('#sum-moon-icon').removeClass("fa-sun").addClass('fa-moon')) 
+            : ($('body').addClass('DarkMode'), localStorage.setItem('isDark', '1'), $('#sum-moon-icon').addClass("fa-sun").removeClass('fa-moon')),
+            
+            setTimeout(function () {
+            $('.Cuteen_DarkSky').fadeOut(1e3, function () {
+                $(this).remove()
+            })
+            }, 2e3)
+        })
+    }
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+    
+    
+
+    <!-- 雪花特效 -->
+    
+
+    <!-- 鼠标星星特效 -->
+     
+        <script type="text/javascript">
+            // 只在桌面版网页启用特效
+            var windowWidth = $(window).width();
+            if (windowWidth > 768) {
+                document.write('<script type="text/javascript" src="/libs/others/star.js"><\/script>');
+            }
+        </script>
+    
+
+    
+
+    <!-- Baidu Analytics -->
+
+<script>
+    var _hmt = _hmt || [];
+    (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":250,"hOffset":50,"vOffset":5},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.8},"log":false});</script></body>
+
+</html>

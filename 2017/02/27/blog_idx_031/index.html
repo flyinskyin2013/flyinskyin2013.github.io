@@ -1,0 +1,1416 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="keywords" content="FAT32 文件系统详解, Sky&#39;s Blogs">
+    <meta name="description" content=" 
+PS：要转载请注明出处，本人版权所有。
+PS: 这个只是基于《我自己》的理解，如果和你的原则及想法相冲突，请谅解，勿喷。
+
+环境说明
+  无
+前言
+
+  最近有个项目是做STM32裸机开发的，由于需要用到USB向android系统传输数">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+    gtag('config', 'G-80RLMJ8DQP');
+</script>
+
+
+    <title>FAT32 文件系统详解 | Sky&#39;s Blogs</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    
+
+
+    <!-- bg-cover style     -->
+
+
+
+<link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+<link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+<link rel="stylesheet" type="text/css" href="/css/matery.css">
+<link rel="stylesheet" type="text/css" href="/css/my.css">
+<link rel="stylesheet" type="text/css" href="/css/dark.css" media="none" onload="if(media!='all')media='all'">
+
+
+
+
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+    <link rel="stylesheet" href="/css/post.css">
+
+
+
+
+    
+        <link rel="stylesheet" type="text/css" href="/css/reward.css">
+    
+
+
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.jpg" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Sky&#39;s Blogs</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+  <li>
+    <a href="javascript:;" class="waves-effect waves-light" onclick="switchNightMode()" title="深色/浅色模式" >
+      <i id="sum-moon-icon" class="fas fa-sun" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.jpg" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Sky&#39;s Blogs</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/flyinskyin2013" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Follow Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/flyinskyin2013" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Follow Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/8.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">FAT32 文件系统详解</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E6%95%B0%E6%8D%AE/">
+                                <span class="chip bg-color">数据</span>
+                            </a>
+                        
+                            <a href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+                                <span class="chip bg-color">文件系统</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%AD%98%E5%82%A8/">
+                                <span class="chip bg-color">存储</span>
+                            </a>
+                        
+                            <a href="/tags/STM32/">
+                                <span class="chip bg-color">STM32</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" class="post-category">
+                                嵌入式
+                            </a>
+                        
+                            <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/%E5%B8%B8%E8%AF%86/" class="post-category">
+                                常识
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2017-02-27
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.min.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-16 14:03:56
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=031） 
+&emsp;&emsp;本文发布于 2017-02-27 12:27:29，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=031） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  最近有个项目是做STM32裸机开发的，由于需要用到USB向android系统传输数据，先考虑USB HID Class，但是考虑到驱动和后续要支持读取SD问题，进而采用USB MS Class作为传输数据的载体。模拟一个带FAT32文件系统的存储设备。</p>
+<p>  模拟设备基本信息:总容量8MB，除去MBR,DBR,FSINFO,FAT,等，大概还有7.8MB左右的容量。</p>
+<p>  这篇文章主要用于讲解FAT32的详细结构，同时也详解存储介质和文件系统的关系。读这篇文章时，以假设你对FAT32 具备一定的了解，至少你知道FAT32由哪些地方组成。现在网上的资料，就我查询来看，都没有介绍MBR，大部分都直接从DBR开始讲起来,而模拟一个存储设备，MBR是一切的起点，只要搞清楚MBR，我们就可以顺着线，了解所有。如果对文中的一些词语不了解，请多百度。</p>
+<p>  <strong>此外，此文章是我查看许多资料而融合而来，向前人致敬！！！</strong></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="FAT-FileSystem">FAT FileSystem</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="存储介质">存储介质</h5>
+<p>  由于我们的存储介质是由存储载体（磁面或者存储芯片）和 读写机构组成。如硬盘的磁面和磁头部分等等。这就解决了怎么物理级读取数据的问题，而操作系统的存储驱动正是做这个事情的。驱动提供接口让我们可以在存储介质上读写数。</p>
+<p>  我们虽然可以通过驱动向存储介质写数据，但是都是很低级的写，同时，我们写入的大部分是文件，而很少有人直接往磁盘保存文件中的二进制数据吧，而不保存文件的其他信息吧，并且这样是很难管理的（如：我要取一个文件，就是说我要的是人记住这个文件在存储介质的那个位置，是那几个字节）。为了方便管理，有了文件系统的概念，文件系统可以提供方便的存储文件各种信息的方法。</p>
+<p>  FAT文件系统是一个小容量类常用的文件系统，容量太大了就不太适合使用FAT系文件系统。FAT有FAT12，FAT16,FAT32，我们今天主要就是介绍FAT32.</p>
+<br/>
+<br/>
+<h5 id="FAT32">FAT32</h5>
+<p>  由于网上这方面的资料很多，我主要是介绍一些网上现有资料让我迷惑的一些地方。同时通过代码的方式，让我们知道各个组成部分到底是怎么回事。</p>
+<p>  FAT32 由 MBR,DBR,FSINFO,FAT1,FAT2,DATA(DATA = DIR + FILE_DATA) 组成。</p>
+<p>  MBR是主引导记录，主要作用是为了标示一个分区的信息而设立的。MBR结构如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//0 扇区</span>
+<span class="token class-name">uint8_t</span> FAT32_MBR<span class="token punctuation">[</span><span class="token number">80</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span>
+	<span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token comment">/*DPT 开始位*/</span><span class="token number">0x80</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x01</span><span class="token comment">/**/</span><span class="token punctuation">,</span>
+	<span class="token number">0x01</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x0B</span><span class="token punctuation">,</span><span class="token number">0xFE</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x3F</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span>  <span class="token number">0x3F</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*4bytes下个分区的扇区地址*/</span><span class="token punctuation">,</span>  <span class="token number">0x82</span><span class="token punctuation">,</span><span class="token number">0x3e</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*4bytes为SD卡总的扇区个数(16002个)*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span>
+	<span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span>
+	<span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span>
+	<span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x55</span><span class="token punctuation">,</span><span class="token number">0xAA</span><span class="token comment">/**/</span><span class="token punctuation">,</span>
+
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  MBR决定DBR的起始位置,DBR存储FAT表信息。DBR如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//DOS BOOT RECORD</span>
+<span class="token comment">//DBR=引导代码+BPB+扩展BPB+校验</span>
+<span class="token comment">//FAT1 = 63+34</span>
+<span class="token comment">//FAT2 = 63+34+123 = 220</span>
+<span class="token comment">//DATA = 63+34+123+123 = 343</span>
+<span class="token comment">//ROOT-DIR = 343</span>
+<span class="token class-name">uint8_t</span> FAT32_DBR<span class="token punctuation">[</span><span class="token number">96</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span>
+	
+	<span class="token number">0xEB</span><span class="token punctuation">,</span><span class="token number">0x58</span><span class="token punctuation">,</span><span class="token number">0x90</span><span class="token comment">/*(0x0-0x2)跳转指令*/</span><span class="token punctuation">,</span><span class="token number">0x4D</span><span class="token punctuation">,</span><span class="token number">0x53</span><span class="token punctuation">,</span><span class="token number">0x44</span><span class="token punctuation">,</span><span class="token number">0x4F</span><span class="token punctuation">,</span><span class="token number">0x53</span><span class="token punctuation">,</span><span class="token number">0x35</span><span class="token punctuation">,</span><span class="token number">0x2E</span><span class="token punctuation">,</span><span class="token number">0x30</span><span class="token comment">/*（0x3-0xA）OEM区域:MSDOS5.0*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x02</span><span class="token comment">/*（0xB-0xC）每扇区字节数*/</span><span class="token punctuation">,</span><span class="token number">0x01</span><span class="token comment">/*（0xD）每簇扇区数*/</span><span class="token punctuation">,</span><span class="token number">0x22</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0xE-0xF)保留扇区数*/</span><span class="token punctuation">,</span>
+	<span class="token number">0x02</span><span class="token comment">/*(0x10)FAT数(Number of FAT) 该分区上FAT的副本数*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*（0x11-0x12）FAT32必须等于0，FAT12/FAT16为根目录中目录的个数；*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x13-0x14)FAT32必须等于0，FAT12/FAT16为扇区总数*/</span><span class="token punctuation">,</span><span class="token number">0xF8</span><span class="token comment">/*(0x15),哪种存储介质，0xF8标准值，可移动存储介质，常用的 0xF0*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x16-0x17)FAT32必须为0，FAT12/FAT16为一个FAT 表所占的扇区数*/</span><span class="token punctuation">,</span><span class="token number">0x3F</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x18-0x19)每磁道扇区数，只对于有“特殊形状”（由磁头和柱面每 分割为若干磁道）的存储介质有效，63（0x00 3F）*/</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x1A-0x1B)磁头数，只对特殊的介质才有效，255（0x00 FF）。*/</span><span class="token punctuation">,</span><span class="token number">0x3F</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x1C-0x1F)DBR分区之前所隐藏的扇区数，63，与MBR中地址0x1C6开始的4个字节数值相等*/</span><span class="token punctuation">,</span>
+	<span class="token number">0x82</span><span class="token punctuation">,</span><span class="token number">0x3E</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x20-0x23)文件系统总扇区数，16002*/</span><span class="token punctuation">,</span><span class="token number">0x7B</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x24-0x27)每个FAT表占用扇区数，123*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x28-0x29),标记，此域FAT32 特有*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x2A-0x2B)FAT32版本号0.0，FAT32特有*/</span><span class="token punctuation">,</span><span class="token number">0x02</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x2C-0x2F),根目录所在第一个簇的簇号，2。（虽然在FAT32文件系统 下，根目录可以存放在数据区的任何位置，但是通常情况下还是起始于2号簇） */</span><span class="token punctuation">,</span>
+	<span class="token number">0x01</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x30-0x31),FSINFO（文件系统信息扇区）扇区号1，该扇区为操作 系统提供关于空簇总数及下一可用簇的信息*/</span><span class="token punctuation">,</span><span class="token number">0x06</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x32-0x33),备份引导扇区的位置。备份引导扇区总是位于文件系统 的6号扇区*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x34-0x3F),用于以后FAT 扩展使用*/</span><span class="token punctuation">,</span>
+	<span class="token number">0x80</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*(0x40-0x41),与FAT12/16 的定义相同，只不过两者位于启动扇区不同的位置而已*/</span><span class="token punctuation">,</span><span class="token number">0x29</span><span class="token comment">/*(0x42),扩展引导标志，0x29。与FAT12/16 的定义相同*/</span><span class="token punctuation">,</span><span class="token number">0xAF</span><span class="token punctuation">,</span><span class="token number">0xE3</span><span class="token punctuation">,</span><span class="token number">0xB5</span><span class="token punctuation">,</span><span class="token number">0x10</span><span class="token comment">/*(0x43-0x46),卷序列号。通常为一个随机值*/</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span>
+	<span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token comment">/*(0x47-0x51)卷标（ASCII码），如果建立文件系统的时候指定了卷 标，会保存在此*/</span><span class="token punctuation">,</span><span class="token number">0x46</span><span class="token punctuation">,</span><span class="token number">0x41</span><span class="token punctuation">,</span><span class="token number">0x54</span><span class="token punctuation">,</span><span class="token number">0x33</span><span class="token punctuation">,</span><span class="token number">0x32</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token punctuation">,</span><span class="token number">0x20</span><span class="token comment">/*(0x52-0x59)文件系统格式的ASCII码，FAT32*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  FSINFO如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//文件系统信息扇区，位于DBR 后一个扇区</span>
+<span class="token comment">//64扇区</span>
+<span class="token class-name">uint8_t</span> FAT32_FSINFO<span class="token punctuation">[</span><span class="token number">48</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span>
+	<span class="token number">0x52</span><span class="token punctuation">,</span><span class="token number">0x52</span><span class="token punctuation">,</span><span class="token number">0x61</span><span class="token punctuation">,</span><span class="token number">0x41</span><span class="token comment">/*扩展引导标签*/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span>
+	<span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x72</span><span class="token punctuation">,</span><span class="token number">0x72</span><span class="token punctuation">,</span><span class="token number">0x41</span><span class="token punctuation">,</span><span class="token number">0x61</span><span class="token comment">/*FSINFO签名“0x72724161”*/</span><span class="token punctuation">,</span><span class="token number">0x66</span><span class="token punctuation">,</span><span class="token number">0x3D</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*文件系统的空簇数，15788*/</span><span class="token punctuation">,</span><span class="token number">0x15</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/*下一可用簇号（0x 00 00 00 15）*/</span><span class="token punctuation">,</span>
+	<span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token comment">/**/</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x55</span><span class="token punctuation">,</span><span class="token number">0xAA</span><span class="token comment">/**/</span><span class="token punctuation">,</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  FAT表存储哪些簇已经被分配, FAT表如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//97扇区，FAT1</span>
+<span class="token comment">//220,FAT2</span>
+<span class="token class-name">uint8_t</span> FAT32_FAT<span class="token punctuation">[</span><span class="token number">28</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span>
+	<span class="token number">0xF8</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0x0F</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0x0F</span><span class="token punctuation">,</span> <span class="token number">0x04</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span> <span class="token punctuation">,</span> 
+	<span class="token number">0x05</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x06</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span><span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0xFF</span><span class="token punctuation">,</span><span class="token number">0x0F</span>
+	
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  同理通过DBR和FAT表我们可以推算出DIR所在的扇区，同时，也可以推算出DATA所在的扇区，然后我们就可以模拟一个带FAT32文件系统的存储设备。</p>
+<p>  注意:文中的一些地方要结合其他的FAT32文章基础来看，我只是很直白的表达了，到底介质上存了什么才会让OS认出这就是FAT32，容量多大。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Sky</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://e-x.top/2017/02/27/blog_idx_031/">https://e-x.top/2017/02/27/blog_idx_031/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Sky</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/%E6%95%B0%E6%8D%AE/">
+                                    <span class="chip bg-color">数据</span>
+                                </a>
+                            
+                                <a href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+                                    <span class="chip bg-color">文件系统</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%AD%98%E5%82%A8/">
+                                    <span class="chip bg-color">存储</span>
+                                </a>
+                            
+                                <a href="/tags/STM32/">
+                                    <span class="chip bg-color">STM32</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+
+
+
+            
+                <div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.jpg" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+
+
+            
+                <div class="card" data-aos="fade-up">
+    <div id="utteranc-container" class="card-content">
+        <script src="https://utteranc.es/client.js"
+        repo="flyinskyin2013/blog_issues_rep"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+        </script>
+    </div>
+</div>
+
+            
+
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2017/03/14/blog_idx_032/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/15.jpg" class="responsive-img" alt="C 可变参数函数分析(va_start,va_end,va_list...)">
+                        
+                        <span class="card-title">C 可变参数函数分析(va_start,va_end,va_list...)</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2017-03-14
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/C-CPP/" class="post-category">
+                                    C&CPP
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/c%E8%AF%AD%E8%A8%80/">
+                        <span class="chip bg-color">c语言</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%87%BD%E6%95%B0/">
+                        <span class="chip bg-color">函数</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0/">
+                        <span class="chip bg-color">可变参数</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2016/12/01/blog_idx_030/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="Ubuntu(Linux) PyQt5 QtUIFile 转换为 PythonModule (pyuic.py/pyuic脚本)">
+                        
+                        <span class="card-title">Ubuntu(Linux) PyQt5 QtUIFile 转换为 PythonModule (pyuic.py/pyuic脚本)</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2016-12-01
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/GUI%E5%BC%80%E5%8F%91/" class="post-category">
+                                    GUI开发
+                                </a>
+                            
+                            <a href="/categories/GUI%E5%BC%80%E5%8F%91/python/" class="post-category">
+                                    python
+                                </a>
+                            
+                            <a href="/categories/GUI%E5%BC%80%E5%8F%91/python/linux%E5%BC%80%E5%8F%91/" class="post-category">
+                                    linux开发
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Ubuntu/">
+                        <span class="chip bg-color">Ubuntu</span>
+                    </a>
+                    
+                    <a href="/tags/pyqt/">
+                        <span class="chip bg-color">pyqt</span>
+                    </a>
+                    
+                    <a href="/tags/ui/">
+                        <span class="chip bg-color">ui</span>
+                    </a>
+                    
+                    <a href="/tags/pyuic/">
+                        <span class="chip bg-color">pyuic</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+<script>
+    $('#articleContent').on('copy', function (e) {
+        // IE8 or earlier browser is 'undefined'
+        if (typeof window.getSelection === 'undefined') return;
+
+        var selection = window.getSelection();
+        // if the selection is short let's not annoy our users.
+        if (('' + selection).length < Number.parseInt('20')) {
+            return;
+        }
+
+        // create a div outside of the visible area and fill it with the selected text.
+        var bodyElement = document.getElementsByTagName('body')[0];
+        var newdiv = document.createElement('div');
+        newdiv.style.position = 'absolute';
+        newdiv.style.left = '-99999px';
+        bodyElement.appendChild(newdiv);
+        newdiv.appendChild(selection.getRangeAt(0).cloneContents());
+
+        // we need a <pre> tag workaround.
+        // otherwise the text inside "pre" loses all the line breaks!
+        if (selection.getRangeAt(0).commonAncestorContainer.nodeName === 'PRE' || selection.getRangeAt(0).commonAncestorContainer.nodeName === 'CODE') {
+            newdiv.innerHTML = "<pre>" + newdiv.innerHTML + "</pre>";
+        }
+
+        var url = document.location.href;
+        newdiv.innerHTML += '<br />'
+            + '来源: Sky&#39;s Blogs<br />'
+            + '文章作者: Sky<br />'
+            + '文章链接: <a href="' + url + '">' + url + '</a><br />'
+            + '本文章著作权归作者所有，任何形式的转载都请注明出处。';
+
+        selection.selectAllChildren(newdiv);
+        window.setTimeout(function () {bodyElement.removeChild(newdiv);}, 200);
+    });
+</script>
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+
+  <!-- 是否加载使用自带的 prismjs. -->
+  <script type="text/javascript" src="/libs/prism/prism.min.js"></script>
+
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="song"
+                   id="26545309"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="/libs/aplayer/Meting.min.js"></script>
+
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2014-2025</span>
+            
+            <a href="/about" target="_blank">Sky</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            
+            <br>
+            
+            
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2014";
+                        var startMonth = "7";
+                        var startDate = "3";
+                        var startHour = "20";
+                        var startMinute = "45";
+                        var startSecond = "27";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link ">
+    <a href="https://github.com/flyinskyin2013" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 白天和黑夜主题 -->
+<div class="stars-con">
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>  
+</div>
+
+<script>
+    function switchNightMode() {
+        $('<div class="Cuteen_DarkSky"><div class="Cuteen_DarkPlanet"></div></div>').appendTo($('body')),
+        setTimeout(function () {
+            $('body').hasClass('DarkMode') 
+            ? ($('body').removeClass('DarkMode'), localStorage.setItem('isDark', '0'), $('#sum-moon-icon').removeClass("fa-sun").addClass('fa-moon')) 
+            : ($('body').addClass('DarkMode'), localStorage.setItem('isDark', '1'), $('#sum-moon-icon').addClass("fa-sun").removeClass('fa-moon')),
+            
+            setTimeout(function () {
+            $('.Cuteen_DarkSky').fadeOut(1e3, function () {
+                $(this).remove()
+            })
+            }, 2e3)
+        })
+    }
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+    
+    
+
+    <!-- 雪花特效 -->
+    
+
+    <!-- 鼠标星星特效 -->
+     
+        <script type="text/javascript">
+            // 只在桌面版网页启用特效
+            var windowWidth = $(window).width();
+            if (windowWidth > 768) {
+                document.write('<script type="text/javascript" src="/libs/others/star.js"><\/script>');
+            }
+        </script>
+    
+
+    
+
+    <!-- Baidu Analytics -->
+
+<script>
+    var _hmt = _hmt || [];
+    (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":250,"hOffset":50,"vOffset":5},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.8},"log":false});</script></body>
+
+</html>

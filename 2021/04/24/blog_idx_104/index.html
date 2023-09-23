@@ -1,0 +1,1803 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="keywords" content="Mediapipe 在RK3399PRO上的初探（二）(自定义Calculator), Sky&#39;s Blogs">
+    <meta name="description" content=" 
+PS：要转载请注明出处，本人版权所有。
+PS: 这个只是基于《我自己》的理解，如果和你的原则及想法相冲突，请谅解，勿喷。
+
+环境说明
+
+
+Ubuntu 18.04
+
+
+gcc version 7.5.0 (Ubuntu 7.5.0-3u">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+    gtag('config', 'G-80RLMJ8DQP');
+</script>
+
+
+    <title>Mediapipe 在RK3399PRO上的初探（二）(自定义Calculator) | Sky&#39;s Blogs</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    
+
+
+    <!-- bg-cover style     -->
+
+
+
+<link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+<link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+<link rel="stylesheet" type="text/css" href="/css/matery.css">
+<link rel="stylesheet" type="text/css" href="/css/my.css">
+<link rel="stylesheet" type="text/css" href="/css/dark.css" media="none" onload="if(media!='all')media='all'">
+
+
+
+
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+    <link rel="stylesheet" href="/css/post.css">
+
+
+
+
+    
+        <link rel="stylesheet" type="text/css" href="/css/reward.css">
+    
+
+
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.jpg" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Sky&#39;s Blogs</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+  <li>
+    <a href="javascript:;" class="waves-effect waves-light" onclick="switchNightMode()" title="深色/浅色模式" >
+      <i id="sum-moon-icon" class="fas fa-sun" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.jpg" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Sky&#39;s Blogs</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/flyinskyin2013" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Follow Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/flyinskyin2013" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Follow Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/22.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">Mediapipe 在RK3399PRO上的初探（二）(自定义Calculator)</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/CPP/">
+                                <span class="chip bg-color">CPP</span>
+                            </a>
+                        
+                            <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">
+                                <span class="chip bg-color">深度学习</span>
+                            </a>
+                        
+                            <a href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
+                                <span class="chip bg-color">神经网络</span>
+                            </a>
+                        
+                            <a href="/tags/%E8%87%AA%E5%AE%9A%E4%B9%89%E7%AE%97%E5%AD%90/">
+                                <span class="chip bg-color">自定义算子</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/C-CPP/" class="post-category">
+                                C&CPP
+                            </a>
+                        
+                            <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/" class="post-category">
+                                嵌入式
+                            </a>
+                        
+                            <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/linux%E5%BC%80%E5%8F%91/" class="post-category">
+                                linux开发
+                            </a>
+                        
+                            <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/linux%E5%BC%80%E5%8F%91/DL/" class="post-category">
+                                DL
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2021-04-24
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.min.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-23 09:56:54
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=104）
+&emsp;&emsp;本文发布于 2021-04-24 19:45:03    （BlogID=104） -->
+<h6 id="环境说明">环境说明</h6>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>Ubuntu 18.04</p>
+</li>
+<li class="lvl-2">
+<p>gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04)</p>
+</li>
+<li class="lvl-2">
+<p>RK3399PRO 板卡</p>
+</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  本文有一篇前置文章为《Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel)》 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/115838306">https://blog.csdn.net/u011728480/article/details/115838306</a> ，本文是在前置文章上的一点点探索与发现。</p>
+<p>  在前置文章中，我们介绍了一些编译和使用Mediapipe的注意事项，也初步跑起来了一点点demo，算是对这个框架有了一个初步的认知。但是前置文章也说了，了解这个框架的意义是替换我们小组现有的框架，而且能够支撑我们的板卡产品。于是我们还需要一个最最最最最最重要的功能就是“Custormer Calculator”，就是自定义计算节点，因为这个框架的核心就是计算节点。下文我们将会讲到这个框架的一些基本概念，这些概念都是来至于官方文档的机翻+我自己的理解。同时，我会给出一个我定义的计算节点的实例，算是给大家一个感性认知。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Mediapipe的一些概念（本小节基本来至于官方文档的机翻-我自己的理解，不感兴趣，请直接看下一小节）">Mediapipe的一些概念（本小节基本来至于官方文档的机翻+我自己的理解，不感兴趣，请直接看下一小节）</h3>
+<hr>
+<p>  本小节内容，主要参考 <a target="_blank" rel="noopener" href="https://github.com/google/mediapipe/tree/master/docs/framework_concepts">https://github.com/google/mediapipe/tree/master/docs/framework_concepts</a> 的几个介绍概念的md文件。<br>
+  MediaPipe 感觉中文直译为“媒体管道”，为啥会有这个名字呢？因为它把数据+处理组合成一个计算节点，然后把一个一个节点连接起来，用数据来驱动整个核心逻辑。如果大家对Caffe、ncnn类似的框架源码有一点点了解的话，就会觉得他们非常像，但是又不像。像是说，都是通过配置文件定义计算节点逻辑图，然后通过运算，得到我们想得到的逻辑图中节点的数据。不像的话，就是说的是Mediapipe的调度机制了，极大的增加了节点计算的并行功能，而那些框架是按照图节点的上下顺序进行执行的。<br>
+  上面这段话可能有点抽象，我想表达的就是 Mediapipe 就是把任何一个“操作”都可以变为一个Calculator，因为我们的每一个项目的逻辑抽象出来都是 Calculator0+Data0-&gt;Calculator1+Data1-&gt;Calculator2+Data2-&gt;… …，然后，Mediapipe 做的是基于这种calculator的调度和执行。这里我举个栗子：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>人脸图+检测算法=人脸检测结果，这是一个Calculator</p>
+</li>
+<li class="lvl-2">
+<p>RTSP流+解码模块=解码之后的图片，这是一个Calculator</p>
+</li>
+</ul>
+<p>好了，其他的就不过分的解读了，下面就使用MediaPipe的helloworld example（ <a target="_blank" rel="noopener" href="https://github.com/google/mediapipe/blob/master/mediapipe/examples/desktop/hello_world/hello_world.cc">https://github.com/google/mediapipe/blob/master/mediapipe/examples/desktop/hello_world/hello_world.cc</a> ）为例，简单的说说以下几个概念。</p>
+<br/>
+<br/>
+<h5 id="Packet">Packet</h5>
+<p>  Packet，是mediapipe中的数据单元，它可以接收任意类型的数据。也是mediapipe中的数据流动单元。就是在mediapipe中，我们设计的Graph中，所有的逻辑流动都是通过packet流动来实现的。</p>
+<p>  实例代码片段：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">//MakePacket&lt;std::string>("Hello World!") 创建一个packet，顺带说一句，我不喜欢这里的宏，不利于维护</span>
+<span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">AddPacketToInputStream</span><span class="token punctuation">(</span><span class="token string">"in"</span><span class="token punctuation">,</span> <span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token string">"Hello World!"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span><span class="token function">Timestamp</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//从packet中获取数据</span>
+mediapipe<span class="token double-colon punctuation">::</span>Packet packet<span class="token punctuation">;</span>
+packet<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="Graph">Graph</h5>
+<p>  Graph是由各个Calculator组成的，可以直接把Calculator理解为数据结构中图的节点。而Graph直接把他当做图就行了。Graph是我们定义的逻辑流程的具体载体，也就是说我们的业务逻辑是什么样子的，那么Graph里面就会有相应的逻辑流程。可以具备多输入输出。</p>
+<p>  实例代码片段：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">CalculatorGraph graph<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="Caculator-Node">Caculator(Node)</h5>
+<p>  上面不是介绍了Graph和Packet嘛，这里的Calculator就是Graph里面的节点，也是处理Packet的具体单元。可以具备多输入输出。</p>
+<p>  实例代码片段：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">//比如mediapipe/calculators/core/pass_through_calculator.h里面的定义，这个Calculator被Helloworld这个例子使用，作用就是把输入的数据直接传递到输出，不做任何处理，类似NOP</span>
+<span class="token keyword">class</span> <span class="token class-name">PassThroughCalculator</span> <span class="token operator">:</span> <span class="token keyword">public</span> CalculatorBase <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="Stream">Stream</h5>
+<p>  Stream 就是 Caculator 之间的连接起来后，形成的一个数据流动路径。</p>
+<br/>
+<br/>
+<h5 id="Side-packets">Side packets</h5>
+<p>  Side packets 可以直接理解为一些静态的数据packet，在graph创建之后就不会改变的数据。</p>
+<p>… …</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="自定义实现Calculator">自定义实现Calculator</h3>
+<hr>
+<p>  Talk is cheap, show me the code.</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">/*
+ * @Description: 
+ * @Author: Sky
+ * @Date: 
+ * @LastEditors: Sky
+ * @LastEditTime: 
+ * @Github: 
+ */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cstdio></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/calculator_graph.h"</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/port/logging.h"</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/port/parse_text_proto.h"</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/port/status.h"</span></span>
+
+<span class="token comment">//customer calculator</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/calculator_framework.h"</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/port/canonical_errors.h"</span></span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">CustomerDataType</span><span class="token punctuation">&#123;</span>
+
+  <span class="token keyword">public</span><span class="token operator">:</span>
+  <span class="token function">CustomerDataType</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token punctuation">,</span> <span class="token keyword">float</span> f<span class="token punctuation">,</span> <span class="token keyword">bool</span> b<span class="token punctuation">,</span> <span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string <span class="token operator">&amp;</span> str<span class="token punctuation">)</span><span class="token operator">:</span>
+  <span class="token function">val_i</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">val_f</span><span class="token punctuation">(</span>f<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">val_b</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">s_str</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+  <span class="token keyword">int</span> val_i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token keyword">float</span> val_f <span class="token operator">=</span> <span class="token number">11.f</span><span class="token punctuation">;</span>
+  <span class="token keyword">bool</span> val_b <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  std<span class="token double-colon punctuation">::</span>string s_str <span class="token operator">=</span> <span class="token string">"customer str."</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+
+
+<span class="token keyword">namespace</span> mediapipe <span class="token punctuation">&#123;</span>
+
+  <span class="token keyword">class</span> <span class="token class-name">MyStringProcessCalculator</span> <span class="token operator">:</span> <span class="token base-clause"><span class="token keyword">public</span> <span class="token class-name">CalculatorBase</span></span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token comment">/*
+    Calculator authors can specify the expected types of inputs and outputs of a calculator in GetContract(). 
+    When a graph is initialized, the framework calls a static method to verify if the packet types of the connected inputs and outputs match the information in this specification.
+    */</span>
+    <span class="token keyword">static</span> absl<span class="token double-colon punctuation">::</span>Status <span class="token function">GetContract</span><span class="token punctuation">(</span>CalculatorContract<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      
+      <span class="token comment">/*
+      class InputStreamShard;
+      typedef internal::Collection&lt;InputStreamShard> InputStreamShardSet;
+      class OutputStreamShard;
+      typedef internal::Collection&lt;OutputStreamShard> OutputStreamShardSet;
+      */</span>
+      <span class="token comment">//cc->Inputs().NumEntries() returns the number of input streams</span>
+      <span class="token comment">// if (!cc->Inputs().TagMap()->SameAs(*cc->Outputs().TagMap())) &#123;</span>
+
+      <span class="token comment">//   return absl::InvalidArgumentError("Input and output streams's TagMap can't be same.");</span>
+      <span class="token comment">// &#125;</span>
+
+      <span class="token comment">//set stream</span>
+      <span class="token comment">// for (CollectionItemId id = cc->Inputs().BeginId(); id &lt; cc->Inputs().EndId(); ++id) &#123;</span>
+
+      <span class="token comment">//   cc->Inputs().Get(id).SetAny();</span>
+      <span class="token comment">//   cc->Outputs().Get(id).SetSameAs(&amp;cc->Inputs().Get(id));</span>
+      <span class="token comment">// &#125;</span>
+      cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetAny</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Set</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetSameAs</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+      <span class="token comment">//set stream package</span>
+      <span class="token comment">// for (CollectionItemId id = cc->InputSidePackets().BeginId(); id &lt; cc->InputSidePackets().EndId(); ++id) &#123;</span>
+        
+      <span class="token comment">//   cc->InputSidePackets().Get(id).SetAny();</span>
+      <span class="token comment">// &#125;</span>
+      <span class="token comment">// cc->InputSidePackets().Index(0).SetAny();</span>
+      <span class="token comment">// cc->InputSidePackets().Index(1).Set&lt;CustomerDataType>();//set customer data-type</span>
+
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+        <span class="token comment">// if (!cc->InputSidePackets().TagMap()->SameAs(*cc->OutputSidePackets().TagMap())) &#123;</span>
+
+        <span class="token comment">//   return absl::InvalidArgumentError("Input and output side packets's TagMap can't be same.");</span>
+        <span class="token comment">// &#125;</span>
+        
+        <span class="token comment">// for (CollectionItemId id = cc->InputSidePackets().BeginId(); id &lt; cc->InputSidePackets().EndId(); ++id) &#123;</span>
+
+        <span class="token comment">//   cc->OutputSidePackets().Get(id).SetSameAs(&amp;cc->InputSidePackets().Get(id));</span>
+        <span class="token comment">// &#125;</span>
+
+        cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetSameAs</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">&#125;</span>      
+
+      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Open</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span>
+
+      <span class="token keyword">for</span> <span class="token punctuation">(</span>CollectionItemId id <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">BeginId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>id <span class="token operator">&lt;</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">EndId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>id<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Header</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">IsEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+          cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetHeader</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Header</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">&#125;</span>
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span>CollectionItemId id <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">BeginId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> id <span class="token operator">&lt;</span> cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">EndId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>id<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+          
+          cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Set</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">&#125;</span>
+
+      <span class="token comment">// Sets this packet timestamp offset for Packets going to all outputs.</span>
+      <span class="token comment">// If you only want to set the offset for a single output stream then</span>
+      <span class="token comment">// use OutputStream::SetOffset() directly.</span>
+      cc<span class="token operator">-></span><span class="token function">SetOffset</span><span class="token punctuation">(</span><span class="token function">TimestampDiff</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Process</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span>
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> tool<span class="token double-colon punctuation">::</span><span class="token function">StatusStop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">&#125;</span>
+
+      <span class="token comment">//get node input data</span>
+      mediapipe<span class="token double-colon punctuation">::</span>Packet  _data0 <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      mediapipe<span class="token double-colon punctuation">::</span>Packet  _data1 <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token comment">//not safety.</span>
+      <span class="token keyword">char</span> _tmp_buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      
+      <span class="token double-colon punctuation">::</span><span class="token function">memset</span><span class="token punctuation">(</span>_tmp_buf<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token function">snprintf</span><span class="token punctuation">(</span>_tmp_buf<span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">,</span> _data0<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_i<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_f<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_b<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>s_str<span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      std<span class="token double-colon punctuation">::</span>string _out_data <span class="token operator">=</span> _tmp_buf<span class="token punctuation">;</span>
+      cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">AddPacket</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span>_out_data<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">InputTimestamp</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Close</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span> 
+
+      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+  <span class="token function">REGISTER_CALCULATOR</span><span class="token punctuation">(</span>MyStringProcessCalculator<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+
+
+
+<span class="token keyword">namespace</span> mediapipe <span class="token punctuation">&#123;</span>
+
+  absl<span class="token double-colon punctuation">::</span>Status  <span class="token function">RunMyGraph</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token comment">// Configures a simple graph, which concatenates 2 PassThroughCalculators.</span>
+    CalculatorGraphConfig config <span class="token operator">=</span> <span class="token generic-function"><span class="token function">ParseTextProtoOrDie</span><span class="token generic class-name"><span class="token operator">&lt;</span>CalculatorGraphConfig<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token raw-string string">R"(
+      input_stream: "in"
+      input_stream: "customer_in"
+      output_stream: "out"
+      node &#123;
+        calculator: "PassThroughCalculator"
+        input_stream: "in"
+        output_stream: "out1"
+      &#125;
+      node &#123;
+        calculator: "MyStringProcessCalculator"
+        input_stream: "out1"
+        input_stream: "customer_in"
+        output_stream: "out2"        
+      &#125;      
+      node &#123;
+        calculator: "PassThroughCalculator"
+        input_stream: "out2"
+        output_stream: "out"
+      &#125;
+    )"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"parse graph cfg-str done ... ..."</span><span class="token punctuation">;</span>
+
+    CalculatorGraph graph<span class="token punctuation">;</span>
+    <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">Initialize</span><span class="token punctuation">(</span>config<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"init graph done ... ..."</span><span class="token punctuation">;</span>
+
+    <span class="token function">ASSIGN_OR_RETURN</span><span class="token punctuation">(</span>OutputStreamPoller poller<span class="token punctuation">,</span>
+                    graph<span class="token punctuation">.</span><span class="token function">AddOutputStreamPoller</span><span class="token punctuation">(</span><span class="token string">"out"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"add out-node to output-streampoller done ... ..."</span><span class="token punctuation">;</span>
+
+
+    <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">StartRun</span><span class="token punctuation">(</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"start run graph done ... ..."</span><span class="token punctuation">;</span>
+    
+
+    <span class="token comment">// Give 10 input packets that contains the same std::string "Hello World!".</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+      <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">AddPacketToInputStream</span><span class="token punctuation">(</span>
+          <span class="token string">"in"</span><span class="token punctuation">,</span> <span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token string">"CustomerCalculator: val_i %d, val_f %f, val_b %d, val_str %s"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span><span class="token function">Timestamp</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">AddPacketToInputStream</span><span class="token punctuation">(</span>
+          <span class="token string">"customer_in"</span><span class="token punctuation">,</span> <span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1.f</span><span class="token punctuation">,</span> i<span class="token operator">%</span><span class="token number">2</span><span class="token operator">==</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">"s"</span> <span class="token operator">+</span> std<span class="token double-colon punctuation">::</span><span class="token function">to_string</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span><span class="token function">Timestamp</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">// Close the input stream "in".</span>
+    <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">CloseInputStream</span><span class="token punctuation">(</span><span class="token string">"in"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">CloseInputStream</span><span class="token punctuation">(</span><span class="token string">"customer_in"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    mediapipe<span class="token double-colon punctuation">::</span>Packet packet<span class="token punctuation">;</span>
+    <span class="token comment">// Get the output packets std::string.</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>poller<span class="token punctuation">.</span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>packet<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> packet<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"RunGraph Done"</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> graph<span class="token punctuation">.</span><span class="token function">WaitUntilDone</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+<span class="token punctuation">&#125;</span>  <span class="token comment">// namespace mediapipe</span>
+
+
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span> <span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">*</span> argv<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  
+  gflags<span class="token double-colon punctuation">::</span><span class="token function">ParseCommandLineFlags</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>argc<span class="token punctuation">,</span> <span class="token operator">&amp;</span>argv<span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  FLAGS_minloglevel <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  FLAGS_stderrthreshold <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  FLAGS_alsologtostderr <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+  google<span class="token double-colon punctuation">::</span><span class="token function">InitGoogleLogging</span><span class="token punctuation">(</span>argv<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token string">"glog init success ... ..."</span><span class="token punctuation">;</span>
+
+  absl<span class="token double-colon punctuation">::</span>Status run_status <span class="token operator">=</span> mediapipe<span class="token double-colon punctuation">::</span><span class="token function">RunMyGraph</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>run_status<span class="token punctuation">.</span><span class="token function">ok</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token function">LOG</span><span class="token punctuation">(</span>ERROR<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token string">"Failed to run the graph: "</span> <span class="token operator">&lt;&lt;</span> run_status<span class="token punctuation">.</span><span class="token function">message</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  google<span class="token double-colon punctuation">::</span><span class="token function">ShutdownGoogleLogging</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>下面简单介绍这段代码。</p>
+<br/>
+<br/>
+<h5 id="自定义Calculator：MyStringProcessCalculator">自定义Calculator：MyStringProcessCalculator</h5>
+<p>   这里自定义了一个Calculator，主要作用就是传入snprintf的fmt字符串和fmt字符串所需要的数据。所以可以看到有两个输入，一个是string，一个是我自定义的data-type。输出是一个格式化之后的字符串，所以输出是string。</p>
+<p>   自定义Calculator主要还是实现4个接口，分别是GetContract，Open，Process，Close。其中GetContract是Graph初始化的时候，检查Calculator用的。Open接口是在Graph开始后，对Calculator做一些初始化工作，例如设定一些Calculator初始状态等。Process是实际的Calculator功能。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">namespace</span> mediapipe <span class="token punctuation">&#123;</span>
+
+  <span class="token keyword">class</span> <span class="token class-name">MyStringProcessCalculator</span> <span class="token operator">:</span> <span class="token base-clause"><span class="token keyword">public</span> <span class="token class-name">CalculatorBase</span></span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token comment">/*
+    Calculator authors can specify the expected types of inputs and outputs of a calculator in GetContract(). 
+    When a graph is initialized, the framework calls a static method to verify if the packet types of the connected inputs and outputs match the information in this specification.
+    */</span>
+    <span class="token keyword">static</span> absl<span class="token double-colon punctuation">::</span>Status <span class="token function">GetContract</span><span class="token punctuation">(</span>CalculatorContract<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      
+      <span class="token comment">/*
+      class InputStreamShard;
+      typedef internal::Collection&lt;InputStreamShard> InputStreamShardSet;
+      class OutputStreamShard;
+      typedef internal::Collection&lt;OutputStreamShard> OutputStreamShardSet;
+      */</span>
+      <span class="token comment">//cc->Inputs().NumEntries() returns the number of input streams</span>
+      <span class="token comment">// if (!cc->Inputs().TagMap()->SameAs(*cc->Outputs().TagMap())) &#123;</span>
+
+      <span class="token comment">//   return absl::InvalidArgumentError("Input and output streams's TagMap can't be same.");</span>
+      <span class="token comment">// &#125;</span>
+
+      <span class="token comment">//set stream</span>
+      <span class="token comment">// for (CollectionItemId id = cc->Inputs().BeginId(); id &lt; cc->Inputs().EndId(); ++id) &#123;</span>
+
+      <span class="token comment">//   cc->Inputs().Get(id).SetAny();</span>
+      <span class="token comment">//   cc->Outputs().Get(id).SetSameAs(&amp;cc->Inputs().Get(id));</span>
+      <span class="token comment">// &#125;</span>
+      cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetAny</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Set</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetSameAs</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+      <span class="token comment">//set stream package</span>
+      <span class="token comment">// for (CollectionItemId id = cc->InputSidePackets().BeginId(); id &lt; cc->InputSidePackets().EndId(); ++id) &#123;</span>
+        
+      <span class="token comment">//   cc->InputSidePackets().Get(id).SetAny();</span>
+      <span class="token comment">// &#125;</span>
+      <span class="token comment">// cc->InputSidePackets().Index(0).SetAny();</span>
+      <span class="token comment">// cc->InputSidePackets().Index(1).Set&lt;CustomerDataType>();//set customer data-type</span>
+
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+        <span class="token comment">// if (!cc->InputSidePackets().TagMap()->SameAs(*cc->OutputSidePackets().TagMap())) &#123;</span>
+
+        <span class="token comment">//   return absl::InvalidArgumentError("Input and output side packets's TagMap can't be same.");</span>
+        <span class="token comment">// &#125;</span>
+        
+        <span class="token comment">// for (CollectionItemId id = cc->InputSidePackets().BeginId(); id &lt; cc->InputSidePackets().EndId(); ++id) &#123;</span>
+
+        <span class="token comment">//   cc->OutputSidePackets().Get(id).SetSameAs(&amp;cc->InputSidePackets().Get(id));</span>
+        <span class="token comment">// &#125;</span>
+
+        cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetSameAs</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">&#125;</span>      
+
+      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Open</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span>
+
+      <span class="token keyword">for</span> <span class="token punctuation">(</span>CollectionItemId id <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">BeginId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>id <span class="token operator">&lt;</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">EndId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>id<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Header</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">IsEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+          cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetHeader</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Header</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">&#125;</span>
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span>CollectionItemId id <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">BeginId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> id <span class="token operator">&lt;</span> cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">EndId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>id<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+          
+          cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Set</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">&#125;</span>
+
+      <span class="token comment">// Sets this packet timestamp offset for Packets going to all outputs.</span>
+      <span class="token comment">// If you only want to set the offset for a single output stream then</span>
+      <span class="token comment">// use OutputStream::SetOffset() directly.</span>
+      cc<span class="token operator">-></span><span class="token function">SetOffset</span><span class="token punctuation">(</span><span class="token function">TimestampDiff</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">//这里是整个Calculator的核心，就是调用snprintf</span>
+    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Process</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span>
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> tool<span class="token double-colon punctuation">::</span><span class="token function">StatusStop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">&#125;</span>
+
+      <span class="token comment">//get node input data</span>
+      mediapipe<span class="token double-colon punctuation">::</span>Packet  _data0 <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      mediapipe<span class="token double-colon punctuation">::</span>Packet  _data1 <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token comment">//not safety.</span>
+      <span class="token keyword">char</span> _tmp_buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      
+      <span class="token double-colon punctuation">::</span><span class="token function">memset</span><span class="token punctuation">(</span>_tmp_buf<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token function">snprintf</span><span class="token punctuation">(</span>_tmp_buf<span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">,</span> _data0<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_i<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_f<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_b<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>s_str<span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      std<span class="token double-colon punctuation">::</span>string _out_data <span class="token operator">=</span> _tmp_buf<span class="token punctuation">;</span>
+      cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">AddPacket</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span>_out_data<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">InputTimestamp</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Close</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span> 
+
+      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+  <span class="token function">REGISTER_CALCULATOR</span><span class="token punctuation">(</span>MyStringProcessCalculator<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="然后开始编译运行得到结果">然后开始编译运行得到结果</h5>
+<p>   编译。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">
+<span class="token comment"># 注意，这里的--check_visibility=false 为了关闭bazel关于target之间的可见性检查，因为我的Calculator自定义放在我自己的目录的，有一个target对这个目录不可见，编译会报错。</span>
+
+bazel build <span class="token parameter variable">-c</span> dbg <span class="token parameter variable">--define</span> <span class="token assign-left variable">MEDIAPIPE_DISABLE_GPU</span><span class="token operator">=</span><span class="token number">1</span> <span class="token parameter variable">--copt</span> <span class="token parameter variable">-DMESA_EGL_NO_X11_HEADERS</span> <span class="token parameter variable">--copt</span> <span class="token parameter variable">-DEGL_NO_X11</span> my_target <span class="token parameter variable">--check_visibility</span><span class="token operator">=</span>false <span class="token parameter variable">--verbose_failures</span>  <span class="token parameter variable">--local_cpu_resources</span><span class="token operator">=</span><span class="token number">1</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>   然后运行。得到如下图的结果。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_104/result.png" alt="result"/></center>
+    </div>
+</div>   
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  好了，一个超级简单的自定义calculator已经实现了，相信你已经明白了吧。本系列也就此终结吧，以后随缘更新。</p>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Sky</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://e-x.top/2021/04/24/blog_idx_104/">https://e-x.top/2021/04/24/blog_idx_104/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Sky</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/CPP/">
+                                    <span class="chip bg-color">CPP</span>
+                                </a>
+                            
+                                <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">
+                                    <span class="chip bg-color">深度学习</span>
+                                </a>
+                            
+                                <a href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
+                                    <span class="chip bg-color">神经网络</span>
+                                </a>
+                            
+                                <a href="/tags/%E8%87%AA%E5%AE%9A%E4%B9%89%E7%AE%97%E5%AD%90/">
+                                    <span class="chip bg-color">自定义算子</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+
+
+
+            
+                <div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.jpg" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+
+
+            
+                <div class="card" data-aos="fade-up">
+    <div id="utteranc-container" class="card-content">
+        <script src="https://utteranc.es/client.js"
+        repo="flyinskyin2013/blog_issues_rep"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+        </script>
+    </div>
+</div>
+
+            
+
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2021/07/04/blog_idx_105/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="DL基础补全计划(一)---线性回归及示例（Pytorch，平方损失）">
+                        
+                        <span class="card-title">DL基础补全计划(一)---线性回归及示例（Pytorch，平方损失）</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2021-07-04
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/DL/" class="post-category">
+                                    DL
+                                </a>
+                            
+                            <a href="/categories/DL/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" class="post-category">
+                                    计算机视觉
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E5%B9%B3%E6%96%B9%E6%8D%9F%E5%A4%B1/">
+                        <span class="chip bg-color">平方损失</span>
+                    </a>
+                    
+                    <a href="/tags/Pytorch/">
+                        <span class="chip bg-color">Pytorch</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2021/04/18/blog_idx_103/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/3.jpg" class="responsive-img" alt="Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel)">
+                        
+                        <span class="card-title">Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel)</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-04-18
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/C-CPP/" class="post-category">
+                                    C&CPP
+                                </a>
+                            
+                            <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/" class="post-category">
+                                    嵌入式
+                                </a>
+                            
+                            <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/" class="post-category">
+                                    DL
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/CPP/">
+                        <span class="chip bg-color">CPP</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">深度学习</span>
+                    </a>
+                    
+                    <a href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">
+                        <span class="chip bg-color">神经网络</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+<script>
+    $('#articleContent').on('copy', function (e) {
+        // IE8 or earlier browser is 'undefined'
+        if (typeof window.getSelection === 'undefined') return;
+
+        var selection = window.getSelection();
+        // if the selection is short let's not annoy our users.
+        if (('' + selection).length < Number.parseInt('20')) {
+            return;
+        }
+
+        // create a div outside of the visible area and fill it with the selected text.
+        var bodyElement = document.getElementsByTagName('body')[0];
+        var newdiv = document.createElement('div');
+        newdiv.style.position = 'absolute';
+        newdiv.style.left = '-99999px';
+        bodyElement.appendChild(newdiv);
+        newdiv.appendChild(selection.getRangeAt(0).cloneContents());
+
+        // we need a <pre> tag workaround.
+        // otherwise the text inside "pre" loses all the line breaks!
+        if (selection.getRangeAt(0).commonAncestorContainer.nodeName === 'PRE' || selection.getRangeAt(0).commonAncestorContainer.nodeName === 'CODE') {
+            newdiv.innerHTML = "<pre>" + newdiv.innerHTML + "</pre>";
+        }
+
+        var url = document.location.href;
+        newdiv.innerHTML += '<br />'
+            + '来源: Sky&#39;s Blogs<br />'
+            + '文章作者: Sky<br />'
+            + '文章链接: <a href="' + url + '">' + url + '</a><br />'
+            + '本文章著作权归作者所有，任何形式的转载都请注明出处。';
+
+        selection.selectAllChildren(newdiv);
+        window.setTimeout(function () {bodyElement.removeChild(newdiv);}, 200);
+    });
+</script>
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+
+  <!-- 是否加载使用自带的 prismjs. -->
+  <script type="text/javascript" src="/libs/prism/prism.min.js"></script>
+
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="song"
+                   id="26545309"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="/libs/aplayer/Meting.min.js"></script>
+
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2014-2025</span>
+            
+            <a href="/about" target="_blank">Sky</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            
+            <br>
+            
+            
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2014";
+                        var startMonth = "7";
+                        var startDate = "3";
+                        var startHour = "20";
+                        var startMinute = "45";
+                        var startSecond = "27";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link ">
+    <a href="https://github.com/flyinskyin2013" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 白天和黑夜主题 -->
+<div class="stars-con">
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>  
+</div>
+
+<script>
+    function switchNightMode() {
+        $('<div class="Cuteen_DarkSky"><div class="Cuteen_DarkPlanet"></div></div>').appendTo($('body')),
+        setTimeout(function () {
+            $('body').hasClass('DarkMode') 
+            ? ($('body').removeClass('DarkMode'), localStorage.setItem('isDark', '0'), $('#sum-moon-icon').removeClass("fa-sun").addClass('fa-moon')) 
+            : ($('body').addClass('DarkMode'), localStorage.setItem('isDark', '1'), $('#sum-moon-icon').addClass("fa-sun").removeClass('fa-moon')),
+            
+            setTimeout(function () {
+            $('.Cuteen_DarkSky').fadeOut(1e3, function () {
+                $(this).remove()
+            })
+            }, 2e3)
+        })
+    }
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+    
+    
+
+    <!-- 雪花特效 -->
+    
+
+    <!-- 鼠标星星特效 -->
+     
+        <script type="text/javascript">
+            // 只在桌面版网页启用特效
+            var windowWidth = $(window).width();
+            if (windowWidth > 768) {
+                document.write('<script type="text/javascript" src="/libs/others/star.js"><\/script>');
+            }
+        </script>
+    
+
+    
+
+    <!-- Baidu Analytics -->
+
+<script>
+    var _hmt = _hmt || [];
+    (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":250,"hOffset":50,"vOffset":5},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.8},"log":false});</script></body>
+
+</html>

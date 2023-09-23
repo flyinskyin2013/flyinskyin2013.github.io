@@ -1,0 +1,1658 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="keywords" content="寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析, Sky&#39;s Blogs">
+    <meta name="description" content=" 
+PS：要转载请注明出处，本人版权所有。
+PS: 这个只是基于《我自己》的理解，如果和你的原则及想法相冲突，请谅解，勿喷。
+
+环境说明
+
+
+MLU220 开发板
+
+
+Ubuntu18.04 + MLU270开发主机一台
+
+
+aarch64">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+    gtag('config', 'G-80RLMJ8DQP');
+</script>
+
+
+    <title>寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析 | Sky&#39;s Blogs</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    
+
+
+    <!-- bg-cover style     -->
+
+
+
+<link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+<link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+<link rel="stylesheet" type="text/css" href="/css/matery.css">
+<link rel="stylesheet" type="text/css" href="/css/my.css">
+<link rel="stylesheet" type="text/css" href="/css/dark.css" media="none" onload="if(media!='all')media='all'">
+
+
+
+
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+    <link rel="stylesheet" href="/css/post.css">
+
+
+
+
+    
+        <link rel="stylesheet" type="text/css" href="/css/reward.css">
+    
+
+
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.jpg" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Sky&#39;s Blogs</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+  <li>
+    <a href="javascript:;" class="waves-effect waves-light" onclick="switchNightMode()" title="深色/浅色模式" >
+      <i id="sum-moon-icon" class="fas fa-sun" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.jpg" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Sky&#39;s Blogs</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/flyinskyin2013" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Follow Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/flyinskyin2013" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Follow Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/11.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/">
+                                <span class="chip bg-color">嵌入式</span>
+                            </a>
+                        
+                            <a href="/tags/%E8%BE%B9%E7%BC%98%E7%AB%AF/">
+                                <span class="chip bg-color">边缘端</span>
+                            </a>
+                        
+                            <a href="/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">
+                                <span class="chip bg-color">人工智能</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" class="post-category">
+                                嵌入式
+                            </a>
+                        
+                            <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/" class="post-category">
+                                DL
+                            </a>
+                        
+                            <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/%E5%B8%B8%E8%AF%86/" class="post-category">
+                                常识
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2021-11-28
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.min.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:14:43
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=114） 
+&emsp;&emsp;本文发布于 2021-11-28 19:01:17     （BlogID=114）
+-->
+<h6 id="环境说明">环境说明</h6>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>MLU220 开发板</p>
+</li>
+<li class="lvl-2">
+<p>Ubuntu18.04 + MLU270开发主机一台</p>
+</li>
+<li class="lvl-2">
+<p>aarch64-linux-gnu-gcc 6.x 交叉编译环境</p>
+</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  阅读本文前，请务必须知以下前置文章概念：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</p>
+</li>
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</p>
+</li>
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121456789">https://blog.csdn.net/u011728480/article/details/121456789</a> ）</p>
+</li>
+</ul>
+<p>  这里再次回顾一下《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》的内容，寒武纪加速卡是一个硬件平台，是最底层的存在，在硬件平台之上，有驱动，在驱动之上，有运行时。本文的离线模型就是基于运行时的api进行调用和处理，得到模型结果。</p>
+<p>  本文作为本系列的终篇，将会从上文的离线模型开始，从头开始搭建我们的离线模型推理代码结构，经过合理的部署，能够在MLU220开发板正常的运行。</p>
+<p>  若文中引用部分存在侵权，请及时联系我删除。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="离线模型推理前置须知">离线模型推理前置须知</h3>
+<hr>
+<p>  经过前文相关的介绍，我们可以知道我们主要调用的是运行时相关的api。这里存在两套api可以使用，一个是cnrt，一个是easydk。easydk是基于cnrt封装的api，大大简化了离线模型推理的开发流程。但是我们的开发主线是一致的，就是初始化mlu设备，加载模型，预处理，模型推理，后处理，处理结果。</p>
+<p>  此外，寒武纪还提供了CNStream程序框架，基于EasyDk开发，以pipeline+observer的方式，提供了一个简单易用的框架，如果有兴趣，请查看其官网 <a target="_blank" rel="noopener" href="https://github.com/Cambricon/CNStream">https://github.com/Cambricon/CNStream</a> 。</p>
+<p>  我们其实要用的是EasyDK+CNRT的这种开发方式，构造一个类似CNStream这样的程序。</p>
+<br/>
+<br/>
+<h5 id="EasyDK简介与编译">EasyDK简介与编译</h5>
+<p>  首先其官网是：<a target="_blank" rel="noopener" href="https://github.com/Cambricon/easydk%E3%80%82">https://github.com/Cambricon/easydk。</a></p>
+<p>  其除了CNToolKit的依赖（neuware）之外，还依赖于glog,gflags,opencv，这些需要提前安装好。至于CNToolKit x86的版本的相关介绍已经在模型移植环境部分介绍过了。</p>
+<p>  由于我们要开发边缘端离线模型推理程序，一般来说，我们主要还是使用到EasyDK里面的EasyInfer部分的内容。其编译流程的话就如其官方介绍：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>cmake …</p>
+</li>
+<li class="lvl-2">
+<p>make</p>
+</li>
+</ul>
+<p>  如果熟悉cmake的编译流程的话，其实就知道上面的流程是非常普遍的。对于EasyDK的编译来说，在x86下面进行编译是很简单的，但是如果要进行交叉编译的话，最好只生成核心库，其他的sample和test都关闭。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="完成离线模型在MLU270上的运行">完成离线模型在MLU270上的运行</h3>
+<hr>
+<p>  还记得在《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》一文中，我们可以看到，通过torch_mlu.core.mlu_model.set_core_version(‘MLU220’)，我们可以调整生成的离线模型运行的平台，可以是边缘端MLU220，可以是服务器部署端的MLU270。对的，没有看错，MLU270既可以做模型移植，也可以做离线模型的部署，就如同本系列的开篇所讲，这几个平台仅仅是部署场景的差异。</p>
+<p>  为什么我们需要在MLU270上调试离线模型呢？因为方便。因为MLU220一般来说都需要交叉编译，特别是相关的依赖库的生成比较麻烦，如果MLU220的板卡也方便调试的话，那也可以直接基于MLU220进行开发和调试。</p>
+<p>  由于我这边是EasyDK+CNRT混合调用的形式，因此我主要根据其官方的CNRT推理代码进行注释和介绍，并在相关位置标注哪些内容是EasyDK可以一步到位的。这里简单的回答几个疑问。为什么需要EasyDK这个库呢？为什么不直接基于CNRT进行开发？我的回答是根据项目推进的需要做出的选择。关于这种程序的最终形态，其实我还是期待直接基于CNRT开发，因为其有效，但是代价是你必须很熟悉的了解相关的内容。</p>
+<p>  下面是官方推理代码介绍（可能会在顺序上做一些变更，其官方代码未处理一些返回值，自己编写的时候需要注意,此外,官方的代码有些遗漏的地方,我进行了修改）：</p>
+ <pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">/* Copyright (C) [2019] by Cambricon, Inc. */</span>
+ <span class="token comment">/* offline_test */</span>
+ <span class="token comment">/*
+  * A test which shows how to load and run an offline model.
+  * This test consists of one operation --mlp.
+  *
+  * This example is used for MLU270 and MLU220.
+  *
+  */</span>
+
+ <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"cnrt.h"</span></span>
+ <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+ <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+ <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+
+ <span class="token keyword">int</span> <span class="token function">offline_test</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>name<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+   <span class="token comment">// This example is used for MLU270 and MLU220. You need to choose the corresponding offline model.</span>
+   <span class="token comment">// when generating an offline model, u need cnml and cnrt both</span>
+   <span class="token comment">// when running an offline model, u need cnrt only</span>
+   <span class="token comment">// 第一步，你必须调用cnrtInit()初始化运行时环境</span>
+   <span class="token function">cnrtInit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// 第二步， 就是检查MLU设备，并设定当前设备，这一步其实是为多设备推理准备的</span>
+   <span class="token class-name">cnrtDev_t</span> dev<span class="token punctuation">;</span>
+   <span class="token function">cnrtGetDeviceHandle</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>dev<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtSetCurrentDevice</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// 这里的第一二步其实可能创建一个EasyInfer对象就完成了，而且具备了完整的错误检查。</span>
+
+   <span class="token comment">// </span>
+   <span class="token comment">// prepare model name</span>
+   <span class="token comment">// load model</span>
+   <span class="token comment">// 第三步，就是加载模型</span>
+   <span class="token class-name">cnrtModel_t</span> model<span class="token punctuation">;</span>
+   <span class="token function">cnrtLoadModel</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>model<span class="token punctuation">,</span> <span class="token string">"test.cambricon"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// get model total memory</span>
+   <span class="token comment">// 第四步，就是获取模型的一些属性，比如内存占用，并行性这些，这一步是可选的。</span>
+   <span class="token class-name">int64_t</span> totalMem<span class="token punctuation">;</span>
+   <span class="token function">cnrtGetModelMemUsed</span><span class="token punctuation">(</span>model<span class="token punctuation">,</span> <span class="token operator">&amp;</span>totalMem<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"total memory used: %ld Bytes\n"</span><span class="token punctuation">,</span> totalMem<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token comment">// get model parallelism</span>
+   <span class="token keyword">int</span> model_parallelism<span class="token punctuation">;</span>
+   <span class="token function">cnrtQueryModelParallelism</span><span class="token punctuation">(</span>model<span class="token punctuation">,</span> <span class="token operator">&amp;</span>model_parallelism<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"model parallelism: %d.\n"</span><span class="token punctuation">,</span> model_parallelism<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// 第五步，是建立推理逻辑流，这一步就是根据离线模型，在内存中动态生成模型推理结构。这里的"subnet0"是一个 kernel-func 名字，非固定，但是常见的名字都是subnet0，</span>
+   <span class="token comment">// 在.cambricon_twins配套文件中有相关定义。</span>
+   <span class="token comment">// 他这个和cuda编程其实比较类似，我们刚刚生成的模型推理结构其实被当做一个内核函数，函数名就是这个。</span>
+   <span class="token comment">// load extract function</span>
+   <span class="token class-name">cnrtFunction_t</span> function<span class="token punctuation">;</span>
+   <span class="token function">cnrtCreateFunction</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>function<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtExtractFunction</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>function<span class="token punctuation">,</span> model<span class="token punctuation">,</span> <span class="token string">"subnet0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+
+   <span class="token comment">// 第六步，获取输入输出节点个数和输入输出数据size。注意许多网络中有多个输入，也可能有多个输出。在次注意这个概念，后续的操作都在多个输入和多个输出的基础上设计的。</span>
+   <span class="token keyword">int</span> inputNum<span class="token punctuation">,</span> outputNum<span class="token punctuation">;</span>
+   <span class="token class-name">int64_t</span> <span class="token operator">*</span>inputSizeS<span class="token punctuation">,</span> <span class="token operator">*</span>outputSizeS<span class="token punctuation">;</span>
+   <span class="token function">cnrtGetInputDataSize</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>inputSizeS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>inputNum<span class="token punctuation">,</span> function<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtGetOutputDataSize</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>outputSizeS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>outputNum<span class="token punctuation">,</span> function<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// prepare data on cpu</span>
+   <span class="token comment">// 第7步，申请cpu上的输入输出内存，这里是二维指针哈，代表多个输入输出</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>inputCpuPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>inputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>outputCpuPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>outputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// allocate I/O data memory on MLU</span>
+   <span class="token comment">// 第8步，申请mlu上的输入输出内存，这里是二维指针哈，代表多个输入输出。</span>
+   <span class="token comment">// 此时还未真正申请数据内存，只是申请了数据节点的句柄（指针）</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>inputMluPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>inputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>outputMluPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>outputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// prepare input buffer</span>
+   <span class="token comment">// 第9步，分别对第8步的数据节点句柄申请真正的内存空间。这里的inputCpuPtrS和inputMluPtrS是一一对应的，这是内存地址不一样，内存管理者不一样。对输出也是同理。</span>
+   <span class="token comment">// malloc是标准c申请堆内存接口</span>
+   <span class="token comment">// cnrtMalloc是申请mlu所管理的内存接口,类比cuda的话,可以直接理解为申请显存</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         <span class="token comment">// converts data format when using new interface model</span>
+         inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token comment">// malloc mlu memory</span>
+         <span class="token function">cnrtMalloc</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token function">cnrtMemcpy</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> CNRT_MEM_TRANS_DIR_HOST2DEV<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+   <span class="token comment">// prepare output buffer</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         outputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>outputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token comment">// malloc mlu memory</span>
+         <span class="token function">cnrtMalloc</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token punctuation">(</span>outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> outputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   
+
+   <span class="token comment">// 第10步,首先将预处理好的图像数据填充inputCpuPtrS, 拷贝cpu输入数据内存到mlu输入数据内存</span>
+   cv<span class="token operator">::</span>Mat _in_img<span class="token punctuation">;</span>
+   _in_img <span class="token operator">=</span> cv<span class="token operator">::</span><span class="token function">imread</span><span class="token punctuation">(</span><span class="token string">"test.jpg"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   _in_img<span class="token punctuation">.</span><span class="token function">convertTo</span><span class="token punctuation">(</span>_in_img<span class="token punctuation">,</span> CV_32FC3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+       <span class="token comment">// 注意这里的memcpy是我添加的，一般来说，模型的数据输入都是fp16或者fp32，但是一般我们的opencv生成的uint8。需要转换成fp32，或者fp16。</span>
+       <span class="token comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span>
+       <span class="token comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span>
+       <span class="token comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span>
+       <span class="token operator">::</span><span class="token function">memcpy</span><span class="token punctuation">(</span> inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> _in_img<span class="token punctuation">.</span>data<span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+       <span class="token function">cnrtMemcpy</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> CNRT_MEM_TRANS_DIR_HOST2DEV<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token comment">// 第10步，主要就是图像预处理，将图像数据传输到mlu上面去。</span>
+
+   <span class="token comment">// 第11步，主要是开始设置推理参数</span>
+   <span class="token comment">// prepare parameters for cnrtInvokeRuntimeContext</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>param <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token punctuation">(</span>inputNum <span class="token operator">+</span> outputNum<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         param<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         param<span class="token punctuation">[</span>inputNum <span class="token operator">+</span> i<span class="token punctuation">]</span> <span class="token operator">=</span> outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token comment">// 第12步，绑定设备和设置推理context</span>
+   <span class="token comment">// setup runtime ctx</span>
+   <span class="token class-name">cnrtRuntimeContext_t</span> ctx<span class="token punctuation">;</span>
+   <span class="token function">cnrtCreateRuntimeContext</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ctx<span class="token punctuation">,</span> function<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// compute offline</span>
+   <span class="token class-name">cnrtQueue_t</span> queue<span class="token punctuation">;</span>
+   <span class="token function">cnrtRuntimeContextCreateQueue</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> <span class="token operator">&amp;</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// bind device</span>
+   <span class="token function">cnrtSetRuntimeContextDeviceId</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtInitRuntimeContext</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+   <span class="token comment">// 第13步，推理并等待推理结束。</span>
+   <span class="token comment">// invoke</span>
+   <span class="token function">cnrtInvokeRuntimeContext</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> param<span class="token punctuation">,</span> queue<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// sync</span>
+   <span class="token function">cnrtSyncQueue</span><span class="token punctuation">(</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// 第14步，将数据从mlu拷贝回cpu，然后进行后续的后处理</span>
+   <span class="token comment">// copy mlu result to cpu</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         <span class="token function">cnrtMemcpy</span><span class="token punctuation">(</span>outputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> outputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> CNRT_MEM_TRANS_DIR_DEV2HOST<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token comment">// 第15步，清理环境。</span>
+   <span class="token comment">// free memory space</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         <span class="token function">free</span><span class="token punctuation">(</span>inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token function">cnrtFree</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         <span class="token function">free</span><span class="token punctuation">(</span>outputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token function">cnrtFree</span><span class="token punctuation">(</span>outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+   <span class="token function">free</span><span class="token punctuation">(</span>inputCpuPtrS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">free</span><span class="token punctuation">(</span>outputCpuPtrS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">free</span><span class="token punctuation">(</span>param<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token function">cnrtDestroyQueue</span><span class="token punctuation">(</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtDestroyRuntimeContext</span><span class="token punctuation">(</span>ctx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtDestroyFunction</span><span class="token punctuation">(</span>function<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtUnloadModel</span><span class="token punctuation">(</span>model<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtDestroy</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+ <span class="token punctuation">&#125;</span>
+
+ <span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+   <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"mlp offline test\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">offline_test</span><span class="token punctuation">(</span><span class="token string">"mlp"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+ <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>   下面我简单列出一些EasyDK的操作顺序：</p>
+<ul class="lvl-0">
+<li class="lvl-3">
+<p>上文的第三四五步其实对应的是EasyInfer下面的ModelLoader模块，当初始化ModelLoader模块，并传参给EasyInfer实例，就完成了三四五步的内容。其实前面这些内容都是固定形式的，并不是重点。重点是后面的数据输入、推理、数据输出部分。</p>
+</li>
+<li class="lvl-3">
+<p>上文的第6,7,8,9步其实都是在为模型在cpu和mlu上申请相关的内存空间。在EasyDk中有对应的接口直接完成内存申请。</p>
+</li>
+<li class="lvl-3">
+<p>注意上文的第10步，是比较重要的一步，包含了图像数据预处理，到图像数据类型转换，再到图像数据输入到mlu内存。</p>
+</li>
+<li class="lvl-3">
+<p>上文的第11,12步是为推理准备参数</p>
+</li>
+<li class="lvl-3">
+<p>上文的第13步开始推理</p>
+</li>
+<li class="lvl-3">
+<p>上文的第14步从mlu内存中拷贝出推理结果到cpu内存，然后进行后处理。</p>
+</li>
+<li class="lvl-3">
+<p>上文的第15步，清理环境。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="离线模型在MLU220上的部署">离线模型在MLU220上的部署</h3>
+<hr>
+<p>  前一小节，主要还是完成离线模型推理的程序开发，并在MLU270上运行测试。本小节的主要内容是怎么将我们调好的程序部署到MLU220。</p>
+<p>  部署到MLU220，我们面临的第一个问题就是交叉编译生成AARCH64的程序。这里包含3个部分依赖，CNToolkit-aarch64，easydk-aarch64，其他第三方库如opencv-aarch64等。这时，我们得到了aarch64的离线推理程序，并配合之前我们转换得到的mlu220版本的离线模型。</p>
+<p>  当我们把生成好的程序放到mlu220板卡，这个时候，可能程序还是无法跑起来，因为可能驱动未加载，这个时候，建议找到驱动和固件，让mlu220运行起来。然后运行程序即可。</p>
+<p>  下面是无mlu设备的报错示例：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/no_dev.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  下面是加载驱动的最后日志：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/insmod_drv.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  下面是运行程序的输出：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/test_seg.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  对于RK3399pro和寒武纪MLU220平台来说，一些出来时间较为长久的模型，由于优化的比较到位，速度相较于RK3399pro可能有个300%+的性能提升。但是对于一些新的模型和一些非经典（非大众）的模型，由于自带的优化或者网络结构的原因，可能只有30%+的性能提升，但是这也是令人高兴的事情，毕竟硬件升级之后，好多事情可以达到准实时。</p>
+<p>  本系列的基本介绍就这些了，完结撒花~~~ ~~~。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</p>
+</li>
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</p>
+</li>
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121456789">https://blog.csdn.net/u011728480/article/details/121456789</a> ）</p>
+</li>
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="https://www.cambricon.com/">https://www.cambricon.com/</a></p>
+</li>
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/cnrt/user_guide_html/example/offline_mode.html">https://www.cambricon.com/docs/cnrt/user_guide_html/example/offline_mode.html</a></p>
+</li>
+<li class="lvl-2">
+<p>其他相关保密资料。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Sky</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://e-x.top/2021/11/28/blog_idx_114/">https://e-x.top/2021/11/28/blog_idx_114/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Sky</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/">
+                                    <span class="chip bg-color">嵌入式</span>
+                                </a>
+                            
+                                <a href="/tags/%E8%BE%B9%E7%BC%98%E7%AB%AF/">
+                                    <span class="chip bg-color">边缘端</span>
+                                </a>
+                            
+                                <a href="/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">
+                                    <span class="chip bg-color">人工智能</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+
+
+
+            
+                <div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.jpg" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+
+            
+
+
+            
+                <div class="card" data-aos="fade-up">
+    <div id="utteranc-container" class="card-content">
+        <script src="https://utteranc.es/client.js"
+        repo="flyinskyin2013/blog_issues_rep"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+        </script>
+    </div>
+</div>
+
+            
+
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2021/12/26/blog_idx_115/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="一种实用性较强的求IOU的算法（任意多边形之间的IOU）">
+                        
+                        <span class="card-title">一种实用性较强的求IOU的算法（任意多边形之间的IOU）</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2021-12-26
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/C-CPP/" class="post-category">
+                                    C&CPP
+                                </a>
+                            
+                            <a href="/categories/C-CPP/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" class="post-category">
+                                    数据结构与算法
+                                </a>
+                            
+                            <a href="/categories/C-CPP/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" class="post-category">
+                                    计算机视觉
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/">
+                        <span class="chip bg-color">计算机视觉</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">深度学习</span>
+                    </a>
+                    
+                    <a href="/tags/%E7%AE%97%E6%B3%95/">
+                        <span class="chip bg-color">算法</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2021/11/21/blog_idx_113/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/19.jpg" class="responsive-img" alt="寒武纪加速平台(MLU200系列) 摸鱼指南（三）--- 模型移植-分割网络实例">
+                        
+                        <span class="card-title">寒武纪加速平台(MLU200系列) 摸鱼指南（三）--- 模型移植-分割网络实例</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-11-21
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" class="post-category">
+                                    嵌入式
+                                </a>
+                            
+                            <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/" class="post-category">
+                                    DL
+                                </a>
+                            
+                            <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/%E5%B8%B8%E8%AF%86/" class="post-category">
+                                    常识
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/">
+                        <span class="chip bg-color">嵌入式</span>
+                    </a>
+                    
+                    <a href="/tags/%E8%BE%B9%E7%BC%98%E7%AB%AF/">
+                        <span class="chip bg-color">边缘端</span>
+                    </a>
+                    
+                    <a href="/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">
+                        <span class="chip bg-color">人工智能</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+<script>
+    $('#articleContent').on('copy', function (e) {
+        // IE8 or earlier browser is 'undefined'
+        if (typeof window.getSelection === 'undefined') return;
+
+        var selection = window.getSelection();
+        // if the selection is short let's not annoy our users.
+        if (('' + selection).length < Number.parseInt('20')) {
+            return;
+        }
+
+        // create a div outside of the visible area and fill it with the selected text.
+        var bodyElement = document.getElementsByTagName('body')[0];
+        var newdiv = document.createElement('div');
+        newdiv.style.position = 'absolute';
+        newdiv.style.left = '-99999px';
+        bodyElement.appendChild(newdiv);
+        newdiv.appendChild(selection.getRangeAt(0).cloneContents());
+
+        // we need a <pre> tag workaround.
+        // otherwise the text inside "pre" loses all the line breaks!
+        if (selection.getRangeAt(0).commonAncestorContainer.nodeName === 'PRE' || selection.getRangeAt(0).commonAncestorContainer.nodeName === 'CODE') {
+            newdiv.innerHTML = "<pre>" + newdiv.innerHTML + "</pre>";
+        }
+
+        var url = document.location.href;
+        newdiv.innerHTML += '<br />'
+            + '来源: Sky&#39;s Blogs<br />'
+            + '文章作者: Sky<br />'
+            + '文章链接: <a href="' + url + '">' + url + '</a><br />'
+            + '本文章著作权归作者所有，任何形式的转载都请注明出处。';
+
+        selection.selectAllChildren(newdiv);
+        window.setTimeout(function () {bodyElement.removeChild(newdiv);}, 200);
+    });
+</script>
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+
+  <!-- 是否加载使用自带的 prismjs. -->
+  <script type="text/javascript" src="/libs/prism/prism.min.js"></script>
+
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="song"
+                   id="26545309"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="/libs/aplayer/Meting.min.js"></script>
+
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2014-2025</span>
+            
+            <a href="/about" target="_blank">Sky</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            
+            <br>
+            
+            
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2014";
+                        var startMonth = "7";
+                        var startDate = "3";
+                        var startHour = "20";
+                        var startMinute = "45";
+                        var startSecond = "27";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link ">
+    <a href="https://github.com/flyinskyin2013" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 白天和黑夜主题 -->
+<div class="stars-con">
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>  
+</div>
+
+<script>
+    function switchNightMode() {
+        $('<div class="Cuteen_DarkSky"><div class="Cuteen_DarkPlanet"></div></div>').appendTo($('body')),
+        setTimeout(function () {
+            $('body').hasClass('DarkMode') 
+            ? ($('body').removeClass('DarkMode'), localStorage.setItem('isDark', '0'), $('#sum-moon-icon').removeClass("fa-sun").addClass('fa-moon')) 
+            : ($('body').addClass('DarkMode'), localStorage.setItem('isDark', '1'), $('#sum-moon-icon').addClass("fa-sun").removeClass('fa-moon')),
+            
+            setTimeout(function () {
+            $('.Cuteen_DarkSky').fadeOut(1e3, function () {
+                $(this).remove()
+            })
+            }, 2e3)
+        })
+    }
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+    
+    
+
+    <!-- 雪花特效 -->
+    
+
+    <!-- 鼠标星星特效 -->
+     
+        <script type="text/javascript">
+            // 只在桌面版网页启用特效
+            var windowWidth = $(window).width();
+            if (windowWidth > 768) {
+                document.write('<script type="text/javascript" src="/libs/others/star.js"><\/script>');
+            }
+        </script>
+    
+
+    
+
+    <!-- Baidu Analytics -->
+
+<script>
+    var _hmt = _hmt || [];
+    (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":250,"hOffset":50,"vOffset":5},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.8},"log":false});</script></body>
+
+</html>
