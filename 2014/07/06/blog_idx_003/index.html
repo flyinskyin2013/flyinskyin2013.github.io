@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  前置说明   本文发布于  2014-07-06 22:58:35，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID&#x3D;003） 环境说明   无 前言    无     linux系统版本的分类    今天安装Codeblock">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于linux系统版本的一个分类展现">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2014/07/06/blog_idx_003/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  前置说明   本文发布于  2014-07-06 22:58:35，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID&#x3D;003） 环境说明   无 前言    无     linux系统版本的分类    今天安装Codeblock">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2014-07-06T14:58:35.000Z">
+<meta property="article:modified_time" content="2023-09-23T08:02:50.240Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2014/07/06/blog_idx_003/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>关于linux系统版本的一个分类展现 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2014/07/06/blog_idx_003/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关于linux系统版本的一个分类展现
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2014-07-06 22:58:35" itemprop="dateCreated datePublished" datetime="2014-07-06T22:58:35+08:00">2014-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-09-23 16:02:50" itemprop="dateModified" datetime="2023-09-23T16:02:50+08:00">2023-09-23</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>936</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>1 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-12-17 15:07:31
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=003） 
+&emsp;&emsp;本文发布于  2014-07-06 22:58:35，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=003） 
+-->
+<h6 id="前置说明">前置说明</h6>
+<p>  本文发布于  2014-07-06 22:58:35，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=003）</p>
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="linux系统版本的分类">linux系统版本的分类</h3>
+<hr>
+<p>  今天安装Codeblocks，进入下载页面时，顿时傻眼了＠。＠||。。。不知道该下载哪个？？？被迫，去查了资料</p>
+<p>  文章参考维基百科linux词条，并经过自己总结。。。。</p>
+<p>  下面根据软件包的打包方式进行分类进行介绍：</p>
+<br/>
+<br/>
+<h5 id="＠Debian-系＠">＠Debian 系＠</h5>
+<p>  ＠Debian GNU / Linux是一种强调使用自由软件的发行版。它支持多种硬件平台。Debian及其派生发行版使用deb软件包格式，并使用dpkg及其前端作为包管理器。</p>
+<p>  ps:＝＝＝在这个软件包格式下就有两个著名的linux发行版本，一个是Debian,另外一个是Ubuntu。当然，基于这个软件打包格式的系统还有很多，我们了解就行了。。。</p>
+<p>  ps:对于这个name.deb。我们使用的安装软件的命令为：sudo dpkg -i name.deb</p>
+<br/>
+<br/>
+<h5 id="＠Red-Hat系＠">＠Red Hat系＠</h5>
+<p>  @Red Hat Linux和SUSE Linux是最早使用RPM格式软件包的发行版，如今RPM格式已广泛运用于众多的发行版。这两种发行版后来都分为商业版本和社区支持版本。Red Hat Linux的社区支持版本现称为Fedora，商业版本则称为Red Hat Enterprise Linux。</p>
+<p>  ps:＝＝＝在这个软件包格式下就有两个著名的linux发行版本,一个是fedora（这个为以前的Red Hat linux的替代）,一个是Red Hat Enterprise Linux</p>
+<p>  ps:对于这个name.rpm。我们使用的安装软件的命令为：sudo rpm -i name.rpm</p>
+<br/>
+<br/>
+<h5 id="＠其他系＠">＠其他系＠</h5>
+<p>  @其他软件打包方式等等</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  ＃PS 现在各位在下载某些开源软件的时候，不怕不知道选择什么格式的软件包了吧 ＠.＠</p>
+<p>  ＃PS各位请不喜勿喷。。。。。。</p>
+<h3 id="参考文献">参考文献</h3>
+<p>  无</p>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2014/07/06/blog_idx_002/" rel="prev" title="关于Ubuntu的磁盘空间不足其中的一种问题">
+      <i class="fa fa-chevron-left"></i> 关于Ubuntu的磁盘空间不足其中的一种问题
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2014/07/25/blog_idx_004/" rel="next" title="在Ubuntu14.04上安装qt5和qtcreator的 两种方式（源代码和xxxxx.run） 和我的感悟-------超级详细版">
+      在Ubuntu14.04上安装qt5和qtcreator的 两种方式（源代码和xxxxx.run） 和我的感悟-------超级详细版 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">前置说明</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">2.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux%E7%B3%BB%E7%BB%9F%E7%89%88%E6%9C%AC%E7%9A%84%E5%88%86%E7%B1%BB"><span class="nav-number"></span> <span class="nav-text">linux系统版本的分类</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%EF%BC%A0Debian-%E7%B3%BB%EF%BC%A0"><span class="nav-number"></span> <span class="nav-text">＠Debian 系＠</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%EF%BC%A0Red-Hat%E7%B3%BB%EF%BC%A0"><span class="nav-number"></span> <span class="nav-text">＠Red Hat系＠</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%EF%BC%A0%E5%85%B6%E4%BB%96%E7%B3%BB%EF%BC%A0"><span class="nav-number"></span> <span class="nav-text">＠其他系＠</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">13k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">12 mins.</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
