@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Windows 10 VSCode Python 3.8.10 Pytorch 1.8.1 Cuda 10.2  前言    从我2017毕业到现在为止，我的工作一直都是AI在边缘端部署落地等相关内容。所以我的工作基本都集中在嵌入式+Linux+DL三者之内的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DL基础补全计划(一)---线性回归及示例（Pytorch，平方损失）">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2021/07/04/blog_idx_105/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Windows 10 VSCode Python 3.8.10 Pytorch 1.8.1 Cuda 10.2  前言    从我2017毕业到现在为止，我的工作一直都是AI在边缘端部署落地等相关内容。所以我的工作基本都集中在嵌入式+Linux+DL三者之内的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_105/feature_label.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_105/loss_surface.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_105/train_log.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-07-04T08:15:16.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.888Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_105/feature_label.png">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2021/07/04/blog_idx_105/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>DL基础补全计划(一)---线性回归及示例（Pytorch，平方损失） | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2021/07/04/blog_idx_105/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DL基础补全计划(一)---线性回归及示例（Pytorch，平方损失）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-04 16:15:16" itemprop="dateCreated datePublished" datetime="2021-07-04T16:15:16+08:00">2021-07-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>7.6k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>7 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:05
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=105） 
+&emsp;&emsp;本文发布于 2021-07-04 16:15:16    （BlogID=105）       
+-->
+<h6 id="环境说明">环境说明</h6>
+<ul>
+<li>Windows 10</li>
+<li>VSCode</li>
+<li>Python 3.8.10</li>
+<li>Pytorch 1.8.1</li>
+<li>Cuda 10.2</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  从我2017毕业到现在为止，我的工作一直都是AI在边缘端部署落地等相关内容。所以我的工作基本都集中在嵌入式+Linux+DL三者之内的范围，由于个人兴趣和一些工作安排，就会去做一些模型移植的工作，所以我会经常接触模型基本结构，前处理、后处理等等基本的知识，但是其实我很少去接触模型怎么来的这个问题。虽然以前也硬啃过Lenet5和BP算法，也按照别人弄好的脚本训练过一些简单的模型，但是从来没有认真仔细的看过这些脚本，这些脚本为什么这样写。</p>
+<p>  在2019年下半年，随着我移植模型的工作深入，接触的各种硬件平台越来越多，经常遇见一些层在此平台无法移植，需要拆出来特殊处理。这让我产生了为啥这些层在这些特定平台不能够移植的疑问？为啥替换为别的层就能正常工作？为啥此平台不提供这个层？于是我去请教我们的算法小伙伴们，他们建议我如果要解决这个问题，建议我学习一下DL的基本知识，至少要简单了解从数据采集及处理、模型搭建及训练、模型部署等知识，其中模型部署可能是我最了解的内容了。利用一些闲暇时间和工作中的一些机会，我对以上需要了解的知识有了一个大概的认知。随着了解的深入，可能我也大概知道我比较缺一些基础知识。经过小伙伴的推荐和自己的搜索，我选择了《动⼿学深度学习.pdf》作为我的基础补全资料。</p>
+<p>  本文是以‘补全资料’的Chapter3中线性规划为基础来编写的，主要是对‘补全资料’之前的基础知识的一个简单汇总，包含了深度学习中一些基本的知识点，同时会对这些基本知识点进行一些解释。</p>
+<p>  由于我也是一个初学者，文中的解释是基于我的知识水平结构做的‘特色适配’，如果解释有误，请及时提出，我这里及时更正。写本文的原因也是记录我的学习历程，算是我的学习笔记。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="回归概念">回归概念</h3>
+<hr>
+<p>  回归是一种建模方法，得到的模型表示了自变量和因变量的关系。因此回归还可以解释为一种事与事之间的联系。对我们来说最常见的例子就是我们学习过的函数。例如函数Y=aX+b，这里的Y=aX+b就是我们模型， X代表自变量，Y代表因变量。</p>
+<p>  这里顺便多说一句，深度学习是机器学习的子集。建模方法很多，回归只是其中的一种。</p>
+<br/>
+<br/>
+<h5 id="线性回归">线性回归</h5>
+<p>  线性回归就是自变量和因变量是线性关系，感觉跟废话一样，换个方式表达就是自变量是一次。例如：Y=aX+b, Y=aX1+bX2+c, 这里的X、X1、X2都是一次的，不是二次或者更高的。</p>
+<br/>
+<br/>
+<h5 id="非线性回归">非线性回归</h5>
+<p>  非线性回归就是自变量和因变量不是是线性关系，同样感觉跟废话一样，换个方式表达就是自变量是二次及以上的。这里和线性回归对比一下就行。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="基于y-aX1-2-bX1-2-cX2-dX2-e的回归Pytorch实例">基于y=aX1^2+bX1^2+cX2+dX2+e的回归Pytorch实例</h3>
+<hr>
+<p>  此实例是《动⼿学深度学习.pdf》中线性回归的从零实现的变种。从零实现，可以了解到许多的基本知识。<br>
+  此小节基本按照数据采集及处理、模型搭建及训练和模型部署来描述。</p>
+<br/>
+<br/>
+<h5 id="带噪声数据采集及处理">带噪声数据采集及处理</h5>
+<p>  我们知道，在我们准备数据时，肯定由于各种各样的原因，会有各种干扰，导致我们根据实际场景采集到的数据，其实不是精准的，但是这并不影响我们建模，因为我们的模型是尽量去拟合真实场景的情况。</p>
+<p>  生成我们的实际模型的噪声数据，也就是我们常见的数据集的说法。如下是代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">synthetic_data</span>(<span class="params">w1, w2, b, num_examples</span>): <span class="comment">#@save</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;⽣成y = X1^2w1 + X2w2 + b + 噪声。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 根据正太分布，随机生成我们的X1和X2</span></span><br><span class="line">    <span class="comment"># X1和X2都是(1000, 2)的矩阵</span></span><br><span class="line">    X1 = np.random.normal(<span class="number">0</span>, <span class="number">1</span>, (num_examples, <span class="built_in">len</span>(w1)))</span><br><span class="line">    X2 = np.random.normal(<span class="number">0</span>, <span class="number">1</span>, (num_examples, <span class="built_in">len</span>(w2)))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 基于X1,X2,true_w1, true_w2, true_b， 通过向量内积、广播等方法计算模型的真实结果</span></span><br><span class="line">    y = np.dot(X1**<span class="number">2</span>, w1) + np.dot(X2, w2) + b</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 通过随机噪声加上真实结果，生成我们的数据集。</span></span><br><span class="line">    <span class="comment"># y是(1000, 1)的矩阵</span></span><br><span class="line">    y += np.random.normal(<span class="number">0</span>, <span class="number">0.1</span>, y.shape)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> X1, X2, y.reshape((-<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line">    </span><br><span class="line">true_w1 = np.array([<span class="number">5.7</span>, -<span class="number">3.4</span>])</span><br><span class="line">true_w2 = np.array([<span class="number">4.8</span>, -<span class="number">3.4</span>])</span><br><span class="line">true_b = <span class="number">4.2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 这里我们得到了我们的数据集，包含了特征和标签</span></span><br><span class="line">features1, features2, labels = synthetic_data(true_w1, true_w2, true_b, <span class="number">1000</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 因为我们知道我们的模型是y=aX1^2+bX1^2+cX2+dX2+e，于是我们知道a的数据分布是类似y=ax^2+b的这种形状。于是我们知道c的数据分布是类似y=ax+b的这种形状。</span></span><br><span class="line"><span class="comment"># 我们可以通过如下代码验证一下</span></span><br><span class="line">plt.scatter(features1[:, <span class="number">0</span>], labels[:], <span class="number">1</span>, c=<span class="string">&#x27;r&#x27;</span>)</span><br><span class="line">plt.scatter(features2[:, <span class="number">0</span>], labels[:], <span class="number">1</span>, c=<span class="string">&#x27;b&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_105/feature_label.png" alt="rep_img"/></center>
+    </div>
+</div>   
+其实从图中可以看到，红色的是类似y=ax^2+b的这种形状，蓝色是类似y=ax+b这种形状，但是他们都不是在一条线，说明我们的设置的噪声项是有效的。
+<p>  同时这里我们还要准备一个函数用来随机抽取特征和标签，一批一批的进行训练。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">data_iter</span>(<span class="params">batch_size, features1, features2, labels</span>):</span><br><span class="line">    num_examples = <span class="built_in">len</span>(features1)</span><br><span class="line">    indices = <span class="built_in">list</span>(<span class="built_in">range</span>(num_examples))</span><br><span class="line">    np.random.shuffle(indices) <span class="comment"># 样本的读取顺序是随机的</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, num_examples, batch_size):</span><br><span class="line">        j = np.array(indices[i: <span class="built_in">min</span>(i + batch_size, num_examples)])</span><br><span class="line">        <span class="comment"># print(features1.take(j, axis=0).shape)</span></span><br><span class="line">        <span class="keyword">yield</span> torch.tensor(features1.take(j, <span class="number">0</span>)), torch.tensor(features2.take(j, <span class="number">0</span>)), torch.tensor(labels.take(j)) <span class="comment"># take函数根据索引返回对应元素</span></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="模型搭建及训练">模型搭建及训练</h5>
+<p>  对于我们这个实例来说，模型就是一个二元二次函数，此外这里的模型也叫作目标函数。所以，下面我们用torch来实现它就行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">our_func</span>(<span class="params">X1, X2, W1, W2, B</span>):</span><br><span class="line">    <span class="comment"># print(X1.shape) (100, 2)</span></span><br><span class="line">    <span class="comment"># print(W1.shape) (2, 1)</span></span><br><span class="line">    net_out = torch.matmul(X1**<span class="number">2</span>, W1) + torch.matmul(X2, W2) + B</span><br><span class="line">    <span class="comment"># print(net_out.shape) (100, 1)</span></span><br><span class="line">    <span class="keyword">return</span> net_out</span><br></pre></td></tr></table></figure>
+<p>注意哟，这里的X1,X2,W1,W2,B都是torch的tensor格式。</p>
+<p>  由数据采集及处理可知，在我们设定的真实true_w1,true_w2和true_b的情况下，我们得到了许许多多的X1,X2和y。我们要做的事情是求出W1、W2和b，这里看起是不是很矛盾？我们已知了true_w1,true_w2,true_b然后去求w1,w2,b。这里其实是一个错觉，由于在实际情况中，我们可能会得到许许多多的X1,X2和y，这些数据不是我们模拟生成的，而是某种关系实际产生的数据，只是这些数据被我们收集到了。在实际情况下，而且我们仅仅只能够得到X1,X2和y，我们通过观察X1,X2和y的关系，发现他们有一元二次和一元一次关系，所以我们建立的模型为y=aX1^2+bX1^2+cX2+dX2+e，这个过程称为建模。</p>
+<p>  通过上面的说明，我们知道这个模型我们要求a,b,c,d,e这些参数的值，我们求这些参数的过程叫做训练。对于这个实例来说，这个过程也叫作求解方程，这里其实我们可以通过解方程的方法把这5个参数解出来，但是在实际情况中，我们建立的模型可能参数较多，可能手动解不出来，于是我们要通过训练的方式，去拟合这些参数。所以这里一个重要的问题就是怎么拟合这些参数？</p>
+<p>  如果学习过《数值分析》这门课程的话，其实就比较好理解了，如果要拟合这些参数，我们有许多的方法可以使用，但是基本分为两类，一类是针对误差进行分析，一类是针对模型进行分析。那么在深度学习中，我们一般是对误差进行分析，也就是我们常说的梯度下降法，我们需要随机生成这些参数初始值(w1,w2,b)，然后根据我们得到的X1,X2和y，通过梯度下降方法可以得到新的w1’,w2’,b’，且w1’,w2’,b’更加接近true_w1,true_w2和true_b。这就是一种优化过程，经过多次优化，我们就有可能求出跟接近与true_w1,true_w2和true_b的值。</p>
+<p>  上面啰嗦了一大堆之后，我这里正式引入损失函数这个概念，然后我们根据损失函数去优化我们的w1,w2,b。我们定义这个实例的损失函数如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">loss_func</span>(<span class="params">y_train, y_label</span>):</span><br><span class="line">    <span class="comment"># print(y_train.shape)</span></span><br><span class="line">    <span class="comment"># print(y_label.shape)</span></span><br><span class="line">    <span class="keyword">return</span> ((y_train - y_label)**<span class="number">2</span>)/<span class="number">2</span></span><br></pre></td></tr></table></figure>
+<p>  这里我们y_train就是我们得到的训练值，y_label就是我们采集到数值，这里的损失函数就是描述训练值和标签的差多少，那么我们只需要让这个损失函数的值越来越小就行，那么可能问题就变成了求损失函数的极小值问题，我们在这里还是用梯度下降的方法来求损失函数的极小值。</p>
+<p>  这里要回忆起来一个概念，梯度是一个函数在这个方向增长最快的方向。我们求损失函数的极小值的话，就减去梯度就行了。</p>
+<p>  这里还要说一句，损失函数有很多(L1,MSE,交叉熵等等)，大家以后可以自己选一个合适的即可，这里的合适需要大家去学习每种损失函数的适用场景。这里的平方损失的合理性我个人认为有两种：</p>
+<ul>
+<li>1 直观法，平方损失函数描述的是在数据集上，训练值和真实值的误差趋势，我要想得到的参数最准确，就要求误差最小，误差最小就要求我去求解损失函数的极小值，这是我所了解的数学知识的直观反映。 （直觉大法）</li>
+<li>2 数学证明如下：我们生成数据或者采样数据的时候，他们的误差服从正态分布（ $P(x) = 1/\sqrt{2\pi\sigma^2}*exp((-1/2\sigma^2)(x-\mu)^2)$ ），于是我们根据条件概率得到特定feature得到特定y的概率为: $P(y|X) = 1/\sqrt{2\pi\sigma^2}*exp((-1/2\sigma^2)(y-w1X1^2-w2X2-b)^2)$,根据最大似然估计$P(y|X) = \prod\limits_{i=0}^{n-1}P(y^{i}|X^{i})$，此时最大似然估计最大，w1,w2,b就是最佳的参数，但是乘积函数的最大值不好求，我们用对数转换一下，变为各项求和，只需要保证含义一致就行。由于一般的优化一般是说最小化，所以我们要取负的对数和$-\log(P(y|X))$，此时我们把最大似然估计函数转换为对数形式：$-\log(P(y|X)) = \sum\limits_{i=0}^{n-1}1/2\log(2\pi\sigma^2)+1/2\sigma^2(y-w1X1^2-w2X2-b)^2)$,我们可以看到要求此函数的最小值，其实就是后半部分的平方是最小值就行，因为其余的都是常数项，而后面部分恰好就是我们的平方损失函数。（Copy书上大法）</li>
+</ul>
+<p>  这里的梯度下降法就是(w1,w2,b)-lr*(w1,w2,b).grad/batch_size,代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">sgd</span>(<span class="params">params, lr, batch_size</span>): <span class="comment">#@save</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;⼩批量随机梯度下降。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">for</span> param <span class="keyword">in</span> params:</span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            param[:] = param - lr * param.grad / batch_size</span><br></pre></td></tr></table></figure>
+<p>  这里我画出我们的损失函数的三维图像,我们把损失函数简化为Z=aX^2+bY+c的形式。其图像如下图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_105/loss_surface.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>我们可以看到这个曲面有很多极小值，当我们随机初始化a,b,c的时候，我们会根据X和Y得到部分损失点，这时我们求出a,b,c的梯度，当我们对a,b,c减去偏导数时，就会更快的靠近损失函数的谷底，我们的当我们的损失函数到极小值时，我们就认为此时的a,b,c是我们要找的参数。这就是我们的梯度下降法的意义所在。</p>
+<p>  下面就直接写训练代码就行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">w1 = torch.tensor(np.random.normal(<span class="number">0</span>, <span class="number">0.5</span>, (<span class="number">2</span>, <span class="number">1</span>)), requires_grad=<span class="literal">True</span>)</span><br><span class="line">w2 = torch.tensor(np.random.normal(<span class="number">0</span>, <span class="number">0.5</span>, (<span class="number">2</span>, <span class="number">1</span>)), requires_grad=<span class="literal">True</span>)</span><br><span class="line">b = torch.tensor(np.ones(<span class="number">1</span>), requires_grad=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># print(w1.grad)</span></span><br><span class="line"><span class="comment"># print(w1.grad_fn)</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line">lr = <span class="number">0.001</span></span><br><span class="line">num_epochs = <span class="number">10000</span></span><br><span class="line">net = our_func</span><br><span class="line">loss = loss_func</span><br><span class="line"></span><br><span class="line">batch_size = <span class="number">200</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(num_epochs):</span><br><span class="line">    <span class="keyword">for</span> X1, X2, y <span class="keyword">in</span> data_iter(batch_size, features1, features2, labels):</span><br><span class="line">        <span class="comment"># print(X1.shape) (100, 2)</span></span><br><span class="line">        <span class="comment"># print(y.shape) (100, 1)</span></span><br><span class="line">        l = loss(net(X1, X2, w1, w2, b), y.reshape(batch_size, <span class="number">1</span>)) <span class="comment"># `X`和`y`的⼩批量损失</span></span><br><span class="line">        <span class="comment"># print(f&#x27;epoch &#123;epoch + 1&#125;, before sdg loss &#123;float(l.mean()):f&#125;&#x27;)</span></span><br><span class="line">        <span class="comment"># 计算l关于[`w`, `b`]的梯度</span></span><br><span class="line">        <span class="comment"># print(l.shape)</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># l.backward() default call, loss.backward(torch.Tensor(1.0))</span></span><br><span class="line">        w1.grad = <span class="literal">None</span></span><br><span class="line">        w2.grad = <span class="literal">None</span></span><br><span class="line">        b.grad = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">        l.backward(torch.ones_like(y.reshape(batch_size, <span class="number">1</span>)))</span><br><span class="line"></span><br><span class="line">        sgd([w1, w2, b], lr, batch_size) <span class="comment"># 使⽤参数的梯度更新参数</span></span><br><span class="line">        </span><br><span class="line">        l1 = loss(net(X1, X2, w1, w2, b), y.reshape(batch_size, <span class="number">1</span>)) <span class="comment"># `X`和`y`的⼩批量损失</span></span><br><span class="line">        <span class="comment"># print(f&#x27;epoch &#123;epoch + 1&#125;, after sdg loss &#123;float(l1.mean()):f&#125;&#x27;)</span></span><br><span class="line">    </span><br><span class="line">    train_l = loss(net( torch.from_numpy(features1), torch.from_numpy(features2), w1, w2, b), torch.from_numpy(labels))</span><br><span class="line">    <span class="comment"># print(train_l.sum())</span></span><br><span class="line">    <span class="keyword">if</span> (epoch % <span class="number">1000</span> == <span class="number">0</span>):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;epoch <span class="subst">&#123;epoch + <span class="number">1</span>&#125;</span>, loss <span class="subst">&#123;<span class="built_in">float</span>(train_l.mean()):f&#125;</span>&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;train_w1 &#x27;</span>,w1)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;train_w2 &#x27;</span>,w2)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;train_b &#x27;</span>,b)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  这里做的事情就是首先设定训了次数，学习率，批次数量参数，然后随机生成了w1,w2,b，然后通过data_iter取一批数据，算出loss，清空w1,w2,b的梯度，对loss求w1,w2,b的偏导数，调用sdg求新的w1,w2,b。最后计算新参数在整个数据集上的损失。</p>
+<p>  这里尤其需要注意的是在多次迭代过程中，一定要清空w1,w2,b的梯度，因为它的梯度是累加的，不会覆盖。这里用的Pytorch的自动求导模块，其实底层就是调用的bp算法，利用了链式法则，反向从loss开始，能够算出w1,w2,b的偏导数。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_105/train_log.png" alt="rep_img"/></center>
+    </div>
+</div>   
+这里我们看到最终的平均误差到了一定值后就下降不了，这和我们的数据有关系，我们只需要关心这个误差我们能够接受吗？能接受，我们就训练得到了成功的模型，如果不能接受，我们就改参数重新来，这是一个多次试验尝试的过程。
+<p>  我们从上文可知，true_w1 = np.array([5.7, -3.4])，true_w2 = np.array([4.8, -3.4])，true_b = 4.2。我们训练出来的值是w1=(5.7012, -3.3955),w2=(4.8042, -3.4071),b=4.2000。可以看到其实训练得到的值还是非常接近的，但是这个任务其实太简单了。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  这里主要用到了许多基本的概念，一个是数据集的收集和处理，模型搭建，模型训练，优化方法、损失函数等等。至少通过本文，我们知道了得到一个模型的基本过程，其实普遍性的深度学习就是使用新的损失函数、搭建新的模型、使用新的优化方法等等。</p>
+<p>  从文中特例我们可以发现，我们只利用了Pytorch自带的自动求导模块，其他的一些常见的深度学习概念都是我们手动实现了，其实这些好多内容都是Pytorch这些框架封装好的，我们没有必要自己手写，但是如果是初次学习的话，建议手动来写，这样认知更加深刻。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/d2l-ai/d2l-zh/releases">https://github.com/d2l-ai/d2l-zh/releases</a> (V1.0.0)</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/d2l-ai/d2l-zh/releases">https://github.com/d2l-ai/d2l-zh/releases</a> (V2.0.0 alpha1)</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/24/blog_idx_104/" rel="prev" title="Mediapipe 在RK3399PRO上的初探（二）(自定义Calculator)">
+      <i class="fa fa-chevron-left"></i> Mediapipe 在RK3399PRO上的初探（二）(自定义Calculator)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/11/blog_idx_106/" rel="next" title="DL基础补全计划(二)---Softmax回归及示例（Pytorch，交叉熵损失）">
+      DL基础补全计划(二)---Softmax回归及示例（Pytorch，交叉熵损失） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9E%E5%BD%92%E6%A6%82%E5%BF%B5"><span class="nav-number"></span> <span class="nav-text">回归概念</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92"><span class="nav-number"></span> <span class="nav-text">线性回归</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9D%9E%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92"><span class="nav-number"></span> <span class="nav-text">非线性回归</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8Ey-aX1-2-bX1-2-cX2-dX2-e%E7%9A%84%E5%9B%9E%E5%BD%92Pytorch%E5%AE%9E%E4%BE%8B"><span class="nav-number"></span> <span class="nav-text">基于y&#x3D;aX1^2+bX1^2+cX2+dX2+e的回归Pytorch实例</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B8%A6%E5%99%AA%E5%A3%B0%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E5%8F%8A%E5%A4%84%E7%90%86"><span class="nav-number"></span> <span class="nav-text">带噪声数据采集及处理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E6%90%AD%E5%BB%BA%E5%8F%8A%E8%AE%AD%E7%BB%83"><span class="nav-number"></span> <span class="nav-text">模型搭建及训练</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

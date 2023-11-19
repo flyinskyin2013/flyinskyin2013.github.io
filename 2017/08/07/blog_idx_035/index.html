@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   Ubuntu 16.04 LTS 前言    无     Libx264实时视频流    本文的技术实现部分参考雷博士的这篇文章。http:&#x2F;&#x2F;blog.csdn.net&#x2F;leixiaohua1020&#x2F;article&#x2F;details&#x2F;42078645  现在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="毕设系列之Libx264实时视频流（YUV 420P转H264视频编码篇）">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2017/08/07/blog_idx_035/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   Ubuntu 16.04 LTS 前言    无     Libx264实时视频流    本文的技术实现部分参考雷博士的这篇文章。http:&#x2F;&#x2F;blog.csdn.net&#x2F;leixiaohua1020&#x2F;article&#x2F;details&#x2F;42078645  现在">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2017-08-07T08:30:54.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.716Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2017/08/07/blog_idx_035/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>毕设系列之Libx264实时视频流（YUV 420P转H264视频编码篇） | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2017/08/07/blog_idx_035/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          毕设系列之Libx264实时视频流（YUV 420P转H264视频编码篇）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-08-07 16:30:54" itemprop="dateCreated datePublished" datetime="2017-08-07T16:30:54+08:00">2017-08-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>10 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-16 15:02:38
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=035） 
+&emsp;&emsp;本文发布于 2017-08-07 16:30:54，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=035） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  Ubuntu 16.04 LTS</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Libx264实时视频流">Libx264实时视频流</h3>
+<hr>
+<p>  本文的技术实现部分参考雷博士的这篇文章。<a target="_blank" rel="noopener" href="http://blog.csdn.net/leixiaohua1020/article/details/42078645">http://blog.csdn.net/leixiaohua1020/article/details/42078645</a></p>
+<ol>
+<li>现在网上关于H264的文章有很多，但是我个人认为最好的就是雷霄骅博士的x264部分的文章最详细。所以许多的细节部分，我推荐大家去雷博士的blog去看。本文只提及我们使用Libx264时候，我们要注意的问题。</li>
+<li>使用Libx264时候，我们需要关注的东西（下面用我的代码来说明假如我们要使用Libx264,那么我们需要注意的几个事情）。</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//encoder</span></span><br><span class="line">	<span class="type">x264_t</span> * pX264Handle;<span class="comment">//结构体是一个编码器实例句柄,要使用这个编码库，我们必须有一个这种变量，没有为啥。</span></span><br><span class="line"><span class="comment">//param</span></span><br><span class="line">	<span class="type">x264_param_t</span> * pX264Param;<span class="comment">//这个结构体就比较重要了，他是我们设置编码器参数的载体，我们必须具体的了解各种参数的意义。具体参数在下一节进行分析。</span></span><br><span class="line"><span class="comment">//input,output pic</span></span><br><span class="line">	<span class="type">x264_picture_t</span> *pPic_In;<span class="comment">//这就是YUV输入图像和输出图像的载体，这里面有一个pts参数需要注意，下面小节进行说明。</span></span><br><span class="line">	<span class="type">x264_picture_t</span> *pPic_Out;</span><br><span class="line"><span class="comment">//output h264 stream</span></span><br><span class="line">	<span class="type">x264_nal_t</span> * pNals;<span class="comment">//这个也是比较重要的一个东西，他的作用是用来保存编码后，网络抽象层所保存的数据(NAL HEADER,NAL BODY),想具体了解，可以去看H264编码原理。</span></span><br><span class="line"><span class="comment">//user config callback</span></span><br><span class="line">	<span class="comment">//UESER_CONF_CALLBACK yX264_UserConfig;</span></span><br><span class="line">	<span class="type">int</span> (*yX264_UserConfig)(<span class="keyword">struct</span> ymx264 * mvl);<span class="comment">//私有，忽略</span></span><br><span class="line"><span class="comment">//pi_nal is the number of NAL units </span></span><br><span class="line">	<span class="type">int</span> pi_nal;<span class="comment">//网络抽象单元个数</span></span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>编码器参数分析</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//* cpuFlags  </span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_threads  = X264_SYNC_LOOKAHEAD_AUTO;<span class="comment">//* 取空缓冲区继续使用不死锁的保证. </span></span><br><span class="line"><span class="comment">//* 视频选项  </span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_width   = FRAME_WIDTH; <span class="comment">//* 要编码的图像宽度.  </span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_height  = FRAME_HEIGHT; <span class="comment">//* 要编码的图像高度  </span></span><br><span class="line">mvl-&gt;pX264Param-&gt;i_frame_total = <span class="number">0</span>; <span class="comment">//* 编码总帧数.不知道用0.  </span></span><br><span class="line"><span class="comment">/* Force an IDR keyframe at this interval */</span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_keyint_max = <span class="number">10</span>; <span class="comment">//这个参数很重要,控制i帧的频率</span></span><br><span class="line"> </span><br><span class="line">mvl-&gt;pX264Param-&gt;b_repeat_headers = <span class="number">1</span>;  <span class="comment">// 重复SPS/PPS 放到关键帧前面//做实时流播放，此参数必须ENABLE</span></span><br><span class="line"><span class="comment">//* 流参数  </span></span><br><span class="line"><span class="comment">//* how many b-frame between 2 references pictures */</span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_bframe  = <span class="number">5</span>;  </span><br><span class="line"><span class="comment">//</span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;b_open_gop  = <span class="number">0</span>;  </span><br><span class="line"><span class="comment">//* Keep some B-frames as references: 0=off, 1=strict hierarchical, 2=normal */</span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_bframe_pyramid = <span class="number">0</span>;  </span><br><span class="line"><span class="comment">//</span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_bframe_adaptive = X264_B_ADAPT_TRELLIS;  </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"><span class="comment">//* Log参数，不需要打印编码信息时直接注释掉就行  </span></span><br><span class="line">   <span class="comment">//mvl-&gt;pX264Param-&gt;i_log_level  = X264_LOG_DEBUG; </span></span><br><span class="line"></span><br><span class="line"><span class="comment">//* 速率控制参数  </span></span><br><span class="line">   <span class="comment">//pX264Param-&gt;rc.i_bitrate = 1024 * 10;//* 码率(比特率,单位Kbps) ，重要</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//* muxing parameters  帧率控制，重要。</span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_fps_den  = <span class="number">1</span>; <span class="comment">//* 帧率分母</span></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_fps_num  = Y_STREAM_FPS;<span class="comment">//* 帧率分子  </span></span><br><span class="line"></span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_timebase_den = mvl-&gt;pX264Param-&gt;i_fps_num;  </span><br><span class="line">   mvl-&gt;pX264Param-&gt;i_timebase_num = mvl-&gt;pX264Param-&gt;i_fps_den;  </span><br></pre></td></tr></table></figure>
+<p>  最后，我们需要注意一点：关于我们设置的帧率的问题，不一定是设置多少，播放的时候就是多少，只是一个参考值，编码器会尽量的把视频编码为这个帧率。</p>
+<ol start="4">
+<li>x264_picture_t * pPic_In-&gt;i_pts += 1; 此参数非常重要。如果不进行设置，视频流将不会正常播放。</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/*</span></span><br><span class="line"><span class="comment">PTS：Presentation Time Stamp。PTS主要用于度量解码后的视频帧什么时候被显示出来</span></span><br><span class="line"><span class="comment">DTS：Decode Time Stamp。DTS主要是标识读入内存中的ｂｉｔ流在什么时候开始送入解码器中进行解码。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>关于颜色空间的问题，大家可以去百度YUV 420 ,YUV 422，YUV 444等这些原始图像的存储问题。具体来说，他们分为两类，一种是分组存储（例如：YYY<em>UUU</em>VVV*），一种是交叉存储(例如：YUYV)</li>
+<li>此模块我的源代码<br>
+ym_x264.h</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">	FileName:ym_x264.h</span></span><br><span class="line"><span class="comment">	Version:1.0</span></span><br><span class="line"><span class="comment">	Description:</span></span><br><span class="line"><span class="comment">	Created On: 2017-3-19</span></span><br><span class="line"><span class="comment">	Modified date:</span></span><br><span class="line"><span class="comment">	Author:Sky</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> _YM_X264_H</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _YM_X264_H</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span>&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* __cplusplus */</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;ym_x264_config.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;x264.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CLEAR_MEM(x) memset(&amp;(x),0,sizeof(x))</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">yX264Cmd</span>&#123;</span></span><br><span class="line"></span><br><span class="line">	DO_DEFAULT_PRESET = <span class="number">0</span>,</span><br><span class="line">	DO_DEFAULT_USERCONF = <span class="number">1</span>,</span><br><span class="line">	DO_PARAM_APPLY_PROFILE = <span class="number">2</span>,</span><br><span class="line">	OPEN_ENCODER = <span class="number">3</span>,</span><br><span class="line">	ENCODER_ENCODE = <span class="number">4</span>,</span><br><span class="line">	</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">yX264ColorSpace</span>&#123;</span></span><br><span class="line">	</span><br><span class="line">	Y_CSP_I444 = <span class="number">0</span>,</span><br><span class="line">	Y_CSP_I422 = <span class="number">1</span>,</span><br><span class="line">	Y_CSP_I420 = <span class="number">2</span>,</span><br><span class="line">	Y_CSP_YUYV = <span class="number">3</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//typedef struct ymx264 yMX264;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">ymx264</span>&#123;</span></span><br><span class="line">		</span><br><span class="line"><span class="comment">//encoder</span></span><br><span class="line">	<span class="type">x264_t</span> * pX264Handle;</span><br><span class="line"><span class="comment">//param</span></span><br><span class="line">	<span class="type">x264_param_t</span> * pX264Param;</span><br><span class="line"><span class="comment">//input,output pic</span></span><br><span class="line">	<span class="type">x264_picture_t</span> *pPic_In;</span><br><span class="line">	<span class="type">x264_picture_t</span> *pPic_Out;</span><br><span class="line"><span class="comment">//output h264 stream</span></span><br><span class="line">	<span class="type">x264_nal_t</span> * pNals;</span><br><span class="line"><span class="comment">//user config callback</span></span><br><span class="line">	<span class="comment">//UESER_CONF_CALLBACK yX264_UserConfig;</span></span><br><span class="line">	<span class="type">int</span> (*yX264_UserConfig)(<span class="keyword">struct</span> ymx264 * mvl);</span><br><span class="line"><span class="comment">//pi_nal is the number of NAL units </span></span><br><span class="line">	<span class="type">int</span> pi_nal;</span><br><span class="line">	</span><br><span class="line">	<span class="type">long</span> cur_pts;</span><br><span class="line">	</span><br><span class="line">&#125;yMX264; </span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="title function_">int</span> <span class="params">(*UESER_CONF_CALLBACK)</span><span class="params">(yMX264 * mvl)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">yInitMX264</span><span class="params">(yMX264 * mvl)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">yDestroyMX264</span><span class="params">(yMX264 * mvl)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">yIoctlX264</span><span class="params">(<span class="keyword">enum</span> yX264Cmd cmd,...)</span>;</span><br><span class="line"><span class="comment">//CSC = ColorSpaceCovert,FIP = Fill In_Pic</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">yDoCSC_And_FIP</span><span class="params">(yMX264 * mvl,<span class="keyword">enum</span> yX264ColorSpace t_csp, <span class="type">int</span> cache_id)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">yDo_Default_UserConf</span><span class="params">(yMX264 * mvl)</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* __cplusplus */</span> </span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<p>ym_x264.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">	FileName:ym_x264.c</span></span><br><span class="line"><span class="comment">	Version:1.0</span></span><br><span class="line"><span class="comment">	Description:</span></span><br><span class="line"><span class="comment">	Created On: 2017-3-19</span></span><br><span class="line"><span class="comment">	Modified date:</span></span><br><span class="line"><span class="comment">	Author:Sky</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">x264_param_default()：设置参数集结构体x264_param_t的缺省值。</span></span><br><span class="line"><span class="comment">x264_picture_alloc()：为图像结构体x264_picture_t分配内存。</span></span><br><span class="line"><span class="comment">x264_encoder_open()：打开编码器。</span></span><br><span class="line"><span class="comment">x264_encoder_encode()：编码一帧图像。</span></span><br><span class="line"><span class="comment">x264_encoder_close()：关闭编码器。</span></span><br><span class="line"><span class="comment">x264_picture_clean()：释放x264_picture_alloc()申请的资源。</span></span><br><span class="line"><span class="comment"> </span></span><br><span class="line"><span class="comment">存储数据的结构体如下所示。</span></span><br><span class="line"><span class="comment">x264_picture_t：存储压缩编码前的像素数据。</span></span><br><span class="line"><span class="comment">x264_nal_t：存储压缩编码后的码流数据。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;ym_x264.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">uint8_t</span> ImgCache[ImageCacheNum][FRAME_SIZE];</span><br><span class="line"><span class="type">int</span> <span class="title function_">yInitMX264</span><span class="params">(yMX264 * mvl)</span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	mvl-&gt;pX264Param = (<span class="type">x264_param_t</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="type">x264_param_t</span>));</span><br><span class="line">	</span><br><span class="line"><span class="comment">//	for (int i = 0; i &lt; ImageCacheNum; i++)&#123;</span></span><br><span class="line"></span><br><span class="line">		mvl-&gt;pPic_In = (<span class="type">x264_picture_t</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="type">x264_picture_t</span>));</span><br><span class="line">		mvl-&gt;pPic_Out = (<span class="type">x264_picture_t</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="type">x264_picture_t</span>));</span><br><span class="line">		</span><br><span class="line">		mvl-&gt;pNals = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">		mvl-&gt;pi_nal = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">		x264_picture_init(mvl-&gt;pPic_Out);  </span><br><span class="line">    	x264_picture_alloc(mvl-&gt;pPic_In, FRAME_COLORSPACE, FRAME_WIDTH, FRAME_HEIGHT);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// PTS FROM 0,AND AUTO INCRESE 1</span></span><br><span class="line">		mvl-&gt;pPic_In-&gt;i_pts = <span class="number">0</span>;</span><br><span class="line"><span class="comment">//	&#125;</span></span><br><span class="line"></span><br><span class="line">	mvl-&gt;cur_pts = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">yDestroyMX264</span><span class="params">(yMX264 * mvl)</span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 清除图像区域  </span></span><br><span class="line">	<span class="comment">//for (int i = 0; i &lt; ImageCacheNum; i++)</span></span><br><span class="line">	x264_picture_clean(mvl-&gt;pPic_In);  </span><br><span class="line">    x264_encoder_close(mvl-&gt;pX264Handle);  </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="built_in">free</span>(mvl-&gt;pX264Param);</span><br><span class="line">	<span class="comment">//for (int i = 0; i &lt; ImageCacheNum; i++)&#123;</span></span><br><span class="line">	</span><br><span class="line">		<span class="built_in">free</span>(mvl-&gt;pPic_In);</span><br><span class="line">		<span class="built_in">free</span>(mvl-&gt;pPic_Out);</span><br><span class="line">	<span class="comment">//&#125;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">yIoctlX264</span><span class="params">(<span class="keyword">enum</span> yX264Cmd cmd,...)</span>&#123;</span><br><span class="line"></span><br><span class="line">	va_list arg;</span><br><span class="line">    va_start(arg,cmd);</span><br><span class="line">    yMX264 *mx264;</span><br><span class="line">    mx264 = va_arg(arg,yMX264 *);</span><br><span class="line">    va_end(arg);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">switch</span>(cmd)&#123;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> DO_DEFAULT_PRESET:</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="comment">/* Get default params for preset/tuning */</span></span><br><span class="line">			<span class="comment">//x264_param_default(pParam);  //this do default set for x264,but can not config some info</span></span><br><span class="line">    		<span class="keyword">if</span>( x264_param_default_preset( mx264-&gt;pX264Param, <span class="string">&quot;veryfast&quot;</span>, <span class="string">&quot;zerolatency&quot;</span> ) &lt; <span class="number">0</span> )&#123;</span><br><span class="line">		</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">&quot;x264_param_default_preset failed!\n&quot;</span>);</span><br><span class="line">				<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">case</span> DO_DEFAULT_USERCONF:</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="comment">//va_list arg;</span></span><br><span class="line">    		<span class="comment">//va_start(arg,cmd);</span></span><br><span class="line">    		<span class="comment">//mx264-&gt;yX264_UserConfig = va_arg(arg,UESER_CONF_CALLBACK);</span></span><br><span class="line">			<span class="comment">//mx264-&gt;yX264_UserConfig = NULL;</span></span><br><span class="line">			</span><br><span class="line">    		<span class="comment">//va_end(arg);</span></span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> ( (*mx264-&gt;yX264_UserConfig)(mx264) &lt; <span class="number">0</span>)&#123;</span><br><span class="line">				</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">&quot;Do user conf callback failed.\n&quot;</span>);</span><br><span class="line">				<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">case</span> DO_PARAM_APPLY_PROFILE:</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="comment">//x264_profile_names[0] = baseline , to set stream-quality</span></span><br><span class="line">			<span class="keyword">if</span> (x264_param_apply_profile(mx264-&gt;pX264Param, x264_profile_names[<span class="number">0</span>]) &lt; <span class="number">0</span> )&#123;</span><br><span class="line"></span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">&quot;x264_param_apply_profile failed.\n&quot;</span>);</span><br><span class="line">				<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">			&#125; </span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">case</span> OPEN_ENCODER:</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="comment">//open encoder</span></span><br><span class="line">			<span class="keyword">if</span>( (mx264-&gt;pX264Handle = x264_encoder_open(mx264-&gt;pX264Param)) == <span class="literal">NULL</span>)&#123;</span><br><span class="line">				</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">&quot;x264_encoder_open failed.\n&quot;</span>);</span><br><span class="line">				<span class="keyword">return</span> <span class="number">-1</span>;				</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">case</span> ENCODER_ENCODE:</span><br><span class="line">		&#123;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">	x264_encoder_encode:</span></span><br><span class="line"><span class="comment"> *      encode one picture.</span></span><br><span class="line"><span class="comment"> *      *pi_nal is the number of NAL units outputted in pp_nal.</span></span><br><span class="line"><span class="comment"> *      returns the number of bytes in the returned NALs.</span></span><br><span class="line"><span class="comment"> *      returns negative on error and zero if no NAL units returned.</span></span><br><span class="line"><span class="comment"> *      the payloads of all output NALs are guaranteed to be sequential in memory. </span></span><br><span class="line"><span class="comment">	int     x264_encoder_encode( x264_t *, x264_nal_t **pp_nal, int *pi_nal, x264_picture_t *pic_in, x264_picture_t *pic_out );</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> ( x264_encoder_encode(mx264-&gt;pX264Handle, &amp;mx264-&gt;pNals, &amp;mx264-&gt;pi_nal, mx264-&gt;pPic_In, mx264-&gt;pPic_Out) &lt; <span class="number">0</span>)&#123;</span><br><span class="line">				</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">&quot;x264_encoder_encode failed.\n&quot;</span>);</span><br><span class="line">				<span class="keyword">return</span> <span class="number">-1</span>;					</span><br><span class="line">				</span><br><span class="line">			&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">PTS：Presentation Time Stamp。PTS主要用于度量解码后的视频帧什么时候被显示出来</span></span><br><span class="line"><span class="comment">DTS：Decode Time Stamp。DTS主要是标识读入内存中的ｂｉｔ流在什么时候开始送入解码器中进行解码。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">			<span class="comment">//Presentation Time Stamp。PTS主要用于度量解码后的视频帧什么时候被显示出来</span></span><br><span class="line">			<span class="comment">//MUST DO THIS ,IT DECIDE ,主要用于度量解码后的视频帧什么时候被显示出来</span></span><br><span class="line">			<span class="comment">//mx264-&gt;pPic_In-&gt;i_pts += 1;</span></span><br><span class="line">			mx264-&gt;pPic_In-&gt;i_pts += <span class="number">1</span>; </span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">&quot;pts = %d\n&quot;</span>,mx264-&gt;pPic_In-&gt;i_pts);</span><br><span class="line">			<span class="keyword">break</span>; </span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">default</span> :</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">&quot;No this cmd to analyse\n&quot;</span>);</span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">yDoCSC_And_FIP</span><span class="params">(yMX264 * mvl,<span class="keyword">enum</span> yX264ColorSpace t_csp, <span class="type">int</span> cache_id)</span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">switch</span>(t_csp)&#123;  </span><br><span class="line">        <span class="keyword">case</span> Y_CSP_I444:</span><br><span class="line">		&#123;  </span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">            read(fd_in,pPic_In-&gt;img.plane[0],FRAME_SIZE);         //Y  </span></span><br><span class="line"><span class="comment">            read(fd_in,pPic_In-&gt;img.plane[1],FRAME_SIZE);         //U  </span></span><br><span class="line"><span class="comment">            read(fd_in,pPic_In-&gt;img.plane[2],FRAME_SIZE);         //V  </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">		&#125;  </span><br><span class="line">        <span class="keyword">case</span> Y_CSP_I420:</span><br><span class="line">		&#123;  </span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">			#ifndef ENABLE_YUYVTOI420 </span></span><br><span class="line"><span class="comment">            read(fd_in,pPic_In-&gt;img.plane[0],FRAME_SIZE);         //Y  </span></span><br><span class="line"><span class="comment">            read(fd_in,pPic_In-&gt;img.plane[1],FRAME_SIZE/4);     //U  </span></span><br><span class="line"><span class="comment">            read(fd_in,pPic_In-&gt;img.plane[2],FRAME_SIZE/4);     //V  </span></span><br><span class="line"><span class="comment">			#else</span></span><br><span class="line"><span class="comment">			//YUYV to I420</span></span><br><span class="line"><span class="comment">			read(fd_in,Cache,FRAME_SIZE*2);         //read one frame to cache </span></span><br><span class="line"><span class="comment">			//must set to 0</span></span><br><span class="line"><span class="comment">			int id_u = 0,  id_v = 0 , id_y = 0;</span></span><br><span class="line"><span class="comment">			for (int i = 0; i &lt; FRAME_SIZE*2 ;i+=4)&#123; </span></span><br><span class="line"><span class="comment">				</span></span><br><span class="line"><span class="comment">				pPic_In-&gt;img.plane[0][id_y] = Cache[i];//get Y</span></span><br><span class="line"><span class="comment">				id_y++;</span></span><br><span class="line"><span class="comment">				pPic_In-&gt;img.plane[0][id_y] = Cache[i+2];//get Y</span></span><br><span class="line"><span class="comment">				id_y++;</span></span><br><span class="line"><span class="comment">				if ( ((int)((i)/1280)%2) == 0 )&#123;</span></span><br><span class="line"><span class="comment">					pPic_In-&gt;img.plane[1][id_u] = Cache[i+1];//get U</span></span><br><span class="line"><span class="comment">					pPic_In-&gt;img.plane[2][id_v] = Cache[i+3];//get V</span></span><br><span class="line"><span class="comment">					id_u++;</span></span><br><span class="line"><span class="comment">					id_v++;</span></span><br><span class="line"><span class="comment">				&#125;</span></span><br><span class="line"><span class="comment">			&#125;</span></span><br><span class="line"><span class="comment">	</span></span><br><span class="line"><span class="comment">			#endif</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">		&#125; </span><br><span class="line">		<span class="keyword">case</span> Y_CSP_YUYV:&#123;</span><br><span class="line">			<span class="comment">// firstly,Do YUYV to I420 ,then, Fill in_pic</span></span><br><span class="line">			<span class="type">int</span> id_u = <span class="number">0</span>,  id_v = <span class="number">0</span> , id_y = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; FRAME_SIZE ;i+=<span class="number">4</span>)&#123; </span><br><span class="line">				</span><br><span class="line">				mvl-&gt;pPic_In-&gt;img.plane[<span class="number">0</span>][id_y] = ImgCache[cache_id][i];<span class="comment">//get Y</span></span><br><span class="line">				id_y++;</span><br><span class="line">				mvl-&gt;pPic_In-&gt;img.plane[<span class="number">0</span>][id_y] = ImgCache[cache_id][i+<span class="number">2</span>];<span class="comment">//get Y</span></span><br><span class="line">				id_y++;</span><br><span class="line">				<span class="keyword">if</span> ( ((<span class="type">int</span>)((i)/<span class="number">1280</span>)%<span class="number">2</span>) == <span class="number">0</span> )&#123;</span><br><span class="line"></span><br><span class="line">					mvl-&gt;pPic_In-&gt;img.plane[<span class="number">1</span>][id_u] = ImgCache[cache_id][i+<span class="number">1</span>];<span class="comment">//get U</span></span><br><span class="line">					mvl-&gt;pPic_In-&gt;img.plane[<span class="number">2</span>][id_v] = ImgCache[cache_id][i+<span class="number">3</span>];<span class="comment">//get V</span></span><br><span class="line">					id_u++;</span><br><span class="line">					id_v++;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">case</span> Y_CSP_I422:</span><br><span class="line">		&#123;  </span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">			</span></span><br><span class="line"><span class="comment">            read(fd_in,pPic_In-&gt;img.plane[0],FRAME_SIZE);         //Y  </span></span><br><span class="line"><span class="comment">            read(fd_in,pPic_In-&gt;img.plane[1],FRAME_SIZE/2);     //U  </span></span><br><span class="line"><span class="comment">            read(fd_in,pPic_In-&gt;img.plane[2],FRAME_SIZE/2);     //V </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">		&#125; </span><br><span class="line"></span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">		&#123;  </span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;Colorspace Not Support.\n&quot;</span>);  </span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;  </span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">yDo_Default_UserConf</span><span class="params">(yMX264 * mvl)</span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">//* cpuFlags  </span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_threads  = X264_SYNC_LOOKAHEAD_AUTO;<span class="comment">//* 取空缓冲区继续使用不死锁的保证. </span></span><br><span class="line">	<span class="comment">//* 视频选项  </span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_width   = FRAME_WIDTH; <span class="comment">//* 要编码的图像宽度.  </span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_height  = FRAME_HEIGHT; <span class="comment">//* 要编码的图像高度  </span></span><br><span class="line">	mvl-&gt;pX264Param-&gt;i_frame_total = <span class="number">0</span>; <span class="comment">//* 编码总帧数.不知道用0.  </span></span><br><span class="line">	<span class="comment">/* Force an IDR keyframe at this interval */</span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_keyint_max = <span class="number">10</span>; </span><br><span class="line">  </span><br><span class="line">	mvl-&gt;pX264Param-&gt;b_repeat_headers = <span class="number">1</span>;  <span class="comment">// 重复SPS/PPS 放到关键帧前面</span></span><br><span class="line">	<span class="comment">//* 流参数  </span></span><br><span class="line">	<span class="comment">//* how many b-frame between 2 references pictures */</span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_bframe  = <span class="number">5</span>;  </span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;b_open_gop  = <span class="number">0</span>;  </span><br><span class="line">	<span class="comment">//* Keep some B-frames as references: 0=off, 1=strict hierarchical, 2=normal */</span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_bframe_pyramid = <span class="number">0</span>;  </span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_bframe_adaptive = X264_B_ADAPT_TRELLIS;  </span><br><span class="line">	 </span><br><span class="line">	 </span><br><span class="line">	<span class="comment">//* Log参数，不需要打印编码信息时直接注释掉就行  </span></span><br><span class="line">    <span class="comment">//mvl-&gt;pX264Param-&gt;i_log_level  = X264_LOG_DEBUG; </span></span><br><span class="line"> </span><br><span class="line">	<span class="comment">//* 速率控制参数  </span></span><br><span class="line">    <span class="comment">//pX264Param-&gt;rc.i_bitrate = 1024 * 10;//* 码率(比特率,单位Kbps) </span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//* muxing parameters  </span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_fps_den  = <span class="number">1</span>; <span class="comment">//* 帧率分母</span></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_fps_num  = Y_STREAM_FPS;<span class="comment">//* 帧率分子  </span></span><br><span class="line"></span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_timebase_den = mvl-&gt;pX264Param-&gt;i_fps_num;  </span><br><span class="line">    mvl-&gt;pX264Param-&gt;i_timebase_num = mvl-&gt;pX264Param-&gt;i_fps_den;  </span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://blog.csdn.net/leixiaohua1020/article/details/42078645">http://blog.csdn.net/leixiaohua1020/article/details/42078645</a></li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/07/02/blog_idx_034/" rel="prev" title="毕设系列之Linux V4L2（图形图像采集篇）">
+      <i class="fa fa-chevron-left"></i> 毕设系列之Linux V4L2（图形图像采集篇）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/08/07/blog_idx_036/" rel="next" title="Qt HTTP网络相关GET，POST（HTTP 模拟POST 表单(multipartform)最简单和正式的方法）">
+      Qt HTTP网络相关GET，POST（HTTP 模拟POST 表单(multipartform)最简单和正式的方法） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Libx264%E5%AE%9E%E6%97%B6%E8%A7%86%E9%A2%91%E6%B5%81"><span class="nav-number"></span> <span class="nav-text">Libx264实时视频流</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在我们一个一年前的项目里，由于对方的485串口硬件发生了变更，不能够通过默认的termios相关内容去read和write了，这里需要控制串口16550A芯片的RTS脚，然后去控制ADM2486 485 modem芯片RTS相关脚的收发。简单">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 串口驱动实例简单分析(x86 8250驱动(16550A),TIOCMGET, TIOCMSET, RTS)">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2020/04/23/blog_idx_093/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在我们一个一年前的项目里，由于对方的485串口硬件发生了变更，不能够通过默认的termios相关内容去read和write了，这里需要控制串口16550A芯片的RTS脚，然后去控制ADM2486 485 modem芯片RTS相关脚的收发。简单">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s2.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s3.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s4.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s5.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s6.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s7.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s8.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s9.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s10.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s11.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s12.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s13.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s14.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s15.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s16.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s17.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s18.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s19.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s20.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s21.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s22.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s23.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2020-04-23T08:44:18.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.869Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s1.png">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2020/04/23/blog_idx_093/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>Linux 串口驱动实例简单分析(x86 8250驱动(16550A),TIOCMGET, TIOCMSET, RTS) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2020/04/23/blog_idx_093/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux 串口驱动实例简单分析(x86 8250驱动(16550A),TIOCMGET, TIOCMSET, RTS)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-04-23 16:44:18" itemprop="dateCreated datePublished" datetime="2020-04-23T16:44:18+08:00">2020-04-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>5k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>5 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-31 00:15:18
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=093） 
+&emsp;&emsp;本文发布于 2020-04-23 16:44:18，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=093） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  在我们一个一年前的项目里，由于对方的485串口硬件发生了变更，不能够通过默认的termios相关内容去read和write了，这里需要控制串口16550A芯片的RTS脚，然后去控制ADM2486 485 modem芯片RTS相关脚的收发。简单的理解为ADM485需要控制RTS和相关的引脚的高低电平，才能够控制485的收发。原理图我就不贴出来了，简单说明就是16550A的RTS脚接一个反相器然后直连到ADM2486的RTS脚。</p>
+<p>  首先我这里考虑，这里如果是arm板卡的话，我是非常熟悉的，直接控制gpio就完事儿了。但是这个是个x86板卡，这就是最坑的，x86的io脚我没有控制过。当然，和对方硬件沟通后，一种方案确实是控制x86的通用gpio，而他们的一套方案是通过串口芯片的RTS脚控制485 modem的RTS脚，因为x86的通用引脚是非常昂贵的，而且，电路也麻烦。</p>
+<p>  那么问题来了，怎么控制16550A芯片的RTS脚？</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="相关信息探索">相关信息探索</h3>
+<hr>
+<p>  因为以前我们写了串口程序，操控的是/dev/ttyS0，那么必然现在也是从这个设备下手，我们看看系统启动日志。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s1.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  从这里我们知道串口芯片是16550A，也就是说我们之前通过termios相关的接口实现的老版本串口通信程序也是操作的这个芯片。那么意味着os里面已经自带了这个芯片的相关驱动。到这里，可以预想到后面会有两种情况：</p>
+<ol>
+<li>根据os自带的16550A驱动，里面如果包含了关于RTS脚的操作方法，那么直接通过驱动提供的接口就可以完成RTS电平控制。而且这个方法成功的可能性比较大，因为硬件说过，16550A这种芯片基本是x86-intel主板的标配，那么说明这个芯片用的比较广泛，那么驱动也极有可能带了RTS相关操作。（而且我查了16550A的驱动就是8250驱动，是一个builtin模块）</li>
+<li>直接操作intel cpu的gpio控制，感觉不是很科学，但是也有这种需求的。</li>
+</ol>
+<p>  同时，我查看了相关的串口编程相关内容，发现了一点内容，可以进行一些串口的高级操作，主要还是ioctl这个syscall的这两个宏定义TIOCMGET, TIOCMSET，但是还是有点迷糊，于是根据以上的这些准备，我去看了linux对应内核的内核源码。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="8250驱动源码分析">8250驱动源码分析</h3>
+<hr>
+<p>  直接打开linux/drivers/char/8250.c 和 linux/drivers/char/8250.h分析了一番，在驱动里面找到了RTS相关控制位的操作</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s2.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  从这里知道，8250驱动确实带了相关的芯片mctrl引脚控制相关的接口，如图所示，分别是查询mctrl引脚状态和设置mctrl引脚状态。</p>
+<p>  到这里，我隐约知道怎么做了，就是用ioctl 这个call的TIOCMSET来控制RTS引脚功能。熟悉linux驱动编写的人都知道为啥会这样，因为一个驱动带了open，close，read，write基本功能，其他的选项功能一般都是ioctl基本syscall里面实现的。</p>
+<p>  于是带着这些疑问，我又继续看源码分析，不然心里面总是觉得虚的。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="linux-tty-驱动框架简单分析">linux tty 驱动框架简单分析</h3>
+<hr>
+<p>  等我看完一系列的8250驱动的调用结构后，我才发现要介绍的应该是linux tty 驱动框架，下面我这里简单分析一下这个框架（没必要全懂，知道大概就行，毕竟我们也不写这个驱动，基本都是改再改）</p>
+<p>  首先，我们这个串口是一个字符设备。那就是说，应该有类似字符驱动的流程去打开、操作、关闭。（这里不了解的，可以去查一下linux 字符驱动相关的简单说明）。字符驱动有主设备号和次设备号，对应我们的串口的话，如下图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s3.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  tty设备的主设备为4</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s4.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  我们的串口设备次设备号为64，也就是第0个serial。</p>
+<p>  下面我们从字符设备开始，一步步看怎么调用起来8250里面的serial8250_get_mctrl() serial8250_set_mctrl()</p>
+<br/>
+<br/>
+<h5 id="8250-串口驱动简单说明">8250 串口驱动简单说明</h5>
+<p>  linux/drivers/serial/8250.c</p>
+<p>  下面是8250驱动的初始化部分，就是把重要的serial8250_reg驱动（uart_register_driver（））注册到uart驱动链表上去</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s5.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s6.png" alt="rep_img"/></center>
+    </div>
+</div>     
+<p>  我们在内核的启动日志中，也看见了printk的打印信息。</p>
+<p>  同时我们看一下uart_ops结构体在8250中的定义</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s7.png" alt="rep_img"/></center>
+    </div>
+</div>     
+<p>  这里我们就成功的看到了serial8250_get_mctrl() serial8250_set_mctrl()这俩的上一层接口名字。</p>
+<p>  在linux中，一个uart_driver对应多个uart_port，相当于一个串口驱动可以同时用于多个串口设备。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s8.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s9.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  其中在serial8250_register_ports()中的serial8250_isa_init_ports()接口就是关联uart_port结构体中的ops和serial_8250_pops的。这里我们其实就可以根据uart_port结构体中的set_mctrl和get_mctrl访问serial8250_get_mctrl() serial8250_set_mctrl()。</p>
+<p>  然后通过uart_add_one_port把uart_driver中state成员的port成员赋值我们刚刚初始化好的uart_port.</p>
+<p>  这样我们就可以通过uart_driver.state.port.ops来访问我们的函数指针即可。</p>
+<p>  同时通过tty_register_device在/dev下面创建我们的设备节点。</p>
+<p>  到这里，我们就成功的把调用serial8250_get_mctrl() serial8250_set_mctrl()这两个api转换为可以通过uart_driver来调用了。</p>
+<p>  我们通过上述说明，基本可以看到一些内容，下面我们来看一个我们现在未讲到的东西，就是uart_register_driver</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s10.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  我们可以看到，这里把uart_driver和一个叫做tty_driver的结构体关联了起来。特别是通过tty_set_operations()把uart_driver中的8250相关的api和tty_driver中的相关api关联了。</p>
+<p>  而且通过tty_register_driver()把一个重要内容联系起来。至于为啥和怎么关联，我们继续往下面看。</p>
+<br/>
+<br/>
+<h5 id="serial-core简单说明">serial_core简单说明</h5>
+<p>  linux/drivers/serial/serial_core.c</p>
+<p>  其实查看这里的源码后发现，8250.c就是基于serial_core.c的内容进行串口驱动编程。</p>
+<p>  在serial_core.h里面我们可以看到上述我们见到的大量的uart_*的有用的结构体。</p>
+<br/>
+<br/>
+<h5 id="tty-drivers-简单说明">tty_drivers 简单说明</h5>
+<p>  linux/drivers/char/tty_io.c</p>
+<p>  我们知道一个简单的字符串驱动，肯定有个init入口，如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s11.png" alt="rep_img"/></center>
+    </div>
+</div>   
+&emsp;&emsp;我们看最后的vt部分，这里创建了一个设备号为4,0的/dev/tty0的一个设备。
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s12.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  这里一个tty_core核心驱动就完事儿了。</p>
+<p>  写过字符驱动的人都应该知道，我们还应该关注一个file_operations的结构体，因为我们在用户态熟悉的open/close/read/write/ioctl都是通过这个结构体关联的。</p>
+<p>  具体怎么关联的，可以看一下我这里的这个比较水的记录：<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/51547405">https://blog.csdn.net/u011728480/article/details/51547405</a></p>
+<p>  我简单来说，linux下一切皆是文件，包括我们要操作的串口设备，类似上面的/dev/tty0这种设备。在linux的vfs里面，一个文件对应一个inode结构体，同时内核维护一个file结构体和inode对应。inode结构体里面有个i_cdev成员，这个成员就是我们cdev结构体，就是我们在如图的初始化入口中的vc0_cdev，这个结构体里面有个重要的成员就是ops，这里面存放的就是各种open/close/read/write/ioctl的实际函数指针。</p>
+<p>  在《8250 串口驱动简单说明》小节中，我们说明了serial8250_init（）通过调用tty_register_device在/dev中创建了对应的设备节点。并把tty_driver和uart_driver关联起来，我们可以通过tty_driver去访问serial8250_get_mctrl() serial8250_set_mctrl()这两个我想要的东西。</p>
+<p>  <strong>那file_operations结构体和tty_driver是怎么关联起来的呢？如果我们知道了的话，整个驱动的调用链路就理清楚了，也好处理我们遇到的问题。</strong></p>
+<p>  在《8250 串口驱动简单说明》小节最后部分提到了8250的初始化调用了tty_register_driver()这个重要的接口，这个结构就是把我们想要的两个结构体关联起来的关键。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s13.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  我们在初始化一个字符设备的时候，在这里关联了file_operations结构体和tty_driver。</p>
+<p>  我们看看tty_fops的定义：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s14.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  到了这里，我们的整个调用链路都打通了。</p>
+<p>  这里我们直接看tty_ioctl这个接口，我们就可以看到调用8250的方法了serial8250_get_mctrl() serial8250_set_mctrl()。最后我们在文末总结一下。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="8250调用实例分析">8250调用实例分析</h3>
+<hr>
+<p>  我们这里通过调用通过8250驱动设置16550A的 RTS脚电平来回顾一下我们的整个调用链路。</p>
+<p>  当我们调用ioctl的时候，通过传入参数TIOCMGET或者TIOCMSET，默认我们会调用tty_ioctl方法，然后进一步会调用tty_tiocmget 和tty_tiocmset。如下图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s15.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s16.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  在tty_tiocmget 和tty_tiocmset中，分别调用tty_driver中的tiocmset和tiocmget</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s17.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s18.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  然后我们上文说了，tty_driver和uart_driver是通过uart_register_driver和tty_set_operations关联起来的</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s19.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  也就是说，对tty_driver的tiocmget和tiocmset的调用，就是直接对tty_operations的tiocmget和tiocmset的调用。</p>
+<p>  我们在《8250 串口驱动简单说明》小节最后部分，说调用tty_set_operations()关联起来了一个tty_driver和一个tty_operations,而这里注册的uart_ops就很明显了</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s20.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  也就是说tty_operations的tiocmget和tiocmset的调用，就是对uart_tiocmget和uart_tiocmset的调用。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s21.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s22.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  uart_tiocmget和uart_tiocmset的调用就是对uart_driver.state.port.ops.set_mctrl和uart_driver.state.port.ops.get_mctrl的调用，而这里就是对serial8250_set_mctrl和serial8250_get_mctrl的调用。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_093/s23.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  总结</p>
+<p>  我们可以看到，这里，我们在用户层对相关vfs的接口进行调用，都会映射为相应的驱动ops。</p>
+<p>  在这里，用户态的ioctl转换为内核态的tty_ioctl，最终一步步到我们要的地方。</p>
+<p>  因为我是要读这个驱动是不是有这个功能，而不是写一个驱动，所以看起来要简单很多了。</p>
+<p>  我查了tty相关的驱动框架，内容还是挺多的，特别是tty_read和tty_write和我们这里的调用流程是完全不一致的，但是我这里暂时不需要去看，因为我要的功能有了，如果有需求，我会去看这部分内容。最终，我通过ioctl加上特定的命令，成功的控制了16550A的RTS脚。而且这里通了的话，不需要通过gpio去处理。</p>
+<p>  其实这个还是挺有意思的，虽然好的抽象的东西看起来很不爽，但是了解通了整个调用流程，我感觉就特别的舒服。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/12/blog_idx_092/" rel="prev" title="Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)">
+      <i class="fa fa-chevron-left"></i> Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/16/blog_idx_094/" rel="next" title="ModuleNotFoundError: No module named xxx 的原因和解决办法（附带新大陆）">
+      ModuleNotFoundError: No module named xxx 的原因和解决办法（附带新大陆） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E4%BF%A1%E6%81%AF%E6%8E%A2%E7%B4%A2"><span class="nav-number"></span> <span class="nav-text">相关信息探索</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8250%E9%A9%B1%E5%8A%A8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number"></span> <span class="nav-text">8250驱动源码分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux-tty-%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6%E7%AE%80%E5%8D%95%E5%88%86%E6%9E%90"><span class="nav-number"></span> <span class="nav-text">linux tty 驱动框架简单分析</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#8250-%E4%B8%B2%E5%8F%A3%E9%A9%B1%E5%8A%A8%E7%AE%80%E5%8D%95%E8%AF%B4%E6%98%8E"><span class="nav-number"></span> <span class="nav-text">8250 串口驱动简单说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#serial-core%E7%AE%80%E5%8D%95%E8%AF%B4%E6%98%8E"><span class="nav-number"></span> <span class="nav-text">serial_core简单说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#tty-drivers-%E7%AE%80%E5%8D%95%E8%AF%B4%E6%98%8E"><span class="nav-number"></span> <span class="nav-text">tty_drivers 简单说明</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8250%E8%B0%83%E7%94%A8%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90"><span class="nav-number"></span> <span class="nav-text">8250调用实例分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   Linux  4.8.0-36-generic #36~16.04.1-Ubuntu SMP Sun Feb 5 09:39:57 UTC 2017 x86_64 x86_64 x86_64 GNU&#x2F;Linux 前言    无     JRtp    首先直">
+<meta property="og:type" content="article">
+<meta property="og:title" content="毕设系列之JrtpLib H264(裸视频数据) 实时视频传输(发送与接受)">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2017/08/21/blog_idx_037/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   Linux  4.8.0-36-generic #36~16.04.1-Ubuntu SMP Sun Feb 5 09:39:57 UTC 2017 x86_64 x86_64 x86_64 GNU&#x2F;Linux 前言    无     JRtp    首先直">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2017-08-21T09:00:39.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.721Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2017/08/21/blog_idx_037/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>毕设系列之JrtpLib H264(裸视频数据) 实时视频传输(发送与接受) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2017/08/21/blog_idx_037/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          毕设系列之JrtpLib H264(裸视频数据) 实时视频传输(发送与接受)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-08-21 17:00:39" itemprop="dateCreated datePublished" datetime="2017-08-21T17:00:39+08:00">2017-08-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>10 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-16 15:48:55
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=037） 
+&emsp;&emsp;本文发布于 2017-08-21 17:00:39，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=037） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  Linux  4.8.0-36-generic #36~16.04.1-Ubuntu SMP Sun Feb 5 09:39:57 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="JRtp">JRtp</h3>
+<hr>
+<ol>
+<li>
+<p>首先直接下载源代码，查看其中的example1和2，里面有关于字符串的发送和接收的例子。先研究一下这个例子中JRTPlib的基本用法。然后就可以接着看下面的部分。（了解的忽略这一部分）</p>
+</li>
+<li>
+<p>JRTPLib的使用心得。</p>
+<ol>
+<li>
+<p>首先我实现的所有的主要功能都来至于这些类，那就是RTPSession ，RTPSessionParams。其中RTPSession 是核心，所有的其他类都是为这个服务的。它的主要作用是管理一个rtp会话，而另外一个是设置这个会话的参数。</p>
+</li>
+<li>
+<p>这个库使用的主要流程是建立一个会话对象，为这个会话设置参数，创建会话，循环等待响应和处理会话（也就是发送和接收）。所以这个库的核心就在循环等待这一块，其他的都是约定好的东西，照搬就可以。</p>
+</li>
+<li>
+<p>现在我们进入正题，也就是循环等待部分（JRTPLib的核心）</p>
+<ul>
+<li>发送部分<br>
+RTPSession .SendPacket（buf,len）用来发送数据</li>
+<li>接收部分<br>
+RTPSession .BeginDataAccess();RTPSession .EndDataAccess();之间的部分就是接收和处理RTP数据。</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<p>正题，H264裸视频的传输，以实际代码为例。</p>
+</li>
+</ol>
+<p>    a. 首先是H264相关是设定，如果对RTP协议不太了解，可去找找相关资料来看一看就OK了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">this-&gt;sess.SetDefaultPayloadType(<span class="number">96</span>);<span class="comment">//设置传输类型 ,来至于rtp协议规范 </span></span><br><span class="line">this-&gt;sess.SetDefaultMark(<span class="literal">true</span>);      <span class="comment">//设置位，true标志此分包是最后一个包，false反之  </span></span><br><span class="line">this-&gt;sess.SetTimestampUnit(<span class="number">1.0</span>/<span class="number">9000.0</span>); <span class="comment">//设置采样间隔  </span></span><br><span class="line">this-&gt;sess.SetDefaultTimestampIncrement(<span class="number">10</span>);<span class="comment">//设置时间戳增加间隔  </span></span><br></pre></td></tr></table></figure>
+<p>    b. 然后是传输参数的设定</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line">	sessparams.SetOwnTimestampUnit(<span class="number">1.0</span>/<span class="number">10.0</span>); <span class="comment">//时间戳单位  </span></span><br><span class="line">    sessparams.SetAcceptOwnPackets(<span class="literal">true</span>);   <span class="comment">//接收自己发送的数据包，这里必须设定为true，否则不能够接收到相关的包。 </span></span><br><span class="line">    sessparams.SetUsePredefinedSSRC(<span class="literal">true</span>);  <span class="comment">//设置使用预先定义的SSRC,同步源ID，不明白的去看看相关资料</span></span><br><span class="line">    sessparams.SetPredefinedSSRC(SSRC);     <span class="comment">//定义SSRC</span></span><br><span class="line">```    </span><br><span class="line">&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;c. h264裸视频数据的实时传输（这里有一个非常重要的东西，叫做拆包，学过《计算机网络》的人都应该知道这么一个东西吧），宏CODE_M部分的拆包算法是我写的，另外一部分的是网上传播最宽的一个拆包算法，我没有找到最开始的出处，所以就见谅啦，那位大神，我用来做对照。此外对于H264的传输，一定要知道什么是NALU（header，data），如果不知道去查资料,同时最好去看看RTP协议发送相关的知识。这部分传入的参数为Libx264编码之后生成的Nalu</span><br><span class="line"></span><br><span class="line">```c</span><br><span class="line"><span class="comment">//Internet 对 pkg-len&gt;1400丢包概率很大（出之于某一篇论文），RTP header 12bytes,RTP pkg-max-len &lt;= 1388</span></span><br><span class="line"><span class="comment">//MTU 48~1500, UDP data max len = 1500 - 20(IP header) - 8(UDP header)</span></span><br><span class="line"><span class="comment">//上面的东西看不懂，请回去翻翻计算机网络</span></span><br><span class="line">	<span class="keyword">if</span> ( NaluSize &lt;= MAX_RTP_PKT_LENGTH )  </span><br><span class="line">    &#123;    </span><br><span class="line">        <span class="built_in">memcpy</span>(Sbuf,p_Nalu,NaluSize);    </span><br><span class="line">        status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,NaluSize);  </span><br><span class="line">     </span><br><span class="line">        CheckError(status);  </span><br><span class="line">    &#125;   </span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (NaluSize &gt; MAX_RTP_PKT_LENGTH)&#123;</span><br><span class="line">		</span><br><span class="line">        this-&gt;sess.SetDefaultMark(<span class="literal">false</span>);<span class="comment">//mark that this is not finall pkg</span></span><br><span class="line">		<span class="type">int</span> k=<span class="number">0</span>,l=<span class="number">0</span>;    </span><br><span class="line">        k = NaluSize / MAX_RTP_PKT_LENGTH;  <span class="comment">//k&gt;=1</span></span><br><span class="line">        l = NaluSize % MAX_RTP_PKT_LENGTH;  <span class="comment">//l&gt;=0</span></span><br><span class="line">		<span class="type">int</span> t=<span class="number">0</span>;<span class="comment">//用指示当前发送的是第几个分片RTP包</span></span><br><span class="line">		<span class="type">int</span> SendLen;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CODE_M</span></span><br><span class="line">		<span class="keyword">while</span>( (t &lt; k) || ((t == k) &amp;&amp; (l &gt; <span class="number">0</span>)) )&#123;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> ( t &lt; k - <span class="number">1</span>)&#123;<span class="comment">//0~k-2,total k - 1 pkgs</span></span><br><span class="line">				</span><br><span class="line">				<span class="built_in">memcpy</span>(Sbuf,(p_Nalu+( t * MAX_RTP_PKT_LENGTH)),MAX_RTP_PKT_LENGTH);</span><br><span class="line">				status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,MAX_RTP_PKT_LENGTH);  </span><br><span class="line">                CheckError(status);  </span><br><span class="line">                  </span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> &#123;<span class="comment">//last pkg, t == k,l &gt; 0, or (k -1)&#x27;th pkg</span></span><br><span class="line"></span><br><span class="line">				<span class="keyword">if</span> ( (t == k<span class="number">-1</span>) &amp;&amp; ( l == <span class="number">0</span> ) || (l &gt; <span class="number">0</span>) &amp;&amp; ( t == k))&#123;</span><br><span class="line">					</span><br><span class="line">					this-&gt;sess.SetDefaultMark(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">					<span class="keyword">if</span> ( l &gt; <span class="number">0</span> )</span><br><span class="line">						SendLen = l;</span><br><span class="line">					<span class="keyword">else</span></span><br><span class="line">						SendLen = MAX_RTP_PKT_LENGTH;</span><br><span class="line"></span><br><span class="line">					<span class="built_in">memcpy</span>(Sbuf,(p_Nalu+( t * MAX_RTP_PKT_LENGTH)),SendLen);</span><br><span class="line">					status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,SendLen);  </span><br><span class="line">                	CheckError(status);  </span><br><span class="line">                	</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">else</span> &#123;<span class="comment">//(t == k-1) &amp;&amp; ( l &gt; 0 )</span></span><br><span class="line">					</span><br><span class="line">					<span class="built_in">memcpy</span>(Sbuf,(p_Nalu+( t * MAX_RTP_PKT_LENGTH)),MAX_RTP_PKT_LENGTH);</span><br><span class="line">					status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,MAX_RTP_PKT_LENGTH);  </span><br><span class="line">                	CheckError(status);  </span><br><span class="line">                	</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			t++;</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"> <span class="keyword">while</span>( t &lt; k || ( t==k &amp;&amp; l&gt;<span class="number">0</span> ) )    </span><br><span class="line">        &#123;    </span><br><span class="line">            <span class="keyword">if</span>( (<span class="number">0</span> == t ) || ( t&lt;k &amp;&amp; <span class="number">0</span>!=t ) )<span class="comment">//第一包到最后包的前一包  </span></span><br><span class="line">            &#123;  </span><br><span class="line">                <span class="comment">/*sendbuf[0] = (nalHeader &amp; 0x60)|28;   </span></span><br><span class="line"><span class="comment">                sendbuf[1] = (nalHeader &amp; 0x1f); </span></span><br><span class="line"><span class="comment">                if ( 0 == t ) </span></span><br><span class="line"><span class="comment">                &#123; </span></span><br><span class="line"><span class="comment">                    sendbuf[1] |= 0x80; </span></span><br><span class="line"><span class="comment">                &#125; </span></span><br><span class="line"><span class="comment">                memcpy(sendbuf+2,&amp;pSendbuf[t*MAX_RTP_PKT_LENGTH],MAX_RTP_PKT_LENGTH); </span></span><br><span class="line"><span class="comment">                status = this-&gt;SendPacket((void *)sendbuf,MAX_RTP_PKT_LENGTH+2);*/</span>  </span><br><span class="line">                <span class="built_in">memcpy</span>(Sbuf,&amp;p_Nalu[t*MAX_RTP_PKT_LENGTH],MAX_RTP_PKT_LENGTH);  </span><br><span class="line">                status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,MAX_RTP_PKT_LENGTH);  </span><br><span class="line">                CheckError(status);  </span><br><span class="line">                t++;  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="comment">//最后一包  </span></span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>( ( k==t &amp;&amp; l&gt;<span class="number">0</span> ) || ( t== (k<span class="number">-1</span>) &amp;&amp; l==<span class="number">0</span> ))  </span><br><span class="line">            &#123;  </span><br><span class="line">                <span class="comment">//设置标志位Mark为1  </span></span><br><span class="line">                this-&gt;sess.SetDefaultMark(<span class="literal">true</span>);  </span><br><span class="line">  </span><br><span class="line">                <span class="type">int</span> iSendLen;  </span><br><span class="line">                <span class="keyword">if</span> ( l &gt; <span class="number">0</span>)  </span><br><span class="line">                &#123;  </span><br><span class="line">                    iSendLen = NaluSize - t*MAX_RTP_PKT_LENGTH;  </span><br><span class="line">                &#125;  </span><br><span class="line">                <span class="keyword">else</span>  </span><br><span class="line">                    iSendLen = MAX_RTP_PKT_LENGTH;  </span><br><span class="line">  </span><br><span class="line">                <span class="comment">//sendbuf[0] = (nalHeader &amp; 0x60)|28;    </span></span><br><span class="line">                <span class="comment">//sendbuf[1] = (nalHeader &amp; 0x1f);  </span></span><br><span class="line">                <span class="comment">//sendbuf[1] |= 0x40;  </span></span><br><span class="line">  </span><br><span class="line">                <span class="comment">//memcpy(sendbuf+2,&amp;pSendbuf[t*MAX_RTP_PKT_LENGTH],iSendLen);  </span></span><br><span class="line">                <span class="comment">//status = this-&gt;SendPacket((void *)sendbuf,iSendLen+2);  </span></span><br><span class="line">     </span><br><span class="line">                <span class="built_in">memcpy</span>(Sbuf,&amp;p_Nalu[t*MAX_RTP_PKT_LENGTH],iSendLen);  </span><br><span class="line">                status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,iSendLen);  </span><br><span class="line">  </span><br><span class="line">                CheckError(status);  </span><br><span class="line">                t++;  </span><br><span class="line">            &#125;  </span><br><span class="line">			</span><br><span class="line">        &#125;  </span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>    d. h264数据的接收部分,就是通过一个函数来对包进行组包操作，然后得到了传输数据，这部分代码和传输时拆包部分，息息相关。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">	<span class="keyword">if</span>(pack.GetPayloadType() == H264)  </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="comment">//std::cout&lt;&lt;&quot;Got H264 packet：êo &quot; &lt;&lt; rtppack.GetExtendedSequenceNumber() &lt;&lt; &quot; from SSRC &quot; &lt;&lt; srcdat.GetSSRC() &lt;&lt;std::endl;  </span></span><br><span class="line">        <span class="keyword">if</span>(pack.HasMarker())<span class="comment">//如果是最后一包则进行组包  </span></span><br><span class="line">        &#123;  </span><br><span class="line">           	  </span><br><span class="line">			<span class="comment">//printf(&quot;Got a nal unit \n&quot;);</span></span><br><span class="line">			<span class="built_in">memcpy</span>(this-&gt;rframe-&gt;pframe + this-&gt;cur_size,pack.GetPayloadData(),pack.GetPayloadLength());  		</span><br><span class="line">			this-&gt;cur_size += pack.GetPayloadLength();</span><br><span class="line">			this-&gt;rframe-&gt;use_len = this-&gt;cur_size;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//***************************</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> DO_WRITE_FILE</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> DO_WRITE_FILE</span></span><br><span class="line">			<span class="type">int</span> fd_out = open(<span class="string">&quot;rec.h264&quot;</span>, O_CREAT | O_RDWR,S_IRWXU|S_IRWXO|S_IRWXG);</span><br><span class="line">			lseek(fd_out, <span class="number">0</span>, SEEK_END);</span><br><span class="line">			write(fd_out, this-&gt;rframe-&gt;pframe,this-&gt;rframe-&gt;use_len); </span><br><span class="line">			close(fd_out);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="comment">//***************************</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">            <span class="keyword">if</span> ( cir_buf.reserve() &gt; this-&gt;rframe-&gt;use_len)&#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">for</span> (<span class="type">long</span> i = <span class="number">0</span>; i &lt; this-&gt;rframe-&gt;use_len; i++)&#123;</span><br><span class="line"></span><br><span class="line">                    cir_buf.push_back( *(this-&gt;rframe-&gt;pframe + i) );</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">           	<span class="built_in">memset</span>(this-&gt;rframe-&gt;pframe,<span class="number">0</span>,this-&gt;rframe-&gt;use_len);<span class="comment">//清空缓存，为下次做准备  </span></span><br><span class="line">			</span><br><span class="line">            this-&gt;cur_size = <span class="number">0</span>;  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="keyword">else</span><span class="comment">//放入缓冲区，在此必须确保有序  </span></span><br><span class="line">        &#123;  </span><br><span class="line">            <span class="comment">//unsigned char* p = rtppack.GetPayloadData();  </span></span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">            <span class="built_in">memcpy</span>(this-&gt;rframe-&gt;pframe + this-&gt;cur_size,pack.GetPayloadData(),pack.GetPayloadLength());  </span><br><span class="line">            this-&gt;cur_size += pack.GetPayloadLength();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br></pre></td></tr></table></figure>
+<p>  这里只提供发送部分的代码，我的接收部分的代码和服务端写在一起的不好抽离。<br>
+y_jrtp.cpp</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;y_jrtp.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">bool</span> <span class="title function_">CheckError</span><span class="params">(<span class="type">int</span> rtperr)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (rtperr &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">&quot;ERROR: &quot;</span>&lt;&lt;RTPGetErrorString(rtperr)&lt;&lt;<span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">yJRTPLIB::yJRTPLIB(<span class="type">void</span>)&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">yJRTPLIB::~yJRTPLIB(<span class="type">void</span>)&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">yJRTPLIB::SendX264NalUnit</span><span class="params">(<span class="type">uint8_t</span> * <span class="type">const</span> p_payload, <span class="type">const</span> <span class="type">int</span> i_payload)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">uint8_t</span> *p_Nalu;</span><br><span class="line">    <span class="type">int</span> NaluSize;</span><br><span class="line">    <span class="type">uint8_t</span> Sbuf[MAX_RTP_PKT_LENGTH];</span><br><span class="line">    <span class="type">int</span> status;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    p_Nalu = p_payload;</span><br><span class="line">    NaluSize = i_payload;</span><br><span class="line">    CLEAR_MEM(Sbuf);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Nal unit length is %d \n&quot;</span>,NaluSize);</span><br><span class="line">    <span class="comment">//去除前导码0x000001 或者0x00000001</span></span><br><span class="line">    <span class="comment">//if( 0x01 == m_h264Buf[2] )</span></span><br><span class="line">    <span class="comment">//&#123;</span></span><br><span class="line">    <span class="comment">//  pSendbuf = &amp;m_h264Buf[3];</span></span><br><span class="line">    <span class="comment">//  buflen -= 3;</span></span><br><span class="line">    <span class="comment">//&#125;</span></span><br><span class="line">    <span class="comment">//else</span></span><br><span class="line">    <span class="comment">//&#123;</span></span><br><span class="line">    <span class="comment">//  pSendbuf = &amp;m_h264Buf[4];</span></span><br><span class="line">    <span class="comment">//  buflen -= 4;</span></span><br><span class="line">    <span class="comment">//&#125;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ( NaluSize &lt;= MAX_RTP_PKT_LENGTH )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">memcpy</span>(Sbuf,p_Nalu,NaluSize);</span><br><span class="line">        status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,NaluSize);</span><br><span class="line"></span><br><span class="line">        CheckError(status);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (NaluSize &gt; MAX_RTP_PKT_LENGTH)&#123;</span><br><span class="line"></span><br><span class="line">        this-&gt;sess.SetDefaultMark(<span class="literal">false</span>);<span class="comment">//mark that this is not finall pkg</span></span><br><span class="line">        <span class="type">int</span> k=<span class="number">0</span>,l=<span class="number">0</span>;</span><br><span class="line">        k = NaluSize / MAX_RTP_PKT_LENGTH;  <span class="comment">//k&gt;=1</span></span><br><span class="line">        l = NaluSize % MAX_RTP_PKT_LENGTH;  <span class="comment">//l&gt;=0</span></span><br><span class="line">        <span class="type">int</span> t=<span class="number">0</span>;<span class="comment">//用指示当前发送的是第几个分片RTP包</span></span><br><span class="line">        <span class="type">int</span> SendLen;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CODE_M</span></span><br><span class="line">        <span class="keyword">while</span>( (t &lt; k) || ((t == k) &amp;&amp; (l &gt; <span class="number">0</span>)) )&#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> ( t &lt; k - <span class="number">1</span>)&#123;<span class="comment">//0~k-2,total k - 1 pkgs</span></span><br><span class="line"></span><br><span class="line">                <span class="built_in">memcpy</span>(Sbuf,(p_Nalu+( t * MAX_RTP_PKT_LENGTH)),MAX_RTP_PKT_LENGTH);</span><br><span class="line">                status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,MAX_RTP_PKT_LENGTH);</span><br><span class="line">                CheckError(status);</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;<span class="comment">//last pkg, t == k,l &gt; 0, or (k -1)&#x27;th pkg</span></span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> ( (t == k<span class="number">-1</span>) &amp;&amp; ( l == <span class="number">0</span> ) || (l &gt; <span class="number">0</span>) &amp;&amp; ( t == k))&#123;</span><br><span class="line"></span><br><span class="line">                    this-&gt;sess.SetDefaultMark(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> ( l &gt; <span class="number">0</span> )</span><br><span class="line">                        SendLen = l;</span><br><span class="line">                    <span class="keyword">else</span></span><br><span class="line">                        SendLen = MAX_RTP_PKT_LENGTH;</span><br><span class="line"></span><br><span class="line">                    <span class="built_in">memcpy</span>(Sbuf,(p_Nalu+( t * MAX_RTP_PKT_LENGTH)),SendLen);</span><br><span class="line">                    status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,SendLen);</span><br><span class="line">                    CheckError(status);</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> &#123;<span class="comment">//(t == k-1) &amp;&amp; ( l &gt; 0 )</span></span><br><span class="line"></span><br><span class="line">                    <span class="built_in">memcpy</span>(Sbuf,(p_Nalu+( t * MAX_RTP_PKT_LENGTH)),MAX_RTP_PKT_LENGTH);</span><br><span class="line">                    status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,MAX_RTP_PKT_LENGTH);</span><br><span class="line">                    CheckError(status);</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            t++;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"> <span class="keyword">while</span>( t &lt; k || ( t==k &amp;&amp; l&gt;<span class="number">0</span> ) )</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>( (<span class="number">0</span> == t ) || ( t&lt;k &amp;&amp; <span class="number">0</span>!=t ) )<span class="comment">//第一包到最后包的前一包</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">/*sendbuf[0] = (nalHeader &amp; 0x60)|28;</span></span><br><span class="line"><span class="comment">                sendbuf[1] = (nalHeader &amp; 0x1f);</span></span><br><span class="line"><span class="comment">                if ( 0 == t )</span></span><br><span class="line"><span class="comment">                &#123;</span></span><br><span class="line"><span class="comment">                    sendbuf[1] |= 0x80;</span></span><br><span class="line"><span class="comment">                &#125;</span></span><br><span class="line"><span class="comment">                memcpy(sendbuf+2,&amp;pSendbuf[t*MAX_RTP_PKT_LENGTH],MAX_RTP_PKT_LENGTH);</span></span><br><span class="line"><span class="comment">                status = this-&gt;SendPacket((void *)sendbuf,MAX_RTP_PKT_LENGTH+2);*/</span></span><br><span class="line">                <span class="built_in">memcpy</span>(Sbuf,&amp;p_Nalu[t*MAX_RTP_PKT_LENGTH],MAX_RTP_PKT_LENGTH);</span><br><span class="line">                status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,MAX_RTP_PKT_LENGTH);</span><br><span class="line">                CheckError(status);</span><br><span class="line">                t++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//最后一包</span></span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>( ( k==t &amp;&amp; l&gt;<span class="number">0</span> ) || ( t== (k<span class="number">-1</span>) &amp;&amp; l==<span class="number">0</span> ))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">//设置标志位Mark为1</span></span><br><span class="line">                this-&gt;sess.SetDefaultMark(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">                <span class="type">int</span> iSendLen;</span><br><span class="line">                <span class="keyword">if</span> ( l &gt; <span class="number">0</span>)</span><br><span class="line">                &#123;</span><br><span class="line">                    iSendLen = NaluSize - t*MAX_RTP_PKT_LENGTH;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    iSendLen = MAX_RTP_PKT_LENGTH;</span><br><span class="line"></span><br><span class="line">                <span class="comment">//sendbuf[0] = (nalHeader &amp; 0x60)|28;</span></span><br><span class="line">                <span class="comment">//sendbuf[1] = (nalHeader &amp; 0x1f);</span></span><br><span class="line">                <span class="comment">//sendbuf[1] |= 0x40;</span></span><br><span class="line"></span><br><span class="line">                <span class="comment">//memcpy(sendbuf+2,&amp;pSendbuf[t*MAX_RTP_PKT_LENGTH],iSendLen);</span></span><br><span class="line">                <span class="comment">//status = this-&gt;SendPacket((void *)sendbuf,iSendLen+2);</span></span><br><span class="line"></span><br><span class="line">                <span class="built_in">memcpy</span>(Sbuf,&amp;p_Nalu[t*MAX_RTP_PKT_LENGTH],iSendLen);</span><br><span class="line">                status = this-&gt;sess.SendPacket((<span class="type">void</span> *)Sbuf,iSendLen);</span><br><span class="line"></span><br><span class="line">                CheckError(status);</span><br><span class="line">                t++;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">yJRTPLIB::SetX264Parm</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    this-&gt;sess.SetDefaultPayloadType(H264);<span class="comment">//设置传输类型</span></span><br><span class="line">    this-&gt;sess.SetDefaultMark(<span class="literal">true</span>);      <span class="comment">//设置位</span></span><br><span class="line">    this-&gt;sess.SetTimestampUnit(<span class="number">1.0</span>/<span class="number">9000.0</span>); <span class="comment">//设置采样间隔</span></span><br><span class="line">    this-&gt;sess.SetDefaultTimestampIncrement(<span class="number">10</span>);<span class="comment">//设置时间戳增加间隔</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">yJRTPLIB::SetRtpParm</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">string</span> &amp;d_ip)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> status;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> ipstr = d_ip;</span><br><span class="line">    <span class="type">uint32_t</span> destip;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ( (destip = inet_addr(ipstr.c_str())) == INADDR_NONE)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cerr</span> &lt;&lt; <span class="string">&quot;Bad IP address specified&quot;</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    RTPUDPv4TransmissionParams transparams;</span><br><span class="line">    RTPSessionParams sessparams;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//sessparams.SetOwnTimestampUnit(1.0/9000.0); //时间戳单位</span></span><br><span class="line">    sessparams.SetOwnTimestampUnit(<span class="number">1.0</span>/<span class="number">10.0</span>); <span class="comment">//时间戳单位</span></span><br><span class="line">    sessparams.SetAcceptOwnPackets(<span class="literal">true</span>);   <span class="comment">//接收自己发送的数据包</span></span><br><span class="line">    sessparams.SetUsePredefinedSSRC(<span class="literal">true</span>);  <span class="comment">//设置使用预先定义的SSRC</span></span><br><span class="line">    sessparams.SetPredefinedSSRC(SSRC);     <span class="comment">//定义SSRC</span></span><br><span class="line"></span><br><span class="line">    transparams.SetPortbase(PORTBASE);</span><br><span class="line"></span><br><span class="line">    status = sess.Create(sessparams,&amp;transparams);</span><br><span class="line">    CheckError(status);</span><br><span class="line"></span><br><span class="line">    destip = ntohl(destip);</span><br><span class="line">    RTPIPv4Address <span class="title function_">addr</span><span class="params">(destip,DESTPORT)</span>;</span><br><span class="line">    status = sess.AddDestination(addr);</span><br><span class="line">    CheckError(status);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>y_jrtp.h</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifndef</span> Y_JRTP_H</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> Y_JRTP_H</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;rtpsession.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;rtpudpv4transmitter.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;rtpipv4address.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;rtpsessionparams.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;rtperrors.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;rtplibraryversion.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//port必须是偶数</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PORTBASE 6000</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> DESTPORT 6002</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> DESTIP <span class="string">&quot;127.0.0.1&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> H264 96</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">SSRC：同步源标识。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SSRC 1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//Internet 对 pkg-len&gt;1400丢包概率很大，RTP header 12bytes,RTP pkg-max-len &lt;= 1388</span></span><br><span class="line"><span class="comment">//MTU 48~1500, UDP data max len = 1500 - 20(IP header) - 8(UDP header)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_RTP_PKT_LENGTH 1300</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> CLEAR_MEM</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CLEAR_MEM(mem) memset((mem),0,sizeof((mem)))</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">using namespace jrtplib;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">yJRTPLIB</span>&#123;</span></span><br><span class="line"></span><br><span class="line">    public:</span><br><span class="line">        yJRTPLIB(<span class="type">void</span>);</span><br><span class="line">        ~yJRTPLIB(<span class="type">void</span>);</span><br><span class="line">        <span class="type">void</span> <span class="title function_">SendX264NalUnit</span><span class="params">(<span class="type">uint8_t</span> * <span class="type">const</span> p_payload, <span class="type">const</span> <span class="type">int</span> i_payload)</span>;</span><br><span class="line">        <span class="type">void</span> <span class="title function_">SetX264Parm</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line">        <span class="type">int</span> <span class="title function_">SetRtpParm</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">string</span> &amp;d_ip)</span>;</span><br><span class="line">    private:</span><br><span class="line">        RTPSession sess;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// Y_JRTP_H</span></span></span><br></pre></td></tr></table></figure>
+<p>  首先，这里面的一些代码我直接使用的网上的某些教程，每一处用了一点，然后自己整理成这样的，这里再次说明，拆包部分的宏CODE_M是我的，另外一部分是网友的，不知道是谁，找不到最开始的出处。</p>
+<p>  好了JrtpLib就这些东西了，没有啥新鲜的，对于我这种小白用户，我也只需要了解这么多，如果想要优化RTP传输或者其他的想法，你就得好好的去读读这些代码，并深入的了解RTP协议。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/08/07/blog_idx_036/" rel="prev" title="Qt HTTP网络相关GET，POST（HTTP 模拟POST 表单(multipartform)最简单和正式的方法）">
+      <i class="fa fa-chevron-left"></i> Qt HTTP网络相关GET，POST（HTTP 模拟POST 表单(multipartform)最简单和正式的方法）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/08/23/blog_idx_038/" rel="next" title="GCC&&G++ C && C++ 内嵌汇编和调用汇编函数的方法(x86，ARM自己对照改)">
+      GCC&&G++ C && C++ 内嵌汇编和调用汇编函数的方法(x86，ARM自己对照改) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JRtp"><span class="nav-number"></span> <span class="nav-text">JRtp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

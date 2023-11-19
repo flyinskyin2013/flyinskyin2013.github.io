@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明 Linux 4.4.0-31-generic #50-Ubuntu SMP Wed Jul 13 00:07:12 UTC 2016 x86_64 x86_64 x86_64 GNU&#x2F;Linux 前言   IPC—Inter-Process Communicat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux IPC（进程间通信）摘要（信号灯，共享内存，消息队列，管道）(一)">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2016/07/20/blog_idx_024/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明 Linux 4.4.0-31-generic #50-Ubuntu SMP Wed Jul 13 00:07:12 UTC 2016 x86_64 x86_64 x86_64 GNU&#x2F;Linux 前言   IPC—Inter-Process Communicat">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2016-07-20T08:16:28.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.687Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2016/07/20/blog_idx_024/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>Linux IPC（进程间通信）摘要（信号灯，共享内存，消息队列，管道）(一) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2016/07/20/blog_idx_024/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux IPC（进程间通信）摘要（信号灯，共享内存，消息队列，管道）(一)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-07-20 16:16:28" itemprop="dateCreated datePublished" datetime="2016-07-20T16:16:28+08:00">2016-07-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>2 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-09-11 11:30:37
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=024） 
+&emsp;&emsp;本文发布于 2016-07-20 16:16:28，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=024） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>Linux 4.4.0-31-generic #50-Ubuntu SMP Wed Jul 13 00:07:12 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux</p>
+<h3 id="前言">前言</h3>
+<hr>
+<ol>
+<li>IPC—Inter-Process Communication(进程间通信)</li>
+<li>UNIX 与 LINUX 没有直属血缘关系，是一个新创建的操作系统。LINUX可以说成参考MINIX(一个类UNIX系统，中间的缘由可以由自己百度)自己写的一个操作系统系统。</li>
+<li>System V 是一个UNIX 系统的分支。POSIX是一个IEEE定制的一个标准。（可移植操作系统接口（Portable Operating System Interface ，缩写为 POSIX ））。</li>
+<li>IPC 的种类很多，大概有一下几种：
+<ul>
+<li>A 原始的UNIX IPC</li>
+<li>B 在A的基础上进化出System V IPC</li>
+<li>C 在A的基础上进化出Socket IPC</li>
+<li>D 由IEEE协会制定的POSIX标准中的IPC</li>
+<li>E 由A，B，C，D 综合发展得到Linux IPC</li>
+</ul>
+</li>
+</ol>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="IPC">IPC</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="Linux-IPC">Linux IPC</h5>
+<p>  由于一些历史原因，现在的linux内核里面常见的就是System V 和 Posix的通信。至于Socket IPC 已经被Linux 独立出来，叫做Linux 网络通信，其实本质上还是IPC,只不过由单机IPC，变为了多机IPC.(主要还是由tcp/ip协议作为支撑)</p>
+<br/>
+<br/>
+<h5 id="System-V-IPC">System V IPC</h5>
+<ol>
+<li>System V IPC主要包括：System V消息队列、System V信号灯、System V共享内存区。</li>
+<li>System V IPC 有一个很明显的特征，那就是有一个关键字能够代表这个IPC,很明显这个关键字必须唯一的。得到这个关键字的方法有多种，但是我只用过一种，那就是用ftok()得到。</li>
+<li>API集合
+<ul>
+<li>A System V消息队列
+<ul>
+<li>msgget()根据key与flag访问或者创建IPC对象。</li>
+<li>msgctl()控制与销毁IPC对象</li>
+<li>msgsnd/msgrcv()发送/接受消息</li>
+</ul>
+</li>
+<li>B System V信号灯
+<ul>
+<li>semget()根据key与flag访问或者创建IPC对象。</li>
+<li>semctl()控制与销毁IPC对象</li>
+<li>semop()操作IPC对象，也就是PV操作实现</li>
+</ul>
+</li>
+<li>C System V共享内存区
+<ul>
+<li>shmget()根据key与flag访问或者创建IPC对象。</li>
+<li>shmctl()控制与销毁IPC对象</li>
+<li>shmat()连接共享内存</li>
+<li>shmdt()与共享内存分离<br>
+<br/><br>
+<br/></li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h5 id="Posix-IPC">Posix IPC</h5>
+<p>  Posix IPC的的特征也很明显，与System V对比。首先API命名改变。是由IPC名称_IPC操作构成。其次是以一个名字作为标识符标示一个IPC对象。如信号量族：sem_open()/sem_close()/sem_trywait()/sem_post()</p>
+<ul>
+<li>A Posix 信号量（命名信号量，未命名信号量（亲缘进程通信））
+<ul>
+<li>sem_open()/sem_close() 信号量打开或者创建。/信号量关闭。</li>
+<li>sem_wait()/sem_trywait() V操作</li>
+<li>sem_post()P 操作</li>
+<li>sem_unlink()删除信号量</li>
+<li>sem_getvalue()获取值</li>
+<li>sem_init()未命名信号量初始化</li>
+<li>sem_destory()未命名信号量销毁</li>
+</ul>
+</li>
+<li>B Posix 共享内存
+<ul>
+<li>shm_open()/shm_unlink()打开内存区域/删除内存区域</li>
+<li>ftruncate（）清空内存区域</li>
+<li>fstat（）通过文件描述符获取文件对应的属性。文件打开后这样操作.</li>
+<li>mmap（）映射数据（文件）到当前进程空间</li>
+<li>munmap（）与mmap相反</li>
+</ul>
+</li>
+<li>C Posix 消息队列
+<ul>
+<li>mq_open（）/mq_close（）同上可得</li>
+<li>mq_unlink（）同上可得</li>
+<li>mq_getattr()/mq_setattr()设置或得到mq的属性</li>
+<li>mq_send()同英文含义</li>
+<li>mq_receive()同英文含义</li>
+<li>mq_notify()同英文含义</li>
+</ul>
+</li>
+</ul>
+<br/>
+<br/>
+<h5 id="IPC-之管道">IPC 之管道</h5>
+<p>  管道分为命名管道和非命名管道，此概率可类比Posix 信号量。</p>
+<ul>
+<li>unamepipe API:
+<ul>
+<li>pipe()建立匿名管道</li>
+</ul>
+</li>
+<li>namedpipe/fifo API：
+<ul>
+<li>mkfifo() 建立一个有名管道</li>
+<li>unlink() 删除有名管道</li>
+</ul>
+</li>
+<li>管道操作：
+<ul>
+<li>read()/write()</li>
+</ul>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  从上面我们可以看到posix ipc比 system v 使用起来简单。但是也有一些不足。我们平时都是综合应用这些东西，就能够很好的完成工作了。当然，现在越来越倾向与写Posix IPC，因为方便移植。</p>
+<p>  友情提示：我们在使用前，应该多看看帮助文档，因为可以少让你踩很多坑。</p>
+<h3 id="参考文献">参考文献</h3>
+<p>无</p>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/07/10/blog_idx_023/" rel="prev" title="Ubuntu14.04 apache2 配置 CGI(并测试:shell,可执行文件,python)">
+      <i class="fa fa-chevron-left"></i> Ubuntu14.04 apache2 配置 CGI(并测试:shell,可执行文件,python)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/08/25/blog_idx_025/" rel="next" title="Shell 编写摘要 (一)">
+      Shell 编写摘要 (一) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IPC"><span class="nav-number"></span> <span class="nav-text">IPC</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Linux-IPC"><span class="nav-number"></span> <span class="nav-text">Linux IPC</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#System-V-IPC"><span class="nav-number"></span> <span class="nav-text">System V IPC</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Posix-IPC"><span class="nav-number"></span> <span class="nav-text">Posix IPC</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#IPC-%E4%B9%8B%E7%AE%A1%E9%81%93"><span class="nav-number"></span> <span class="nav-text">IPC 之管道</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

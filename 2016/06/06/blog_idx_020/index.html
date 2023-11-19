@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    无     入侵式链表    链表按照实现原理我分为两类，一是普通的链表，二是入侵式链表。（区别就是，链表结构体里面有没有数据）。由于我重写了Linux 链表的实现，部分东西被我更改，所以文中代码以我的实际代码为例。 下面围绕几点来理解一下：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LinuxKernel 入侵式双向链表的设计，分析，使用">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2016/06/06/blog_idx_020/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    无     入侵式链表    链表按照实现原理我分为两类，一是普通的链表，二是入侵式链表。（区别就是，链表结构体里面有没有数据）。由于我重写了Linux 链表的实现，部分东西被我更改，所以文中代码以我的实际代码为例。 下面围绕几点来理解一下：">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_020/ret.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2016-06-06T06:49:11.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.676Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_020/ret.png">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2016/06/06/blog_idx_020/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>LinuxKernel 入侵式双向链表的设计，分析，使用 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2016/06/06/blog_idx_020/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LinuxKernel 入侵式双向链表的设计，分析，使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-06-06 14:49:11" itemprop="dateCreated datePublished" datetime="2016-06-06T14:49:11+08:00">2016-06-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.8k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-04-17 19:20:55
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=020） 
+&emsp;&emsp;本文发布于 2016-06-06 14:49:11，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=020） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="入侵式链表">入侵式链表</h3>
+<hr>
+<p>  链表按照实现原理我分为两类，一是普通的链表，二是入侵式链表。（区别就是，链表结构体里面有没有数据）。由于我重写了Linux 链表的实现，部分东西被我更改，所以文中代码以我的实际代码为例。</p>
+<p>下面围绕几点来理解一下：</p>
+<p>  链表元素结构体声明：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">y_list_head</span> &#123;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">y_list_head</span> *<span class="title">next</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">y_list_head</span> *<span class="title">prev</span>;</span></span><br><span class="line">&#125; Y_LISTHEAD;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  节点元素结构体声明：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// </span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line"><span class="type">int</span> a;</span><br><span class="line">Y_LISTHEAD <span class="built_in">list</span>;</span><br><span class="line">&#125; test;</span><br></pre></td></tr></table></figure>
+<p>  链表的头节点（用于存放一个链表的逻辑头，由于链表是双向，每个节点都是头）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//declare a node for head of list .</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LIST_HEAD(name) \</span></span><br><span class="line"><span class="meta">	Y_LISTHEAD name = LIST_HEAD_INIT(name)</span></span><br></pre></td></tr></table></figure>
+<p>  这里为了展示例子，我申请了几个变量:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">test* ptr_test;</span><br><span class="line">Y_LISTHEAD * pos;</span><br><span class="line">test * entry;</span><br></pre></td></tr></table></figure>
+<p>  为节点申请内存，并赋值</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ptr_test = (test *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(test));</span><br><span class="line">ptr_test-&gt;a = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>  现在节点创建完毕，开始加入到链表</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Insert a new entry between two known consecutive entries.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * This is only for internal list manipulation where we know</span></span><br><span class="line"><span class="comment"> * the prev/next entries already!</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span> __list_add(Y_LISTHEAD *new,</span><br><span class="line">                  Y_LISTHEAD *prev,</span><br><span class="line">                  Y_LISTHEAD *next)</span><br><span class="line">&#123;</span><br><span class="line">    next-&gt;prev = new;</span><br><span class="line">    new-&gt;next = next;</span><br><span class="line">    new-&gt;prev = prev;</span><br><span class="line">    prev-&gt;next = new;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * list_add - add a new entry</span></span><br><span class="line"><span class="comment"> * @new: new entry to be added</span></span><br><span class="line"><span class="comment"> * @head: list head to add it after</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Insert a new entry after the specified head.</span></span><br><span class="line"><span class="comment"> * This is good for implementing stacks.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span> <span class="title function_">list_add</span><span class="params">(Y_LISTHEAD *new, Y_LISTHEAD *head)</span></span><br><span class="line">&#123;</span><br><span class="line">    __list_add(new, head, head-&gt;next);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">LIST_ADD(&amp;ptr_test-&gt;<span class="built_in">list</span>,&amp;test_list);</span><br></pre></td></tr></table></figure>
+<p>  同理，在添加几个。（详情见末尾例子）,然后，遍历链表并输出：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这里解释一下　GET_ENTRY（）宏函数</span></span><br><span class="line"><span class="comment">//caculate offset-value about member to start of the struct </span></span><br><span class="line"><span class="comment">//计算结构体地址和结构体某成员的地址差值，也就是偏移值</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OFFSET(type, member) ((unsigned int) &amp;((type *)0)-&gt;member)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//第一行声明了一个结构体元素类型的指针</span></span><br><span class="line"><span class="comment">//第二行通过偏移值计算结构体地址，这样就可以得到结构体内所有元素的值</span></span><br><span class="line"><span class="comment">//第三个参数member 为节点元素中，链表变量名</span></span><br><span class="line"><span class="comment">//第二个参数为节点元素类型名</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GET_ENTRY(ptr, type, member) \</span></span><br><span class="line"><span class="meta">(&#123;   				\</span></span><br><span class="line"><span class="meta">    const typeof( ((type *)0)-&gt;member ) *__mptr = (ptr);	\</span></span><br><span class="line"><span class="meta">    (type *)( (char *)__mptr - OFFSET(type,member) );		\</span></span><br><span class="line"><span class="meta">&#125;)</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * list_for_each iterate over a list</span></span><br><span class="line"><span class="comment"> * @pos:the &amp;struct list_head to use as a loop cursor.</span></span><br><span class="line"><span class="comment"> * @head:the head for your list.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LIST_FOR_EACH(pos, head) \</span></span><br><span class="line"><span class="meta">    for (pos = (head)-&gt;next; pos != (head); pos = pos-&gt;next)</span></span><br><span class="line"></span><br><span class="line">LIST_FOR_EACH(pos,&amp;test_list)&#123;</span><br><span class="line">		</span><br><span class="line">	entry = GET_ENTRY(pos,test,<span class="built_in">list</span>);	</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,entry-&gt;a);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 同理,  LIST_DEL_ENTRY()之类的宏定义都是同样的实现。</span></span><br></pre></td></tr></table></figure>
+<p>  实例:list_test.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">*	FileName:list_test.c</span></span><br><span class="line"><span class="comment">*	Version: 1.0</span></span><br><span class="line"><span class="comment">*	Description: The file test my list if it is right</span></span><br><span class="line"><span class="comment">*	Created On:2016-5-15</span></span><br><span class="line"><span class="comment">*	Modified date:</span></span><br><span class="line"><span class="comment">*	Author:Sky</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;Y_List/Y_List.h&quot;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">	<span class="type">int</span> a;</span><br><span class="line">	Y_LISTHEAD <span class="built_in">list</span>;</span><br><span class="line">&#125; test;</span><br><span class="line"> </span><br><span class="line">test* ptr_test;</span><br><span class="line"> </span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span>&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//test head;</span></span><br><span class="line"> </span><br><span class="line">	LIST_HEAD(test_list);</span><br><span class="line">	Y_LISTHEAD * pos;</span><br><span class="line">	test * entry;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//INIT_LIST_HEAD(head-&gt;list);</span></span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	ptr_test = (test *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(test));</span><br><span class="line">	ptr_test-&gt;a = <span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line">	LIST_ADD(&amp;ptr_test-&gt;<span class="built_in">list</span>,&amp;test_list);</span><br><span class="line"> </span><br><span class="line">	ptr_test = (test *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(test));</span><br><span class="line">	ptr_test-&gt;a = <span class="number">2</span>;</span><br><span class="line">	</span><br><span class="line">	LIST_ADD_TAIL(&amp;ptr_test-&gt;<span class="built_in">list</span>,&amp;test_list);</span><br><span class="line"> </span><br><span class="line">	ptr_test = (test *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(test));</span><br><span class="line">	ptr_test-&gt;a = <span class="number">4</span>;</span><br><span class="line">	</span><br><span class="line">	LIST_ADD(&amp;ptr_test-&gt;<span class="built_in">list</span>,&amp;test_list);</span><br><span class="line"> </span><br><span class="line">	ptr_test = (test *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(test));</span><br><span class="line">	ptr_test-&gt;a = <span class="number">8</span>;</span><br><span class="line">	</span><br><span class="line">	LIST_ADD_TAIL(&amp;ptr_test-&gt;<span class="built_in">list</span>,&amp;test_list);</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">	LIST_FOR_EACH(pos,&amp;test_list)&#123;</span><br><span class="line">		</span><br><span class="line">		entry = GET_ENTRY(pos,test,<span class="built_in">list</span>);	</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,entry-&gt;a);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">	LIST_DEL_ENTRY(&amp;(ptr_test-&gt;<span class="built_in">list</span>));</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">	LIST_FOR_EACH(pos,&amp;test_list)&#123;</span><br><span class="line">		</span><br><span class="line">		entry = GET_ENTRY(pos,test,<span class="built_in">list</span>);	</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,entry-&gt;a);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line">	</span><br><span class="line">	LIST_FOR_EACH(pos,&amp;test_list)&#123;</span><br><span class="line">		</span><br><span class="line">		entry = GET_ENTRY(pos,test,<span class="built_in">list</span>);</span><br><span class="line">		<span class="built_in">free</span>(entry);</span><br><span class="line">	&#125;</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// LIST_ADD在给出地址后添加一个元素</span></span><br><span class="line"><span class="comment">// LIST_ADD_TAIL在给出地址前添加一个元素</span></span><br><span class="line"><span class="comment">// LIST_DEL_ENTRY删除指定地址的节点</span></span><br></pre></td></tr></table></figure>
+<p>  运行截图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_020/ret.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  其实链表只有几个部分要主要：</p>
+<ul>
+<li>
+<p>链表结构体</p>
+</li>
+<li>
+<p>节点结构体</p>
+</li>
+<li>
+<p>链表头</p>
+</li>
+<li>
+<p>链表增删改查</p>
+</li>
+</ul>
+<p>  而在Linux的链表实现中，要注意下面这个东西，怎么确定的节点结构体地址，这是LInux链表实现的核心。搞清楚了这个，Ｌｉｎｕｘ链表你就会了GET_ENTRY（）</p>
+<p>  如果希望查看上面项目代码，移步:<a target="_blank" rel="noopener" href="https://github.com/flyinskyin2013/Y_LINUX_FRAME/tree/master/include/Y_List">https://github.com/flyinskyin2013/Y_LINUX_FRAME/tree/master/include/Y_List</a></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/06/02/blog_idx_019/" rel="prev" title="C程序问题归纳(static,auto,register,extern,程序内存分布图，linux下程序的执行过程......)(二)">
+      <i class="fa fa-chevron-left"></i> C程序问题归纳(static,auto,register,extern,程序内存分布图，linux下程序的执行过程......)(二)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/06/14/blog_idx_021/" rel="next" title="Linux Char-Driver （字符驱动　摘要）(一)">
+      Linux Char-Driver （字符驱动　摘要）(一) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A5%E4%BE%B5%E5%BC%8F%E9%93%BE%E8%A1%A8"><span class="nav-number"></span> <span class="nav-text">入侵式链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

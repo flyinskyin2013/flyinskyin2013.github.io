@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   本文所有实例环境为：win10+py35 序    我们有个任务，需要在C++里面调用pycaffe的算法来做相关的检测。（不要问我为啥不直接用caffe的c++接口，因为后面还要调tensorflow和pytorch，导致了算法组为了统(偷)一（懒），就直">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 调用 Python 总结(一)">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2020/01/09/blog_idx_091/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   本文所有实例环境为：win10+py35 序    我们有个任务，需要在C++里面调用pycaffe的算法来做相关的检测。（不要问我为啥不直接用caffe的c++接口，因为后面还要调tensorflow和pytorch，导致了算法组为了统(偷)一（懒），就直">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/com.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/run.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/pyobj1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/pyobj2.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/eg.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2020-01-09T10:39:55.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.864Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/com.png">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2020/01/09/blog_idx_091/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>C++ 调用 Python 总结(一) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2020/01/09/blog_idx_091/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++ 调用 Python 总结(一)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-01-09 18:39:55" itemprop="dateCreated datePublished" datetime="2020-01-09T18:39:55+08:00">2020-01-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>9 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-30 23:43:18
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=091） 
+&emsp;&emsp;本文发布于 2020-01-09 18:39:55，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=091） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  本文所有实例环境为：win10+py35</p>
+<h3 id="序">序</h3>
+<hr>
+<p>  我们有个任务，需要在C++里面调用pycaffe的算法来做相关的检测。（不要问我为啥不直接用caffe的c++接口，因为后面还要调tensorflow和pytorch，导致了算法组为了统(偷)一（懒），就直接怼了一个pycaffe）。</p>
+<p>  我还是第一次遇到这类问题，我去查了查，还真的有相关的内容，真的是存在即合理。</p>
+<p>  本文大部分内容都是主要参考python官方手册，其次也看了网络上的一些资料，我这里做了一些汇总和衍生。(官方手册<a target="_blank" rel="noopener" href="https://docs.python.org/zh-cn/3/c-api/index.html">https://docs.python.org/zh-cn/3/c-api/index.html</a>)</p>
+<p>  阅读本文需要一定的c++基本‘’姿势‘’和了解一些最最最简单的py‘’姿势‘’。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Python-C-Hello-World">Python C Hello World</h3>
+<hr>
+<p>  先来一个全世界通用的例子。(没做异常处理)</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span>&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">//</span></span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">Note Since Python may define some pre-processor definitions which affect the standard headers on some systems, you must include Python.h before any standard headers are included.</span></span><br><span class="line"><span class="comment">It is recommended to always define PY_SSIZE_T_CLEAN before including Python.h. See Parsing arguments and building values for a description of this macro.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PY_SSIZE_T_CLEAN</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;Python.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">//</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//This function works like Py_Initialize() if initsigs is 1. </span></span><br><span class="line">    <span class="comment">//If initsigs is 0, it skips initialization registration of signal handlers, which might be useful when Python is embedded.</span></span><br><span class="line">    <span class="built_in">Py_InitializeEx</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">PyRun_SimpleString</span>(<span class="string">&quot;print(&#x27;hello world.&#x27;)&quot;</span>);</span><br><span class="line">    <span class="built_in">Py_Finalize</span>();</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _WIN32 || _WIN64</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">system</span>(<span class="string">&quot;pause&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> __linux__ || __linux</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">//    </span></span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  编译，设定python的头文件和库文件路径。（注意python的库名字），我这里是在win上做的演示，实际是部署到linux.相关结果如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/com.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/run.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Python-C-常用接口">Python C 常用接口</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="python-基本数据类型对象">python 基本数据类型对象</h5>
+<p>  更加详细的，请查看官方doc中关于Py_BuildValue()接口的描述。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">    PyObject * func_name = <span class="built_in">Py_BuildValue</span>(<span class="string">&quot;s&quot;</span>,<span class="string">&quot;test_add&quot;</span>);</span><br><span class="line">    PyObject * arg1 = <span class="built_in">Py_BuildValue</span>(<span class="string">&quot;l&quot;</span>,<span class="number">3</span>);</span><br><span class="line">```  </span><br><span class="line"></span><br><span class="line">&lt;br/&gt;</span><br><span class="line">&lt;br/&gt;</span><br><span class="line"></span><br><span class="line">####<span class="meta"># python 序列或者容器对象</span></span><br><span class="line">&amp;emsp;&amp;emsp;更多内容，详见官方doc</span><br><span class="line">```cpp</span><br><span class="line"><span class="comment">//tuple</span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyTuple_New</span><span class="params">(Py_ssize_t len)</span></span></span><br><span class="line"><span class="function"><span class="comment">//Return value: New reference.</span></span></span><br><span class="line"><span class="function"><span class="comment">//Return a new tuple object of size len, or NULL on failure.</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyTuple_GetItem</span><span class="params">(PyObject *p, Py_ssize_t pos)</span></span></span><br><span class="line"><span class="function"><span class="comment">//Return value: Borrowed reference.</span></span></span><br><span class="line"><span class="function"><span class="comment">//Return the object at position pos in the tuple pointed to by p. If pos is out of bounds, return NULL and set an IndexError exception.</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">PyTuple_SetItem</span><span class="params">(PyObject *p, Py_ssize_t pos, PyObject *o)</span></span></span><br><span class="line"><span class="function"><span class="comment">//Insert a reference to object o at position pos of the tuple pointed to by p. Return 0 on success. If pos is out of bounds, return -1 and set an IndexError exception.</span></span></span><br><span class="line"><span class="function"><span class="comment">//list</span></span></span><br><span class="line"><span class="function"><span class="comment">//原理同tuple</span></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyList_New</span><span class="params">(Py_ssize_t len)</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">PyList_SetItem</span><span class="params">(PyObject *list, Py_ssize_t index, PyObject *item)</span></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyList_GetItem</span><span class="params">(PyObject *list, Py_ssize_t index)</span></span></span><br><span class="line"><span class="function"><span class="comment">//dict</span></span></span><br><span class="line"><span class="function"><span class="comment">//原理同tuple</span></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyDict_New</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">PyDict_SetItem</span><span class="params">(PyObject *p, PyObject *key, PyObject *val)</span></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyDict_GetItem</span><span class="params">(PyObject *p, PyObject *key)</span></span></span><br></pre></td></tr></table></figure>
+<p>  对于这些python中的数据类型对象，都有相关的c api来创建、操作，更多的内容可以查看官方doc。这部分内容较简单，不做示例。</p>
+<br/>
+<br/>
+<h5 id="python-模块对象">python 模块对象</h5>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">PyObject* <span class="title">PyImport_ImportModuleEx</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name, PyObject *globals, PyObject *locals, PyObject *fromlist)</span></span></span><br><span class="line"><span class="function"><span class="comment">/*</span></span></span><br><span class="line"><span class="comment"><span class="function">Return value: New reference.</span></span></span><br><span class="line"><span class="comment"><span class="function">Import a module. This is best described by referring to the built-in Python function __import__().</span></span></span><br><span class="line"><span class="comment"><span class="function"></span></span></span><br><span class="line"><span class="comment"><span class="function">The return value is a new reference to the imported module or top-level package, or NULL with an exception set on failure. Like for __import__(), the return value when a submodule of a package was requested is normally the top-level package, unless a non-empty fromlist was given.</span></span></span><br><span class="line"><span class="comment"><span class="function"></span></span></span><br><span class="line"><span class="comment"><span class="function">Failing imports remove incomplete module objects, like with PyImport_ImportModule().</span></span></span><br><span class="line"><span class="comment"><span class="function">*/</span></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyModule_GetDict</span><span class="params">(PyObject *<span class="keyword">module</span>)</span></span></span><br><span class="line"><span class="function"><span class="comment">/*</span></span></span><br><span class="line"><span class="comment"><span class="function">Return value: Borrowed reference.</span></span></span><br><span class="line"><span class="comment"><span class="function">Return the dictionary object that implements module&#x27;s namespace; this object is the same as the __dict__ attribute of the module object. If module is not a module object (or a subtype of a module object), SystemError is raised and NULL is returned.</span></span></span><br><span class="line"><span class="comment"><span class="function"></span></span></span><br><span class="line"><span class="comment"><span class="function">It is recommended extensions use other PyModule_*() and PyObject_*() functions rather than directly manipulate a module&#x27;s __dict__.</span></span></span><br><span class="line"><span class="comment"><span class="function">*/</span></span></span><br><span class="line"><span class="function"></span></span><br></pre></td></tr></table></figure>
+<p>  这些api主要是导入python模块，类似关键字import，同时返回模块的属性dict。这些属性包含当前命名空间下的：全局变量，全局函数，类等等。</p>
+<br/>
+<br/>
+<h5 id="python-callable-object-python-class-object-python-object-function">python callable object , python class object, python object function</h5>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">Return value: New reference.</span></span><br><span class="line"><span class="comment">Call a callable Python object callable, with arguments given by the tuple args. If no arguments are needed, then args can be NULL.</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">Return the result of the call on success, or raise an exception and return NULL on failure.</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">This is the equivalent of the Python expression: callable(*args).</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyObject_CallObject</span><span class="params">(PyObject *callable, PyObject *args)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="comment">/*</span></span></span><br><span class="line"><span class="comment"><span class="function">Return value: New reference.</span></span></span><br><span class="line"><span class="comment"><span class="function">Return a new instance method object, with func being any callable object func is the function that will be called when the instance method is called.</span></span></span><br><span class="line"><span class="comment"><span class="function">*/</span></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyInstanceMethod_New</span><span class="params">(PyObject *func)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="comment">//call obj.func</span></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyObject_CallMethod</span><span class="params">(PyObject *obj, <span class="type">const</span> <span class="type">char</span> *name, <span class="type">const</span> <span class="type">char</span> *format, ...)</span></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyObject_CallMethodObjArgs</span><span class="params">(PyObject *obj, PyObject *name, ..., <span class="literal">NULL</span>)</span></span></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="PyObject-对象">PyObject 对象</h3>
+<hr>
+<p>  这个对象是pythonc c api 所有对象的wrapper，有许许多多需要注意的事项，其中最重要的就是其内存管理问题。详细细节参考官方doc，这里给出最重要的几条我遇到的结论：</p>
+<ol>
+<li>pyobject 是依靠引用计数来管理对象的。</li>
+<li>pyobject 的创建者需要对这个obj负责，创建者可以传递，存储，和调用 Py_DECREF()</li>
+<li>python c api 都有关于pyobject的处理说明，比如：借用，新建。如下图。</li>
+</ol>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/pyobj1.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/pyobj2.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p><front color = red size = 4>本章特别重要，有兴趣的去看官方文档。当你乱用Py_INCREF和Py_DECREF时，你写的程序会在调用Py_Finalize时崩溃，这个时候，你需要看下文，去看看你哪个地方用错了。（<a target="_blank" rel="noopener" href="https://docs.python.org/3.8/extending/extending.html#ownership-rules%EF%BC%89">https://docs.python.org/3.8/extending/extending.html#ownership-rules）</a></front></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="实例">实例</h3>
+<hr>
+<p>  上一个实例来展示本文所有内容。</p>
+<p>  这是我要调用的python module</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="meta">@Description: </span></span><br><span class="line"><span class="meta">@Author: Sky</span></span><br><span class="line"><span class="meta">@Date: <span class="number">2019</span>-<span class="number">12</span>-05 <span class="number">16</span>:<span class="number">23</span>:<span class="number">29</span></span></span><br><span class="line"><span class="meta">@LastEditors  : Sky</span></span><br><span class="line"><span class="meta">@LastEditTime : <span class="number">2020</span>-01-09 <span class="number">18</span>:04:<span class="number">41</span></span></span><br><span class="line"><span class="meta">@FilePath: \Test_C_Call_Python\py_modules\py_normal_test.py</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">import sys</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">class TestPythonNormal:</span></span><br><span class="line"><span class="string">    cls_attr = &#x27;I am cls attr&#x27;</span></span><br><span class="line"><span class="string">    # def __new__(class_ins):</span></span><br><span class="line"><span class="string">    #     print(&#x27;call TestPythonNormal.__new__&#x27;)</span></span><br><span class="line"><span class="string">    #     return class_ins</span></span><br><span class="line"><span class="string">    def __init__(self):</span></span><br><span class="line"><span class="string">        print(&#x27;call TestPythonNormal.__init__&#x27;)</span></span><br><span class="line"><span class="string">        self.obj_attr = &#x27;I am obj attr&#x27;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    def test_add(self, a = 0 , b = 0):</span></span><br><span class="line"><span class="string">        print(&quot;a = &quot;, a)</span></span><br><span class="line"><span class="string">        print(&quot;b = &quot;,  b)</span></span><br><span class="line"><span class="string">        print(&quot;a + b = &quot;, (a + b))</span></span><br><span class="line"><span class="string">        return (a + b)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">g_num = 22222</span></span><br><span class="line"><span class="string">g_str = &#x27;hello f***&#x27;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">def g_func(a):</span></span><br><span class="line"><span class="string">    print(&quot;g_func arg = &quot;, a - 1)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">if __name__ == &#x27;__main__&#x27;:</span></span><br><span class="line"><span class="string">    test = TestPythonNormal()</span></span><br><span class="line"><span class="string">    test.test_add(2, 3)</span></span><br><span class="line"><span class="string">    print(TestPythonNormal.__dict__)</span></span><br><span class="line"><span class="string">    # print(TestPythonNormal.__dir__(test))</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * @Description: </span></span><br><span class="line"><span class="comment"> * @Author: Sky</span></span><br><span class="line"><span class="comment"> * @Date: 2020-01-09 11:26:28</span></span><br><span class="line"><span class="comment"> * @LastEditors  : Sky</span></span><br><span class="line"><span class="comment"> * @LastEditTime : 2020-01-09 18:21:53</span></span><br><span class="line"><span class="comment"> * @FilePath: \Test_C_Call_Python\test_tmp.cpp</span></span><br><span class="line"><span class="comment"> * @Github: </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span>&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">//</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PY_SSIZE_T_CLEAN</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;Python.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">//</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//This function works like Py_Initialize() if initsigs is 1. </span></span><br><span class="line">    <span class="comment">//If initsigs is 0, it skips initialization registration of signal handlers, which might be useful when Python is embedded.</span></span><br><span class="line">    <span class="built_in">Py_InitializeEx</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">PyRun_SimpleString</span>(<span class="string">&quot;print(&#x27;hello world.&#x27;)&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//add path of module-py_normal_test to sys.path</span></span><br><span class="line">    <span class="built_in">PyRun_SimpleString</span>(<span class="string">&quot;import sys&quot;</span>);</span><br><span class="line">    <span class="built_in">PyRun_SimpleString</span>(<span class="string">&quot;import numpy as np&quot;</span>);</span><br><span class="line">    <span class="built_in">PyRun_SimpleString</span>(<span class="string">&quot;sys.path.append(&#x27;E://TestDir//Test_C_Call_Python//py_modules&#x27;)&quot;</span>);</span><br><span class="line">    <span class="built_in">PyRun_SimpleString</span>(<span class="string">&quot;print(sys.path)&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//import </span></span><br><span class="line">    <span class="comment">//Return value: New reference.</span></span><br><span class="line">    PyObject * p_module = <span class="built_in">PyImport_ImportModuleEx</span>(<span class="string">&quot;py_normal_test&quot;</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>);<span class="comment">//import module</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//get module attr, they are g_var, g_func, class and so on.</span></span><br><span class="line">    <span class="comment">//Return value: Borrowed reference.</span></span><br><span class="line">    PyObject * p_dict_mo = <span class="built_in">PyModule_GetDict</span>(p_module);<span class="comment">//get module&#x27;s all attr</span></span><br><span class="line">    <span class="comment">//Return value: Borrowed reference.</span></span><br><span class="line">    PyObject * p_module_g_num = <span class="built_in">PyDict_GetItemString</span>(p_dict_mo, <span class="string">&quot;g_num&quot;</span>);<span class="comment">// global var</span></span><br><span class="line"></span><br><span class="line">    PyObject * p_module_cls = <span class="built_in">PyDict_GetItemString</span>(p_dict_mo, <span class="string">&quot;TestPythonNormal&quot;</span>);<span class="comment">//class</span></span><br><span class="line"></span><br><span class="line">    PyObject * p_module_g_func = <span class="built_in">PyDict_GetItemString</span>(p_dict_mo, <span class="string">&quot;g_func&quot;</span>);<span class="comment">// global function</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//print g_var</span></span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;g_num is &quot;</span>&lt;&lt;<span class="built_in">PyLong_AsLong</span>(p_module_g_num)&lt;&lt;std::endl;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//call g_func</span></span><br><span class="line">    <span class="comment">//Return value: New reference.</span></span><br><span class="line">    PyObject * arg_tuple = <span class="built_in">PyTuple_New</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">PyTuple_SetItem</span>(arg_tuple, <span class="number">0</span>, p_module_g_num);<span class="comment">//prepare arg</span></span><br><span class="line">    <span class="built_in">PyObject_CallObject</span>(p_module_g_func, arg_tuple);<span class="comment">//call g_func</span></span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="comment">//instance a class</span></span><br><span class="line">    <span class="comment">//Return value: New reference.</span></span><br><span class="line">    PyObject * p_cls_instance = <span class="built_in">PyInstanceMethod_New</span>(p_module_cls);<span class="comment">//call builtin.__new__, new a instance</span></span><br><span class="line">    <span class="comment">//Return value: New reference.</span></span><br><span class="line">    p_cls_instance = <span class="built_in">PyObject_CallObject</span>(p_cls_instance, <span class="literal">NULL</span>);<span class="comment">//call __init__,construct function,return None</span></span><br><span class="line">    <span class="comment">// Py_XDECREF(p_none);</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//print class-var</span></span><br><span class="line">    <span class="comment">//Return value: New reference.</span></span><br><span class="line">    <span class="comment">//PyObject* PyObject_GetAttrString(PyObject *o, const char *attr_name)</span></span><br><span class="line">    PyObject * cls_attr = <span class="built_in">PyObject_GetAttrString</span>(p_module_cls, <span class="string">&quot;cls_attr&quot;</span>);</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;cls_attr is &quot;</span>&lt;&lt;<span class="built_in">PyUnicode_AsUTF8</span>(cls_attr)&lt;&lt;std::endl;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//print obj.var</span></span><br><span class="line">    PyObject * obj_attr = <span class="built_in">PyObject_GetAttrString</span>(p_cls_instance, <span class="string">&quot;obj_attr&quot;</span>);</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;obj_attr is &quot;</span>&lt;&lt;<span class="built_in">PyUnicode_AsUTF8</span>(obj_attr)&lt;&lt;std::endl;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//call obj.func</span></span><br><span class="line">    <span class="comment">//Way0: This is the equivalent of the Python expression: obj.name(arg1, arg2, ...).</span></span><br><span class="line">    <span class="comment">//Return value: New reference.Return value: New reference.</span></span><br><span class="line">    PyObject * ret0 = <span class="built_in">PyObject_CallMethod</span>(p_cls_instance, <span class="string">&quot;test_add&quot;</span>, <span class="string">&quot;ii&quot;</span>, <span class="number">10</span>, <span class="number">10</span>);<span class="comment">//test_add(self, 10, 10)</span></span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;call obj.func, Way0 ret =  &quot;</span>&lt;&lt;<span class="built_in">PyLong_AsLong</span>(ret0)&lt;&lt;std::endl;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//Return value: New reference.</span></span><br><span class="line">    PyObject * func_name = <span class="built_in">Py_BuildValue</span>(<span class="string">&quot;s&quot;</span>,<span class="string">&quot;test_add&quot;</span>);<span class="comment">//</span></span><br><span class="line">    PyObject * arg1 = <span class="built_in">Py_BuildValue</span>(<span class="string">&quot;l&quot;</span>,<span class="number">3</span>);</span><br><span class="line">    PyObject * arg2 = <span class="built_in">Py_BuildValue</span>(<span class="string">&quot;l&quot;</span>,<span class="number">3</span>);</span><br><span class="line">    <span class="comment">//Return value: New reference.</span></span><br><span class="line">    PyObject * ret1 = <span class="built_in">PyObject_CallMethodObjArgs</span>(p_cls_instance, func_name, arg1, arg2,  <span class="literal">NULL</span>);<span class="comment">//test_add(self, 3, 3)</span></span><br><span class="line">    <span class="built_in">PyErr_PrintEx</span>(<span class="number">1</span>);</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;call obj.func, Way1 ret =  &quot;</span>&lt;&lt;<span class="built_in">PyLong_AsLong</span>(ret1)&lt;&lt;std::endl;</span><br><span class="line">        </span><br><span class="line">    </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="built_in">Py_XDECREF</span>(ret1);</span><br><span class="line">    <span class="built_in">Py_XDECREF</span>(arg2);</span><br><span class="line">    <span class="built_in">Py_XDECREF</span>(arg1);</span><br><span class="line">    <span class="built_in">Py_XDECREF</span>(func_name);</span><br><span class="line">    <span class="built_in">Py_XDECREF</span>(ret0);</span><br><span class="line">    <span class="built_in">Py_XDECREF</span>(obj_attr);</span><br><span class="line">    <span class="built_in">Py_XDECREF</span>(cls_attr);</span><br><span class="line">    <span class="built_in">Py_XDECREF</span>(p_cls_instance);</span><br><span class="line">    <span class="built_in">Py_XDECREF</span>(p_module);</span><br><span class="line">    <span class="comment">//Py_XDECREF(ret0);</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">Py_Finalize</span>();</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _WIN32 || _WIN64</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">system</span>(<span class="string">&quot;pause&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> __linux__ || __linux</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">//    </span></span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  效果：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_091/eg.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  以下的内容希望重点关注：</p>
+<font color = red size = 4>
+<ol>
+<li>其实这个看起来是很简单的，如果有一定的c++基础，整个流程就是导入模块，获取模块中的属性，这些属性包括函数，全局变量，类等等。</li>
+<li>操作全局的函数和变量</li>
+<li>这里最难的还是对于python class 的操作，第1点中获取的类属性是一个callable object，这个时候需要实例化class(这里调用了builtin的__new__，而不是class中重载的__new__)，然后需要手动调用__init__方法。到此，class的实例化完成</li>
+<li>通过api获取class的属性，就是class的变量</li>
+<li>通过api调用object method，传入obj和函数名，包括参数，直接调用即可，主要某些api要关注self这个参数。</li>
+</ol>
+</font>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="调试常用手段">调试常用手段</h3>
+<hr>
+<ol>
+<li>如果Py_Finalize()调用时，崩溃了，请检查自己的Py_INCREF和Py_DECREF各个引用增减是否正确。</li>
+<li>如果某些python c api调用失败了，可以尝试使用 PyErr_PrintEx(1);</li>
+</ol>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/12/20/blog_idx_090/" rel="prev" title="软件开发、持续集成（CI）、持续交付(CD)、持续部署（CD） 和 版本管理(Version Control) 的理解和思考">
+      <i class="fa fa-chevron-left"></i> 软件开发、持续集成（CI）、持续交付(CD)、持续部署（CD） 和 版本管理(Version Control) 的理解和思考
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/12/blog_idx_092/" rel="next" title="Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)">
+      Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%8F"><span class="nav-number"></span> <span class="nav-text">序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Python-C-Hello-World"><span class="nav-number"></span> <span class="nav-text">Python C Hello World</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Python-C-%E5%B8%B8%E7%94%A8%E6%8E%A5%E5%8F%A3"><span class="nav-number"></span> <span class="nav-text">Python C 常用接口</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#python-%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%AF%B9%E8%B1%A1"><span class="nav-number"></span> <span class="nav-text">python 基本数据类型对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#python-%E6%A8%A1%E5%9D%97%E5%AF%B9%E8%B1%A1"><span class="nav-number"></span> <span class="nav-text">python 模块对象</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#python-callable-object-python-class-object-python-object-function"><span class="nav-number"></span> <span class="nav-text">python callable object , python class object, python object function</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PyObject-%E5%AF%B9%E8%B1%A1"><span class="nav-number"></span> <span class="nav-text">PyObject 对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number"></span> <span class="nav-text">实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E5%B8%B8%E7%94%A8%E6%89%8B%E6%AE%B5"><span class="nav-number"></span> <span class="nav-text">调试常用手段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 起因    我们有个项目，做了一个基于TX2核心板的硬件板卡，这个板卡除了做相关算法的检测之外，还得提供一些控制LED啊、通过拨码开关这些来设置一些内容的小功能，你说气不气，这些小功能还必须要实现。如果LED和拨码开关直接挂载到tx2的gpio上的话，就">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TX2 核心板 GPIO、IO扩展器、拨码开关、LED灯 使用总结">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2019/08/24/blog_idx_087/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 起因    我们有个项目，做了一个基于TX2核心板的硬件板卡，这个板卡除了做相关算法的检测之外，还得提供一些控制LED啊、通过拨码开关这些来设置一些内容的小功能，你说气不气，这些小功能还必须要实现。如果LED和拨码开关直接挂载到tx2的gpio上的话，就">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/io.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/io_r0.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/io_r1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/io_addr.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sh0.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sh1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sw1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sw2.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sw_code.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2019-08-24T03:48:24.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.853Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/io.png">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2019/08/24/blog_idx_087/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>TX2 核心板 GPIO、IO扩展器、拨码开关、LED灯 使用总结 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2019/08/24/blog_idx_087/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          TX2 核心板 GPIO、IO扩展器、拨码开关、LED灯 使用总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-08-24 11:48:24" itemprop="dateCreated datePublished" datetime="2019-08-24T11:48:24+08:00">2019-08-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-30 22:51:45
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=087） 
+&emsp;&emsp;本文发布于 2019-08-24 11:48:24，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=087） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="起因">起因</h3>
+<hr>
+<p>  我们有个项目，做了一个基于TX2核心板的硬件板卡，这个板卡除了做相关算法的检测之外，还得提供一些控制LED啊、通过拨码开关这些来设置一些内容的小功能，你说气不气，这些小功能还必须要实现。如果LED和拨码开关直接挂载到tx2的gpio上的话，就没有必要写本文了，没意义，因为只要学过嵌入式的人，给他一个板子，再差劲，读取和设置一个gpio的高低电平总会吧。如果不会，建议还多学学嵌入式基础知识(从单片机玩起来，先裸奔，再上OS)。</p>
+<p>  这里我们知道，其实对于芯片来说，引脚是非常珍贵的，如果芯片所需要实现的功能复杂，那么通用的io管脚异常珍贵，这里就出现了一个种器件，叫做IO扩展器（所实话，我都不知道这样翻译对不对），从名字可知，就是较少的引脚扩展出更多的引脚，本文就是用两个引脚扩展出了16个引脚。</p>
+<p>  TX2上,由于使用了Linux，读取和设置gpio也是非常简单的，直接打开相关的gpio设备，读写即可。不要问我为啥要用linux，不用其他os，或者直接裸机控制，我只能够回答曰：我是想啊，可是我实力不允许啊，什么caffe、opencv、ncnn、cuda等等堆到其他系统或者裸机下，我着实能力不够，弄不过去，关键还麻烦。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="IO扩展器">IO扩展器</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="IO扩展器原理简介">IO扩展器原理简介</h5>
+<p>  其实本文的核心就是IO扩展器，这个器件由于我玩的板子少，见识少，我是第一次见到这种器件。下图就是这种器件在tx2手册里面的推荐使用方法。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/io.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  这种器件就是通过某种总线，然后扩展出尽可能多的io口。这里的这个器件通过I2C总线，扩展出16个io口。</p>
+<p>  这里我们可以看到：SCL和SDA是I2C通信总线，A0和A1是可编程配置I2C从器件地址。（这里不懂也没关系，就是这个器件的地址可以编程设置，至于为啥要有这个地址，可以简单理解为一个总线挂载多个设备，某一时刻总线只能为其中一个设备提供服务，这些设备的区分就是通过地址来完成的。）</p>
+<p>  P00-P17是扩展出来的IO口。</p>
+<p>  知道以上足够了，没学过的也足够了。</p>
+<p>  这个器件的特性是：通过I2C协议操作他的寄存器，他有8个8位寄存器，0-1寄存器是INPUT用，2-3寄存器是OUTPUT用，4-5好像是优先级裁决，6-7是配置寄存器，就是配置IO口是输出还是输入，如果接触过单片机、stm32这种的GPIO程序的话，是很好理解的。（手动滑稽，我出了校门就没接触过了）</p>
+<p>  不要问下图的是什么器件（问就是不知道，手动滑稽），这只是举个例子，这个io扩展器的寄存器分配以及功能就是这样的。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/io_r0.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/io_r1.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<br/>
+<br/>
+<h5 id="IO扩展器编程操作—shell-command">IO扩展器编程操作—shell command</h5>
+<p>  首先这个器件是通过I2C协议操作的，不用关心I2C是什么，他们你可以类比为HTTP。<br>
+那么Linux上怎么通过I2C操作这个器件呢？</p>
+<p>  首先，Linux上有一组工具：i2c-tool，它可以读取所有芯片的i2c bus上挂载的芯片，设置和读取寄存器等等，拿来做测试或者封装一个程序都是不错的。TX2的ubuntu16.04是自带这个工具的，他的详细用法大家去百度，我不造轮子了。</p>
+<p>  在Ubuntu里面操作I2C是非常简单的，你不需要关心I2C的具体传输规定，不用管时序这些烦人的事情。</p>
+<p>  首先我们先用工具来测试，美滋滋：</p>
+<p>  还记得上文我提了这个IO扩展器的从地址的事情吗？由于我的A0和A1都是接的低电平，在这里我的器件地址是0x74，怎么来的，看下图。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/io_addr.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  然后通过i2cdetect查看我们器件的位置（0x74）（注意，这个命令需要传入一个I2C总线序号，我这里是0，也就是说你要知道你这个IO扩展器挂载到哪个总线上的，这和SCL和SDL接线有关，有兴趣的可以去翻一翻手册就知道了，UU代表有人在占用这个设备）</p>
+<p>  shell:&gt;i2cdetect -y -r -a 0</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sh0.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  i2cdump可以通过标准i2c协议探测出所有的寄存器的值，下图8个寄存器的值就的出来了，分别对应上面的寄存器说明。XX代表没有这个寄存器。</p>
+<p>  shell:&gt;i2cdump -f -y  0 0x74</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sh1.png" alt="rep_img"/></center>
+    </div>
+</div>
+<p>  然后：</p>
+<ul>
+<li>i2cset -f -y i2c_bus_num slave_addr reg_num value 设置寄存器值</li>
+<li>i2cget -f -y i2c_bus_num slave_addr reg_num 获取寄存器值</li>
+</ul>
+<p>  其实通过上面的操作就可以完成整个io扩展器的操作，我们可以通过程序执行shell命令的方式设置和操作值。</p>
+<br/>
+<br/>
+<h5 id="IO扩展器编程操作—syscall">IO扩展器编程操作—syscall</h5>
+<p>  实际上，linux做了很多东西，我们可以用标准的linux sys-api来完成以上内容，其实这些api就是i2ctool使用的部分。</p>
+<p>  下面不墨迹，直接给出led操作的接口，有需要的参考吧。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">open_led_device</span><span class="params">(<span class="type">const</span> <span class="type">char</span> * i2c_bus_num, <span class="type">int</span> slave_addr)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> fd = <span class="number">0</span>; </span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ( <span class="number">0</span> &gt; (fd = open(i2c_bus_num, O_RDWR)) )&#123;<span class="comment">//打开i2c总线</span></span><br><span class="line"></span><br><span class="line">        perror(<span class="string">&quot;open i2c bus error:&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(ioctl(fd, I2C_SLAVE_FORCE, DEVICE_I2C_ADDR) &lt; <span class="number">0</span>) &#123;<span class="comment">//设置从器件地址，这里使用I2C_SLAVE_FORCE进行强行设置，那么这个设备忙</span></span><br><span class="line"></span><br><span class="line">        perror(<span class="string">&quot;set device slave addr error:&quot;</span>); </span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>; </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ( <span class="number">0</span> &gt; write_led_register(fd, LED_REG1_CFG_ADDR, LED_REG1_CFG_VAL) )&#123;<span class="comment">//设置写寄存器值，这两个宏和你的硬件连线有关。这里不给出。</span></span><br><span class="line"></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;init pin for output-mode failed.\n&quot;</span>);</span><br><span class="line">        close(fd);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> fd;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">read_led_register</span><span class="params">(<span class="type">int</span> fd, <span class="type">char</span> reg_addr, <span class="type">char</span> *read_val)</span>&#123;<span class="comment">//读寄存器</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (write(fd, &amp;reg_addr, <span class="number">1</span>) != <span class="number">1</span>)&#123;<span class="comment">//write reg addr ,从器件地址通过open接口设置好后，先写入要读的reg地址</span></span><br><span class="line"></span><br><span class="line">        perror(<span class="string">&quot;set reg addr error:&quot;</span>); </span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>; </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ( read(fd, read_val, <span class="number">1</span>) != <span class="number">1</span> )&#123;<span class="comment">//read data，等待i2c返回刚刚要查询的reg值</span></span><br><span class="line"></span><br><span class="line">        perror(<span class="string">&quot;read reg error:&quot;</span>); </span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>; </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">write_led_register</span><span class="params">(<span class="type">int</span> fd, <span class="type">char</span> reg_addr, <span class="type">char</span> data)</span>&#123;<span class="comment">//写寄存器</span></span><br><span class="line"></span><br><span class="line">    <span class="type">char</span> tmp_buf[<span class="number">2</span>];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    tmp_buf[<span class="number">0</span>] =  reg_addr;<span class="comment">//reg 地址</span></span><br><span class="line">    tmp_buf[<span class="number">1</span>] = data;<span class="comment">//reg 值</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (write(fd, tmp_buf, <span class="number">2</span>) != <span class="number">2</span>)&#123;<span class="comment">//write data</span></span><br><span class="line"></span><br><span class="line">        perror(<span class="string">&quot;write data error:&quot;</span>); </span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>; </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">close_led_device</span><span class="params">(<span class="type">int</span> fd)</span>&#123;<span class="comment">//关闭</span></span><br><span class="line"></span><br><span class="line">    close(fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="LED灯">LED灯</h3>
+<hr>
+<p>  此处省略XXX字。</p>
+<p>  相信每个人都知道，常规情况下，在LED灯的两边加电源正极和负极，灯就能亮。在电路设计上，一般来说，LED灯的一端都是和电源正极或者负极是连接好的，另一端和GPIO口接上。如果GPIO输出的电压和另一端电压逻辑一致（比如都是高电平、都是低电平），灯就不亮，反之就亮。</p>
+<p>  <font color = red size = 3>注意：这段话是有毛病的，但是一般人这样理解就行了（不了解电子电路的就看到这就行了）。对于懂的人，这里多说一句，这里还有一个三极管做开关作用，也是就说LED灯两端都接在电源正负极，中间有个三极管开关。</font></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="拨码开关">拨码开关</h3>
+<hr>
+<p>  这种器件，又是另外一种新奇的东西了，感觉我这两年写的“祖传屎山“太多了，现在看到各种硬件器件都是眼前一亮的感觉。</p>
+<p>  就是类似下图这种。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sw1.png" alt="rep_img"/></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sw2.png" alt="rep_img"/></center>
+    </div>
+</div>
+<p>  其作用是：</p>
+<p>  你可以人为的按这个±号按钮，设置数字，这个数字会反应到电路上，从而芯片可以读取你设置的数字。<br>
+说白了，你的系统中有个数字参数，你可以通过这种器件进行手动设置，通过驱动程序，就可以更改这个系统参数，是不是 so 简单。</p>
+<p>  这里简单说明一下电路是怎么反应出对应的数字的：</p>
+<p>  我就举个栗子，下图是个例子拨码开关（手动滑稽，这里多说一句，上图的拨码开关，是4个拨码开关合在一起的，下图的这个输出编码是一个拨码开关的）</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_087/sw_code.png" alt="rep_img"/></center>
+    </div>
+</div>
+<p>  这里可以简单理解为：</p>
+<p>  一个拨码开关有5个引脚，一个引脚是C，接GND或者VCC，其他4个是编码引脚，是需要接GPIO，并去取编码的。</p>
+<p>  其实很简单：</p>
+<p>  例如：C端我接VCC，1248默认值为0，那么数字1，1号引脚接通，那么8421io口输出二进制就是0001，转换为10进制，就是1.</p>
+<p>  然后写个程序读取这4个脚的值，转换一下，就OK。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/06/15/blog_idx_086/" rel="prev" title="HiSi 3516CV500 NNIE(Neural Network Inference Engine) 摸鱼记录(3) ---真机调试（实例分析）">
+      <i class="fa fa-chevron-left"></i> HiSi 3516CV500 NNIE(Neural Network Inference Engine) 摸鱼记录(3) ---真机调试（实例分析）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/09/02/blog_idx_088/" rel="next" title="数与计算机 （编码、原码、反码、补码、移码、IEEE 754、定点数、浮点数）">
+      数与计算机 （编码、原码、反码、补码、移码、IEEE 754、定点数、浮点数） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B5%B7%E5%9B%A0"><span class="nav-number"></span> <span class="nav-text">起因</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IO%E6%89%A9%E5%B1%95%E5%99%A8"><span class="nav-number"></span> <span class="nav-text">IO扩展器</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#IO%E6%89%A9%E5%B1%95%E5%99%A8%E5%8E%9F%E7%90%86%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">IO扩展器原理简介</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#IO%E6%89%A9%E5%B1%95%E5%99%A8%E7%BC%96%E7%A8%8B%E6%93%8D%E4%BD%9C%E2%80%94shell-command"><span class="nav-number"></span> <span class="nav-text">IO扩展器编程操作—shell command</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#IO%E6%89%A9%E5%B1%95%E5%99%A8%E7%BC%96%E7%A8%8B%E6%93%8D%E4%BD%9C%E2%80%94syscall"><span class="nav-number"></span> <span class="nav-text">IO扩展器编程操作—syscall</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LED%E7%81%AF"><span class="nav-number"></span> <span class="nav-text">LED灯</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%A8%E7%A0%81%E5%BC%80%E5%85%B3"><span class="nav-number"></span> <span class="nav-text">拨码开关</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

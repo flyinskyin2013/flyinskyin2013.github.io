@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   ubuntu 18.04   Linux 4.15.0-54-generic #58-Ubuntu SMP Mon Jun 24 10:55:24 UTC 2019 x86_64 x86_64 x86_64 GNU&#x2F;Linux 起因    有些时候，在测试深">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数与计算机 （编码、原码、反码、补码、移码、IEEE 754、定点数、浮点数）">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2019/09/02/blog_idx_088/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   ubuntu 18.04   Linux 4.15.0-54-generic #58-Ubuntu SMP Mon Jun 24 10:55:24 UTC 2019 x86_64 x86_64 x86_64 GNU&#x2F;Linux 起因    有些时候，在测试深">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/ieee_sp.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/ieee_fmt.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/int1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/int2.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f2.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f3.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f4.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f5.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f6.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f7.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f8.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f9.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f10.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f11.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f12.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/sp_f1.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/sp_f2.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/sp_f3.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2019-09-02T09:19:42.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.857Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/ieee_sp.png">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2019/09/02/blog_idx_088/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>数与计算机 （编码、原码、反码、补码、移码、IEEE 754、定点数、浮点数） | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2019/09/02/blog_idx_088/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数与计算机 （编码、原码、反码、补码、移码、IEEE 754、定点数、浮点数）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-09-02 17:19:42" itemprop="dateCreated datePublished" datetime="2019-09-02T17:19:42+08:00">2019-09-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>5.1k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>5 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-30 23:12:27
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=088） 
+&emsp;&emsp;本文发布于 2019-09-02 17:19:42，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=088） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  ubuntu 18.04</p>
+<p>  Linux 4.15.0-54-generic #58-Ubuntu SMP Mon Jun 24 10:55:24 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux</p>
+<h3 id="起因">起因</h3>
+<hr>
+<p>  有些时候，在测试深度学习的模型的时候，特别是模型出问题，或者其他乱七八糟的原因，你会发现某些层的某些特征会出现INF和NAN(特别是转换模型)。说实话，这两个一个是无穷大，一个是不是数字，我们都知道这个的意思，但是怎么出现的，可能都忘了。</p>
+<p>  我如果没有记错的话，数在计算机中的表示是来至于《计算机组成原理》，其中介绍了很多很多的有趣的原理。但是我出校后，这些理论知识很少和实际联系起来，趁着这次机会，我准备结合我们平常写的代码，理一理计算机中数的这个问题。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="符号">符号</h3>
+<hr>
+<p>  在计算机里面，除了指令，就是数值或者符号（统一的说就是数值，因为数值和符号有映射关系，这就是符号编码），我也不知道这样说对不对。</p>
+<p>  本文主要是说的是数值。对于符号来说，符号涉及到编码问题，有兴趣的可以去了解了解，我们常见的编码就是ascii，utf-8, unicode，gbk，big5等等，这些编码涉及到符号显示的问题。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="数值">数值</h3>
+<hr>
+<p>  数值大致有两类表示法，一类是定点数，一类是浮点数。</p>
+<p>  计算机中，对于整数来说，就是定点数表示法（这里对于整数的说法我也不太确定对不对，相关资料也没有查到明确的说法，但是我理解的是整数就是定点数表示法中，小数点在最右边），对于实数来说，就是浮点数表示法。</p>
+<br/>
+<br/>
+<h5 id="整数">整数</h5>
+<p>  在计算机中，在说明整数的定点数表示之前，还得说几个书上的理论：</p>
+<ul>
+<li>原码：原码就是十进制转换为二进制。</li>
+<li>反码：原码取反。</li>
+<li>补码：反码+1。（注意：如果是符号数，反码和补码运算不影响符号位。）</li>
+</ul>
+<p>  在计算机中，正整数的补码反码原码一样，负整数的补码是原码取反加1。</p>
+<p>  对于整数来说，可以分为有符号还是无符号的整数。</p>
+<p>  无符号数，是正整数，所以在计算机中是补码表示，且就是其十进制转换为二进制。</p>
+<p>  有符号整数，如果是正整数，计算机中补码表示，且就是其十进制转换为二进制（补码原码一样），如果是负整数，在计算机中表示，且就是其十进制转换为二进制，取补码。</p>
+<br/>
+<br/>
+<h5 id="实数">实数</h5>
+<p>  在计算机中，在说明浮点数表示法之前，还得说两个理论：<br>
+移码：N-M转换为二进制，M为偏移数。</p>
+<p>  二进制浮点数：整数部分直接转换为二进制（除2逆序取余），小数部分逼近求和（乘2正序取整）。（更详细的百度随便找个教程即可，我这里只是简单写一下）</p>
+<p>  规范化二进制浮点数：小数点前只有一个1。</p>
+<p>  IEEE 754：IEEE根据一些历史因素，定制的大部分通用的浮点数表示方法。以单精度浮点数为例，31位表示符号位，23-30位表示exponent（偏移数是M，指数为E.），0-22表示base(底数为B)，表示的浮点数为：B*(2^(E-M))</p>
+<p>  IEEE 754有很多特殊值，也有一些溢出规则和约等于规则，一般来说，除非你要做科学运算，平常你是遇不到的，简单了解一下即可。</p>
+<p>  IEEE 754规定的特殊值：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/ieee_sp.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/ieee_fmt.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  注意：其实浮点数还有其他的一些异常计算及表示，详细的请查看ieee 754 chapter7</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="实例分析">实例分析</h3>
+<hr>
+<p>  上面扯了半天，大家都看烦了，其实都是一些书本上的知识整理。</p>
+<p>  下面是实例源文件。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc , <span class="type">char</span> * argv[])</span></span>&#123;</span><br><span class="line"></span><br><span class="line"><span class="comment">//integer</span></span><br><span class="line">	<span class="type">char</span> A = <span class="number">0xF1</span>;<span class="comment">//A = -15; size(A) = 1;mem=[1]111 0001(complement); mem=[1]000 1111(true form)</span></span><br><span class="line">	<span class="type">short</span> B = <span class="number">0xF111</span>;<span class="comment">//B= -3823; size(B) = 2; mem = [1]111 0001 / 0001 0001 (complement); mem=[1]000 1110 / 1110 1111(true form)</span></span><br><span class="line">	<span class="type">int</span> C = <span class="number">0xF1111111</span>;<span class="comment">//C = -250539759; size(C) = 4; mem = [1]111 0001 / 0001 0001 / 0001 0001 / 0001 0001 (complement); mem=[1]000 1110 / 1110 1110 / 1110 1110 / 1110 1111 (true form)</span></span><br><span class="line">	<span class="type">long</span> D = <span class="number">0xF1111111</span>;<span class="comment">//D = -250539759(size(D)=4), 4044427537(size(D)=8); size(D) = 4; mem = [1]111 0001 / 0001 0001 / 0001 0001 / 0001 0001 (complement); mem=[1]000 1110 / 1110 1110 / 1110 1110 / 1110 1111 (true form)(Sizeof(D) may be 4 or 8, it decided by compiler)</span></span><br><span class="line">	<span class="type">long</span> <span class="type">long</span> E = <span class="number">0xF111111111111111</span>;<span class="comment">//E = -1076060070966390511; size(E) = 8; mem = [1]111 0001 / 0001 0001 / 0001 0001 / 0001 0001 / 0001 0001 / 0001 0001 / 0001 0001 / 0001 0001 (complement); mem=[1]000 1110 / 1110 1110 / 1110 1110 / 1110 1110 / 1110 1110 / 1110 1110 / 1110 1110 / 1110 1111 (true form)</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//overflow int</span></span><br><span class="line">	<span class="type">int</span> C1 = <span class="number">0xF1111111FF</span>;<span class="comment">//drop highest byte(0xF1), it decided by compiler</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//overflow long long</span></span><br><span class="line">	<span class="type">long</span> <span class="type">long</span> E1 = <span class="number">0xF111111111111111FF</span>;<span class="comment">//drop highest byte(0xF1), it decided by compiler</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//float, IEEE 754.</span></span><br><span class="line"><span class="comment">/*	</span></span><br><span class="line"><span class="comment">single-precision float</span></span><br><span class="line"><span class="comment">bits: [31] is signed bit, (30~23) is exponent, &#123;22~0&#125; is base</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">double-precision float</span></span><br><span class="line"><span class="comment">bits: [63] is signed bit, (62~52) is exponent, &#123;51~0&#125; is base</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">	<span class="type">float</span> F = <span class="number">-10</span>;<span class="comment">//size(F)=4, mem=[1](100 0001 / 0)&#123;010 0000 / 0000 0000 / 0000 0000&#125;, [] is signed bit. () is exponent, &#123;&#125; is normalized base.(single-precision)</span></span><br><span class="line">	<span class="type">double</span> G = <span class="number">10</span>;<span class="comment">//size(G)=8, mem=[0](100 0000 / 0010) &#123;0100 / 0000 0000 / 0000 0000 / 0000 0000 / 0000 0000 / 0000 0000 / 0000 0000&#125;, [] is signed bit. () is exponent, &#123;&#125; is normalized base.(double-precision)</span></span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> tmp_buf = <span class="number">0x00800001</span>;</span><br><span class="line">	<span class="type">float</span> F_normalized_min = <span class="number">0</span>;</span><br><span class="line">	<span class="built_in">memcpy</span>(&amp;F_normalized_min, &amp;tmp_buf, <span class="built_in">sizeof</span>(F_normalized_min));<span class="comment">//size(F)=4</span></span><br><span class="line">	<span class="type">float</span> F_normalized_zero = F_normalized_min - <span class="number">1</span>; <span class="comment">//-1</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="type">float</span> F_normalized_max = <span class="number">0</span>;</span><br><span class="line">	tmp_buf = <span class="number">0x7F7FFFFF</span>;</span><br><span class="line">	<span class="built_in">memcpy</span>(&amp;F_normalized_max, &amp;tmp_buf, <span class="built_in">sizeof</span>(F_normalized_max));<span class="comment">//size(F)=4</span></span><br><span class="line">	<span class="type">float</span> F_normalized_infinity = F_normalized_max * F_normalized_max; <span class="comment">//inf</span></span><br><span class="line">	</span><br><span class="line">	<span class="type">float</span> F_normalized_nan = F_normalized_infinity / F_normalized_infinity;<span class="comment">//nan</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//some fun value</span></span><br><span class="line">	<span class="type">float</span> F_fun_01 = <span class="number">0.1</span>;</span><br><span class="line">	<span class="type">float</span> F_fun_02 = <span class="number">0.2</span>;</span><br><span class="line">	<span class="type">float</span> F_fun_03 = <span class="number">0.3</span>;</span><br><span class="line">	<span class="type">float</span> F_fun_04 = <span class="number">0.4</span>;</span><br><span class="line">	<span class="type">float</span> F_fun_05 = <span class="number">0.5</span>;</span><br><span class="line">	<span class="type">float</span> F_fun_06 = <span class="number">0.6</span>;</span><br><span class="line">	<span class="type">float</span> F_fun_07 = <span class="number">0.7</span>;</span><br><span class="line">	<span class="type">float</span> F_fun_08 = <span class="number">0.8</span>;</span><br><span class="line">	<span class="type">float</span> F_fun_09 = <span class="number">0.9</span>;</span><br><span class="line"></span><br><span class="line">	<span class="type">float</span> F_denormalized_min = <span class="number">0</span>;</span><br><span class="line">	tmp_buf = <span class="number">0x00000001</span>;</span><br><span class="line">	<span class="built_in">memcpy</span>(&amp;F_denormalized_min, &amp;tmp_buf, <span class="built_in">sizeof</span>(F_denormalized_min));<span class="comment">//size(F)=4</span></span><br><span class="line">	<span class="type">float</span> F_denormalized_max = <span class="number">0</span>;</span><br><span class="line">	tmp_buf = <span class="number">0x007FFFFF</span>;</span><br><span class="line">	<span class="built_in">memcpy</span>(&amp;F_denormalized_max, &amp;tmp_buf, <span class="built_in">sizeof</span>(F_denormalized_max));<span class="comment">//size(F)=4</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="整数分析">整数分析</h5>
+<p>  有符号负整数：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/int1.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/int2.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>（注意，x86，小端）</p>
+<p>  无符号整数、有符号正整数，就是直接10进制转换为二进制。</p>
+<br/>
+<br/>
+<h5 id="浮点数分析">浮点数分析</h5>
+<p>  规范化浮点数：（数值：规范化浮点数最小正数）</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f1.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f2.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>（数值：规范化浮点数最大正数）</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f3.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f4.png" alt="rep_img"/></center>
+    </div>
+</div>  
+（数值：非规范化浮点数最小正数）
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f5.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f6.png" alt="rep_img"/></center>
+    </div>
+</div>  
+（数值：非规范化浮点数最大正数）
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f7.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f8.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>浮点数异常计算：<br>
+（数值：NAN）</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f9.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f10.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>（数值：INF）</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f11.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/f12.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="一些有趣的浮点数">一些有趣的浮点数</h3>
+<hr>
+<p>  看了上边后，计算机关于浮点数的的存储其实是很离散的（很不靠谱），也就是说，很多浮点数计算机根本表示不出来（计算机只能够存储，实数数轴上极少部分的数），为什么呢？如果你要是了解了上面关于10进制浮点数转2进制浮点数，那么你可能已经猜到了原因。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/sp_f1.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/sp_f2.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  下面我以0.1位例，分析一下，为啥会出现这样的问题。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_088/sp_f3.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p>  0.1在计算机中表示为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mem=[0](011 1101/ 1)&#123;100 1100/ 1100 1100/ 1100 1100&#125;, [] is signed bit. () is exponent, &#123;&#125; is normalized base.(single-precision)</span><br><span class="line"></span><br><span class="line">E=123</span><br><span class="line">M=127</span><br><span class="line">B=1.100 1100/ 1100 1100/ 1100 1100</span><br><span class="line"></span><br><span class="line">F_fun_01 = B*2(^-4) = 0.0001100 1100/ 1100 1100/ 1100 1100 = 2^(-4) + 2^(-5) + 2^(-8) + 2^(-9) + 2^(-12) + 2^(-13) + 2^(-16) + 2^(-17) + 2^(-20) + 2^(-21) + 2^(-24) + 2^(-25) </span><br></pre></td></tr></table></figure>
+<p>  正是因为在内存中表示的是这样的，所以这里打印出来的值看到不是0.1，而是0.1+。那么大家可能会疑惑，如果0.1都有误差，那计算的时候，不是炸了吗？其实不然，还记得c语言中一句话吗？float的精度为小数点后6位，为啥是6位，而不是10位，8位呢？其实原因就是来至于这里，计算机中，某些小数位后虽然还有值，但是不是有效的，但是这些值影响数值的舍进（类似与四舍五入的约等于，建议大致了解，知道有这个事情即可）。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  总结</p>
+<p>  计算机里面，数的表示，就浮点数最难，但是只需要了解了大致的原理，你就会觉得非常简单。</p>
+<p>  其实对于计算机来说，数值的表示很弱的，离表示整个数轴差的远。</p>
+<p>  在计算机里面，数值有很多边界条件，比如溢出、异常运算、异常值，只是我们平常很少遇到，所以遗忘了。</p>
+<p>  同时也可以说明，其实计算机仅仅是个机器，只会冰冷的加载指令和数，并执行，只是我们的前辈们为我们做了很多事情，隔离了很多细节和底层，让我们觉得这些东西可有可无，极大的便利人们使用计算机。这样有好处也有坏处。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/24/blog_idx_087/" rel="prev" title="TX2 核心板 GPIO、IO扩展器、拨码开关、LED灯 使用总结">
+      <i class="fa fa-chevron-left"></i> TX2 核心板 GPIO、IO扩展器、拨码开关、LED灯 使用总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/11/04/blog_idx_089/" rel="next" title="大端(big endian) 小端(little endian) --- 在多字节存储 和 多字节通信中的含义（我还是太年轻了）">
+      大端(big endian) 小端(little endian) --- 在多字节存储 和 多字节通信中的含义（我还是太年轻了） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B5%B7%E5%9B%A0"><span class="nav-number"></span> <span class="nav-text">起因</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7"><span class="nav-number"></span> <span class="nav-text">符号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E5%80%BC"><span class="nav-number"></span> <span class="nav-text">数值</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B4%E6%95%B0"><span class="nav-number"></span> <span class="nav-text">整数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AE%9E%E6%95%B0"><span class="nav-number"></span> <span class="nav-text">实数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B%E5%88%86%E6%9E%90"><span class="nav-number"></span> <span class="nav-text">实例分析</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B4%E6%95%B0%E5%88%86%E6%9E%90"><span class="nav-number"></span> <span class="nav-text">整数分析</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0%E5%88%86%E6%9E%90"><span class="nav-number"></span> <span class="nav-text">浮点数分析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E6%9C%89%E8%B6%A3%E7%9A%84%E6%B5%AE%E7%82%B9%E6%95%B0"><span class="nav-number"></span> <span class="nav-text">一些有趣的浮点数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

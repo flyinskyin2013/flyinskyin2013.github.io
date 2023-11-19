@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 背景    深度学习的爆发期已经到了瓶颈了，为啥这样说，因为没有突破性的理论进展，都是靠着网络更深、更广，算力更强大来做相应的功能。至少在我的世界观里面是这样的，虽然这样的认知可能会有局限性，或者说是错误的。   现在深度学习的方向已经不是以前的泡沫鼓吹">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HiSi 3516CV500 NNIE(Neural Network Inference Engine) 摸鱼记录(1) --- 环境搭建">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2019/06/07/blog_idx_084/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 背景    深度学习的爆发期已经到了瓶颈了，为啥这样说，因为没有突破性的理论进展，都是靠着网络更深、更广，算力更强大来做相应的功能。至少在我的世界观里面是这样的，虽然这样的认知可能会有局限性，或者说是错误的。   现在深度学习的方向已经不是以前的泡沫鼓吹">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_084/conda.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_084/ruyi.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2019-06-07T03:22:00.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.845Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_084/conda.png">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2019/06/07/blog_idx_084/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>HiSi 3516CV500 NNIE(Neural Network Inference Engine) 摸鱼记录(1) --- 环境搭建 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2019/06/07/blog_idx_084/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HiSi 3516CV500 NNIE(Neural Network Inference Engine) 摸鱼记录(1) --- 环境搭建
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-06-07 11:22:00" itemprop="dateCreated datePublished" datetime="2019-06-07T11:22:00+08:00">2019-06-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4.1k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-30 22:12:52
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=084） 
+&emsp;&emsp;本文发布于 2019-06-07 11:22:00，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=084） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="背景">背景</h3>
+<hr>
+<p>  深度学习的爆发期已经到了瓶颈了，为啥这样说，因为没有突破性的理论进展，都是靠着网络更深、更广，算力更强大来做相应的功能。至少在我的世界观里面是这样的，虽然这样的认知可能会有局限性，或者说是错误的。</p>
+<p>  现在深度学习的方向已经不是以前的泡沫鼓吹了，而是落地，踏踏实实的把实验室的东西转换为实际对社会有用的东西，这才是深度学习的现在的实际情况。</p>
+<p>  要做相关的落地，在大部分应用场景来说，是不能够直接弄台服务器+GPU的方式来做相关的计算的，这样部署维护和成本都是一个很大的问题，现在其实大部分的场景需要的是低成本、小型化。就现在来看，其实就是移动手机平台和其他嵌入式板子平台是一个主流的方向。比如，手机端的：换脸啊、表情啊、化妆啊等等；板卡端的：依托于人脸识别的广告机啊、闸机啊等等。这里面的核心就是要在这些小型设备上做相关的算法运算。</p>
+<p>  在这些小型设备上做运算，有一个问题就是算力的问题，这些小型设备功耗低、算力低，很可能就是算法表现比较差。还好，很多大佬在很久以前就考虑到这些问题了，出了很多硬件加速的东西。如：Nvidia的TX TK系列、瑞芯微的RK系列、HiSi的Hi3559，Hi3519，Hi3516系列以及其他的Android手机SOC里面带的相关的NPU等等。</p>
+<p>  所以，为了把HiSi平台的相关深度学习硬件加速功能用起来，我们得把HiSi的NNIE利用起来完成这个功能。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="NNIE简介">NNIE简介</h3>
+<hr>
+<p>  NNIE是 Neural Network Inference Engine 的 简 称 是 海思 媒体 S oC 中 专门针对神经网<br>
+络特别是深度学习卷积神经网络进行加速处理的硬件单元。----- 摘自hisi sdk svp部分《HiSVP开发指南.pdf》</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="NNIE-工作流程简介">NNIE 工作流程简介</h3>
+<hr>
+<p>  海思提供了一个NNIE Mapper的工具（Linux ， Win都有）。由于NNIE只支持Caffe框架，我们需要的是把Caffe的模型转换为NNIE可以使用的模型。</p>
+<p>  在我们转换的时候，需要我们提供一个NNIE转换的配置文件，然后根据配置文件把相关的caffe模型转换为NNIE的模型。然后我们在板子上加载这个模型，调用相关的API就可以完成这个网络的加速计算。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="NNIE-环境搭建">NNIE 环境搭建</h3>
+<hr>
+<p>  工欲善其事必先利其器。NNIE最开始接触的时候，我觉得贼难受，觉得很难。但是当你把环境配置好了，你就会觉得事半功倍，很舒服。</p>
+<p>  以下内容，我都是按照HISI SDK的SVP部分的《HI SVP开发指南.pdf》做的，只是由于时效性的原因，有些内容需要做一定的改变适应才行。</p>
+<p>  我这里根据我的摸鱼经验，我建议萌新第一步，先把RuyiStudio配置起来，这里面带了所有和NNIE开发的工具。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="RuyiStudio-简介">RuyiStudio 简介</h3>
+<hr>
+<p>  以下是RuyiStudio官方介绍：</p>
+<p>  RuyiStudio 集成 windows 版 的 NNIE mapper 和 仿真库， 具有 生成 NNIE wk 功能、 仿真NNIE 功能，同时 具有 代码 编辑、编译、调试、执行 功能 、 网络拓扑显示、目标检测画框、 向量 相似度 对比、 调试 定位 信息获取等功能 。</p>
+<br/>
+<br/>
+<h5 id="RuyiStudio-MinGW安装">RuyiStudio ----- MinGW安装</h5>
+<p>  这里我建议选择手动安装，下载MinGW的对应版本，解压到一个无中文路径的目录下。然后下载对应MinGW的msys，解压到MinGW的根目录下。这里直接按照文档给的内容走即可。这一步无明显的坑。</p>
+<br/>
+<br/>
+<h5 id="RuyiStudio-Python-3-5-与CAFFE安装">RuyiStudio ----- Python 3.5 与CAFFE安装</h5>
+<p>  这一步是最坑的一步。所以这步我会一一按照文档介绍说明。</p>
+<p>  这一步必须按照手动配置方式，一键脚本配置，我建议有能力的小伙伴使用，纠错有难度。</p>
+<ul>
+<li>按照文档把RUYI_PYTHON_PATH环境变量添加到系统。ruyi_env_setup-2.0.28所在目录定义为PREFIX, 这里添加的值为PREFIX/python35;PREFIX/python35/Scripts;PREFIX/python35/Library/bin。这里没什么坑，就是别有中文路径就好。</li>
+<li>然后把RUYI_PYTHON_PATH的值添加到PATH环境变量中去。没坑这里，注意按照文档整就行了。</li>
+<li>ruyi_env_setup-2.0.28所在目录定义为PREFIX，把PREFIX/python35\Lib\site-packages\caffe\python添加到PYTHONPATH的环境变量中去。</li>
+<li>进入ruyi_env_setup-2.0.28\python_bat目录，双击运行setup_download_python.bat。一般来说，你会报错的，因为anaconda的清华源已经被干掉了，不排除以后恢复的可能性，所以，这里又需要把清华源替换为anaconda的官方源。<br>
+注意：把：setup_download_python.bat中的所有<a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/anaconda%E8%BF%9E%E6%8E%A5%E6%9B%BF%E6%8D%A2%E4%B8%BAhttps://repo.anaconda.com/%E3%80%82">https://mirrors.tuna.tsinghua.edu.cn/anaconda连接替换为https://repo.anaconda.com/。</a><br>
+列如：<br>
+<a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/win-64/certifi-2016.2.28-py35_0.tar.bz2">https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/win-64/certifi-2016.2.28-py35_0.tar.bz2</a>  替换后是 <a target="_blank" rel="noopener" href="https://repo.anaconda.com/pkgs/free/win-64/certifi-2016.2.28-py35_0.tar.bz2">https://repo.anaconda.com/pkgs/free/win-64/certifi-2016.2.28-py35_0.tar.bz2</a> 。这里改完了，你可以双击这个脚本setup_download_python.bat下载相关的库，这里建议开代理下载，很慢，真的。<br>
+如果你以为这样就完了吗？那是不可能的。当你上述脚本执行完后，其中有9个是下载失败的。他们的连接特征如下：<br>
+<a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/win-64/jpeg-9b-vc14_2.tar.bz2">https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/win-64/jpeg-9b-vc14_2.tar.bz2</a><br>
+来至于anaconda/cloud部分的。都不得行，so，得去官方源找对应的9个内容，我把链接地址贴到下面，可能你们需要的版本不是下面连接所示，但是你可以访问那个页面，那个页面包含所有的版本，选择对应的版本即可，<br>
+<a target="_blank" rel="noopener" href="https://anaconda.org/conda-forge/jpeg/9b/download/win-64/jpeg-9b-vc14_2.tar.bz2">https://anaconda.org/conda-forge/jpeg/9b/download/win-64/jpeg-9b-vc14_2.tar.bz2</a><br>
+<a target="_blank" rel="noopener" href="https://anaconda.org/conda-forge/libpng/1.6.34/download/win-64/libpng-1.6.34-vc14_0.tar.bz2">https://anaconda.org/conda-forge/libpng/1.6.34/download/win-64/libpng-1.6.34-vc14_0.tar.bz2</a><br>
+<a target="_blank" rel="noopener" href="https://anaconda.org/conda-forge/libtiff/4.0.9/download/win-64/libtiff-4.0.9-vc14_0.tar.bz2">https://anaconda.org/conda-forge/libtiff/4.0.9/download/win-64/libtiff-4.0.9-vc14_0.tar.bz2</a><br>
+<a target="_blank" rel="noopener" href="https://repo.anaconda.com/cloud/conda-forge/win-64/zlib-1.2.11-vc14_0.tar.bz2">https://repo.anaconda.com/cloud/conda-forge/win-64/zlib-1.2.11-vc14_0.tar.bz2</a><br>
+<a target="_blank" rel="noopener" href="https://anaconda.org/conda-forge/tk/8.5.19/download/win-64/tk-8.5.19-vc14_1.tar.bz2">https://anaconda.org/conda-forge/tk/8.5.19/download/win-64/tk-8.5.19-vc14_1.tar.bz2</a><br>
+<a target="_blank" rel="noopener" href="https://anaconda.org/conda-forge/openssl/1.0.2n/download/win-64/openssl-1.0.2n-vc14_0.tar.bz2">https://anaconda.org/conda-forge/openssl/1.0.2n/download/win-64/openssl-1.0.2n-vc14_0.tar.bz2</a><br>
+<a target="_blank" rel="noopener" href="https://anaconda.org/conda-forge/icu/58.2/download/win-64/icu-58.2-vc14_0.tar.bz2">https://anaconda.org/conda-forge/icu/58.2/download/win-64/icu-58.2-vc14_0.tar.bz2</a><br>
+<a target="_blank" rel="noopener" href="https://anaconda.org/conda-forge/qt/5.6.2/download/win-64/qt-5.6.2-vc14_1.tar.bz2">https://anaconda.org/conda-forge/qt/5.6.2/download/win-64/qt-5.6.2-vc14_1.tar.bz2</a><br>
+<a target="_blank" rel="noopener" href="https://anaconda.org/conda-forge/protobuf/3.5.1/download/win-64/protobuf-3.5.1-py35_vc14_0.tar.bz2">https://anaconda.org/conda-forge/protobuf/3.5.1/download/win-64/protobuf-3.5.1-py35_vc14_0.tar.bz2</a><br>
+如果以上所需的内容版本发生了变动，那么访问<a target="_blank" rel="noopener" href="https://anaconda.org/conda-forge/%EF%BC%8C%E7%9B%B4%E6%8E%A5%E5%8E%BB%E6%9F%A5%E6%89%BE%E9%9C%80%E8%A6%81%E5%8C%85%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97%EF%BC%8C%E9%80%89%E6%8B%A9%E5%AF%B9%E5%BA%94%E7%89%88%E6%9C%AC%E5%8D%B3%E5%8F%AF%EF%BC%8C%E5%A6%82%EF%BC%9Ajpeg">https://anaconda.org/conda-forge/，直接去查找需要包的关键字，选择对应版本即可，如：jpeg</a> ，搜索了后，选择	排名第一的conda-forge / jpeg 9c源，然后进去选择对应版本下载即可。这个网站有点卡，建议代理。如下图：</li>
+</ul>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_084/conda.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  所有的内容下载好了 ，开始下一步。</p>
+<ul>
+<li>把上面下载的包放到ruyi_env_setup-2.0.28\python35目录下，并全部解压到ruyi_env_setup-2.0.28\python35目录。</li>
+<li>把ruyi_env_setup-2.0.28 目录下的caffe.zip 放到ruyi_env_setup-2.0.28\python35\Lib\site-packages下解压。</li>
+<li>把opencv_python-3.4.0.12-cp35-cp35m-win_amd64.whl放到ruyi_env_setup-2.0.28\python35\Lib\site-packages ,然后在ruyi_env_setup-2.0.28\python35\Lib\site-packages目录，执行pip install opencv_python-3.4.0.12-cp35-cp35m-win_amd64.whl安装opencv</li>
+</ul>
+<br/>
+<br/>
+<h5 id="RuyiStudio-2-0-28-zip-解压运行">RuyiStudio-2.0.28.zip 解压运行</h5>
+<p>  打开RuyiStudio.exe得到如下的界面，常用的几个点就如图所示，至于怎么完成后续工作。请看后续文章。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_084/ruyi.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/04/28/blog_idx_083/" rel="prev" title="一种OSD 简单实现 (文字反色---opencv、字体切换---freetype2(中文、空格))">
+      <i class="fa fa-chevron-left"></i> 一种OSD 简单实现 (文字反色---opencv、字体切换---freetype2(中文、空格))
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/06/08/blog_idx_085/" rel="next" title="HiSi 3516CV500 NNIE(Neural Network Inference Engine) 摸鱼记录(2) --- 模型生成及模型仿真(实例分析)">
+      HiSi 3516CV500 NNIE(Neural Network Inference Engine) 摸鱼记录(2) --- 模型生成及模型仿真(实例分析) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number"></span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NNIE%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">NNIE简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NNIE-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">NNIE 工作流程简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NNIE-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-number"></span> <span class="nav-text">NNIE 环境搭建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RuyiStudio-%E7%AE%80%E4%BB%8B"><span class="nav-number"></span> <span class="nav-text">RuyiStudio 简介</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#RuyiStudio-MinGW%E5%AE%89%E8%A3%85"><span class="nav-number"></span> <span class="nav-text">RuyiStudio ----- MinGW安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#RuyiStudio-Python-3-5-%E4%B8%8ECAFFE%E5%AE%89%E8%A3%85"><span class="nav-number"></span> <span class="nav-text">RuyiStudio ----- Python 3.5 与CAFFE安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#RuyiStudio-2-0-28-zip-%E8%A7%A3%E5%8E%8B%E8%BF%90%E8%A1%8C"><span class="nav-number"></span> <span class="nav-text">RuyiStudio-2.0.28.zip 解压运行</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

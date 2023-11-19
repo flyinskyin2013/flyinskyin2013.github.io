@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    最近有个项目是做STM32裸机开发的，由于需要用到USB向android系统传输数据，先考虑USB HID Class，但是考虑到驱动和后续要支持读取SD问题，进而采用USB MS Class作为传输数据的载体。模拟一个带FAT32文件系统的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FAT32 文件系统详解">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2017/02/27/blog_idx_031/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    最近有个项目是做STM32裸机开发的，由于需要用到USB向android系统传输数据，先考虑USB HID Class，但是考虑到驱动和后续要支持读取SD问题，进而采用USB MS Class作为传输数据的载体。模拟一个带FAT32文件系统的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2017-02-27T04:27:29.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.705Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2017/02/27/blog_idx_031/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>FAT32 文件系统详解 | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2017/02/27/blog_idx_031/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          FAT32 文件系统详解
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-02-27 12:27:29" itemprop="dateCreated datePublished" datetime="2017-02-27T12:27:29+08:00">2017-02-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-16 14:03:56
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=031） 
+&emsp;&emsp;本文发布于 2017-02-27 12:27:29，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=031） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  最近有个项目是做STM32裸机开发的，由于需要用到USB向android系统传输数据，先考虑USB HID Class，但是考虑到驱动和后续要支持读取SD问题，进而采用USB MS Class作为传输数据的载体。模拟一个带FAT32文件系统的存储设备。</p>
+<p>  模拟设备基本信息:总容量8MB，除去MBR,DBR,FSINFO,FAT,等，大概还有7.8MB左右的容量。</p>
+<p>  这篇文章主要用于讲解FAT32的详细结构，同时也详解存储介质和文件系统的关系。读这篇文章时，以假设你对FAT32 具备一定的了解，至少你知道FAT32由哪些地方组成。现在网上的资料，就我查询来看，都没有介绍MBR，大部分都直接从DBR开始讲起来,而模拟一个存储设备，MBR是一切的起点，只要搞清楚MBR，我们就可以顺着线，了解所有。如果对文中的一些词语不了解，请多百度。</p>
+<p>  <strong>此外，此文章是我查看许多资料而融合而来，向前人致敬！！！</strong></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="FAT-FileSystem">FAT FileSystem</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="存储介质">存储介质</h5>
+<p>  由于我们的存储介质是由存储载体（磁面或者存储芯片）和 读写机构组成。如硬盘的磁面和磁头部分等等。这就解决了怎么物理级读取数据的问题，而操作系统的存储驱动正是做这个事情的。驱动提供接口让我们可以在存储介质上读写数。</p>
+<p>  我们虽然可以通过驱动向存储介质写数据，但是都是很低级的写，同时，我们写入的大部分是文件，而很少有人直接往磁盘保存文件中的二进制数据吧，而不保存文件的其他信息吧，并且这样是很难管理的（如：我要取一个文件，就是说我要的是人记住这个文件在存储介质的那个位置，是那几个字节）。为了方便管理，有了文件系统的概念，文件系统可以提供方便的存储文件各种信息的方法。</p>
+<p>  FAT文件系统是一个小容量类常用的文件系统，容量太大了就不太适合使用FAT系文件系统。FAT有FAT12，FAT16,FAT32，我们今天主要就是介绍FAT32.</p>
+<br/>
+<br/>
+<h5 id="FAT32">FAT32</h5>
+<p>  由于网上这方面的资料很多，我主要是介绍一些网上现有资料让我迷惑的一些地方。同时通过代码的方式，让我们知道各个组成部分到底是怎么回事。</p>
+<p>  FAT32 由 MBR,DBR,FSINFO,FAT1,FAT2,DATA(DATA = DIR + FILE_DATA) 组成。</p>
+<p>  MBR是主引导记录，主要作用是为了标示一个分区的信息而设立的。MBR结构如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//0 扇区</span></span><br><span class="line"><span class="type">uint8_t</span> FAT32_MBR[<span class="number">80</span>]=&#123;</span><br><span class="line">	<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="comment">/*DPT 开始位*/</span><span class="number">0x80</span><span class="comment">/**/</span>,<span class="number">0x01</span><span class="comment">/**/</span>,</span><br><span class="line">	<span class="number">0x01</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x0B</span>,<span class="number">0xFE</span><span class="comment">/**/</span>,<span class="number">0x3F</span>,<span class="number">0x00</span>,  <span class="number">0x3F</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*4bytes下个分区的扇区地址*/</span>,  <span class="number">0x82</span>,<span class="number">0x3e</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*4bytes为SD卡总的扇区个数(16002个)*/</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,</span><br><span class="line">	<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,</span><br><span class="line">	<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,</span><br><span class="line">	<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x55</span>,<span class="number">0xAA</span><span class="comment">/**/</span>,</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>  MBR决定DBR的起始位置,DBR存储FAT表信息。DBR如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//DOS BOOT RECORD</span></span><br><span class="line"><span class="comment">//DBR=引导代码+BPB+扩展BPB+校验</span></span><br><span class="line"><span class="comment">//FAT1 = 63+34</span></span><br><span class="line"><span class="comment">//FAT2 = 63+34+123 = 220</span></span><br><span class="line"><span class="comment">//DATA = 63+34+123+123 = 343</span></span><br><span class="line"><span class="comment">//ROOT-DIR = 343</span></span><br><span class="line"><span class="type">uint8_t</span> FAT32_DBR[<span class="number">96</span>]=&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="number">0xEB</span>,<span class="number">0x58</span>,<span class="number">0x90</span><span class="comment">/*(0x0-0x2)跳转指令*/</span>,<span class="number">0x4D</span>,<span class="number">0x53</span>,<span class="number">0x44</span>,<span class="number">0x4F</span>,<span class="number">0x53</span>,<span class="number">0x35</span>,<span class="number">0x2E</span>,<span class="number">0x30</span><span class="comment">/*（0x3-0xA）OEM区域:MSDOS5.0*/</span>,<span class="number">0x00</span>,<span class="number">0x02</span><span class="comment">/*（0xB-0xC）每扇区字节数*/</span>,<span class="number">0x01</span><span class="comment">/*（0xD）每簇扇区数*/</span>,<span class="number">0x22</span>,<span class="number">0x00</span><span class="comment">/*(0xE-0xF)保留扇区数*/</span>,</span><br><span class="line">	<span class="number">0x02</span><span class="comment">/*(0x10)FAT数(Number of FAT) 该分区上FAT的副本数*/</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*（0x11-0x12）FAT32必须等于0，FAT12/FAT16为根目录中目录的个数；*/</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*(0x13-0x14)FAT32必须等于0，FAT12/FAT16为扇区总数*/</span>,<span class="number">0xF8</span><span class="comment">/*(0x15),哪种存储介质，0xF8标准值，可移动存储介质，常用的 0xF0*/</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*(0x16-0x17)FAT32必须为0，FAT12/FAT16为一个FAT 表所占的扇区数*/</span>,<span class="number">0x3F</span>,<span class="number">0x00</span><span class="comment">/*(0x18-0x19)每磁道扇区数，只对于有“特殊形状”（由磁头和柱面每 分割为若干磁道）的存储介质有效，63（0x00 3F）*/</span>,<span class="number">0xFF</span>,<span class="number">0x00</span><span class="comment">/*(0x1A-0x1B)磁头数，只对特殊的介质才有效，255（0x00 FF）。*/</span>,<span class="number">0x3F</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*(0x1C-0x1F)DBR分区之前所隐藏的扇区数，63，与MBR中地址0x1C6开始的4个字节数值相等*/</span>,</span><br><span class="line">	<span class="number">0x82</span>,<span class="number">0x3E</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*(0x20-0x23)文件系统总扇区数，16002*/</span>,<span class="number">0x7B</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*(0x24-0x27)每个FAT表占用扇区数，123*/</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*(0x28-0x29),标记，此域FAT32 特有*/</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*(0x2A-0x2B)FAT32版本号0.0，FAT32特有*/</span>,<span class="number">0x02</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*(0x2C-0x2F),根目录所在第一个簇的簇号，2。（虽然在FAT32文件系统 下，根目录可以存放在数据区的任何位置，但是通常情况下还是起始于2号簇） */</span>,</span><br><span class="line">	<span class="number">0x01</span>,<span class="number">0x00</span><span class="comment">/*(0x30-0x31),FSINFO（文件系统信息扇区）扇区号1，该扇区为操作 系统提供关于空簇总数及下一可用簇的信息*/</span>,<span class="number">0x06</span>,<span class="number">0x00</span><span class="comment">/*(0x32-0x33),备份引导扇区的位置。备份引导扇区总是位于文件系统 的6号扇区*/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*(0x34-0x3F),用于以后FAT 扩展使用*/</span>,</span><br><span class="line">	<span class="number">0x80</span>,<span class="number">0x00</span><span class="comment">/*(0x40-0x41),与FAT12/16 的定义相同，只不过两者位于启动扇区不同的位置而已*/</span>,<span class="number">0x29</span><span class="comment">/*(0x42),扩展引导标志，0x29。与FAT12/16 的定义相同*/</span>,<span class="number">0xAF</span>,<span class="number">0xE3</span>,<span class="number">0xB5</span>,<span class="number">0x10</span><span class="comment">/*(0x43-0x46),卷序列号。通常为一个随机值*/</span>,<span class="number">0x20</span>,<span class="number">0x20</span>,<span class="number">0x20</span>,<span class="number">0x20</span>,<span class="number">0x20</span>,<span class="number">0x20</span>,<span class="number">0x20</span>,<span class="number">0x20</span>,<span class="number">0x20</span>,</span><br><span class="line">	<span class="number">0x20</span>,<span class="number">0x20</span><span class="comment">/*(0x47-0x51)卷标（ASCII码），如果建立文件系统的时候指定了卷 标，会保存在此*/</span>,<span class="number">0x46</span>,<span class="number">0x41</span>,<span class="number">0x54</span>,<span class="number">0x33</span>,<span class="number">0x32</span>,<span class="number">0x20</span>,<span class="number">0x20</span>,<span class="number">0x20</span><span class="comment">/*(0x52-0x59)文件系统格式的ASCII码，FAT32*/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  FSINFO如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//文件系统信息扇区，位于DBR 后一个扇区</span></span><br><span class="line"><span class="comment">//64扇区</span></span><br><span class="line"><span class="type">uint8_t</span> FAT32_FSINFO[<span class="number">48</span>]=&#123;</span><br><span class="line">	<span class="number">0x52</span>,<span class="number">0x52</span>,<span class="number">0x61</span>,<span class="number">0x41</span><span class="comment">/*扩展引导标签*/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,</span><br><span class="line">	<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x72</span>,<span class="number">0x72</span>,<span class="number">0x41</span>,<span class="number">0x61</span><span class="comment">/*FSINFO签名“0x72724161”*/</span>,<span class="number">0x66</span>,<span class="number">0x3D</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*文件系统的空簇数，15788*/</span>,<span class="number">0x15</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/*下一可用簇号（0x 00 00 00 15）*/</span>,</span><br><span class="line">	<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span><span class="comment">/**/</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x55</span>,<span class="number">0xAA</span><span class="comment">/**/</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>  FAT表存储哪些簇已经被分配, FAT表如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//97扇区，FAT1</span></span><br><span class="line"><span class="comment">//220,FAT2</span></span><br><span class="line"><span class="type">uint8_t</span> FAT32_FAT[<span class="number">28</span>]=&#123;</span><br><span class="line">	<span class="number">0xF8</span>,<span class="number">0xFF</span>,<span class="number">0xFF</span>,<span class="number">0x0F</span>, <span class="number">0xFF</span>,<span class="number">0xFF</span>,<span class="number">0xFF</span>,<span class="number">0xFF</span>, <span class="number">0xFF</span>,<span class="number">0xFF</span>,<span class="number">0xFF</span>,<span class="number">0x0F</span>, <span class="number">0x04</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span> , </span><br><span class="line">	<span class="number">0x05</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>, <span class="number">0x06</span>,<span class="number">0x00</span>,<span class="number">0x00</span>,<span class="number">0x00</span>, <span class="number">0xFF</span>,<span class="number">0xFF</span>,<span class="number">0xFF</span>,<span class="number">0x0F</span></span><br><span class="line">	</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>  同理通过DBR和FAT表我们可以推算出DIR所在的扇区，同时，也可以推算出DATA所在的扇区，然后我们就可以模拟一个带FAT32文件系统的存储设备。</p>
+<p>  注意:文中的一些地方要结合其他的FAT32文章基础来看，我只是很直白的表达了，到底介质上存了什么才会让OS认出这就是FAT32，容量多大。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/12/01/blog_idx_030/" rel="prev" title="Ubuntu(Linux) PyQt5 QtUIFile 转换为 PythonModule (pyuic.py/pyuic脚本)">
+      <i class="fa fa-chevron-left"></i> Ubuntu(Linux) PyQt5 QtUIFile 转换为 PythonModule (pyuic.py/pyuic脚本)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/03/14/blog_idx_032/" rel="next" title="C 可变参数函数分析(va_start,va_end,va_list...)">
+      C 可变参数函数分析(va_start,va_end,va_list...) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FAT-FileSystem"><span class="nav-number"></span> <span class="nav-text">FAT FileSystem</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E4%BB%8B%E8%B4%A8"><span class="nav-number"></span> <span class="nav-text">存储介质</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#FAT32"><span class="nav-number"></span> <span class="nav-text">FAT32</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

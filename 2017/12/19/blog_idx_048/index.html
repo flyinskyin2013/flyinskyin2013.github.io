@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   date 2017.12.18 前言    首先为了帮队友在win下配置caffe，本人特意在win平台下折腾了一波。在此只想说一句话：个人认为，caffe编译Win比Linux更坑，更难，花了我接近一天的时间（我以前在Linux上配置过N次了）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Caffe源码编译,win10+vs2015+Ninja,C++接口测试(mnist),Python接口测试(mnist),(坑爹篇)">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2017/12/19/blog_idx_048/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   date 2017.12.18 前言    首先为了帮队友在win下配置caffe，本人特意在win平台下折腾了一波。在此只想说一句话：个人认为，caffe编译Win比Linux更坑，更难，花了我接近一天的时间（我以前在Linux上配置过N次了）。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/dataset.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/lmdb.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/model.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/train.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/test.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/iter.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2017-12-19T04:26:21.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.750Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/dataset.png">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2017/12/19/blog_idx_048/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>Caffe源码编译,win10+vs2015+Ninja,C++接口测试(mnist),Python接口测试(mnist),(坑爹篇) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2017/12/19/blog_idx_048/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Caffe源码编译,win10+vs2015+Ninja,C++接口测试(mnist),Python接口测试(mnist),(坑爹篇)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-12-19 12:26:21" itemprop="dateCreated datePublished" datetime="2017-12-19T12:26:21+08:00">2017-12-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4.3k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-16 18:43:07
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=048） 
+&emsp;&emsp;本文发布于 2017-12-19 12:26:21，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=048） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  date 2017.12.18</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  首先为了帮队友在win下配置caffe，本人特意在win平台下折腾了一波。在此只想说一句话：个人认为，caffe编译Win比Linux更坑，更难，花了我接近一天的时间（我以前在Linux上配置过N次了）。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="caffe-windows-编译">caffe windows 编译</h3>
+<hr>
+<p>  注意事项（这才是精华，我就是因为这个才浪费了这一天时间）</p>
+<p>    1. 是否安装readme提供的符合要求的vs，cmake，ninja版本？</p>
+<p>    2. 是否安装了正确的python版本?</p>
+<p>    3. 对于VS来说，检查，你的电脑上应该只存在一个版本，而且此版本应该包含VC++的功能（包括MFC以及基础功能）（不理解就全部装上，绝对不吃亏，不上当，我就是因为节约空间，少装了一些东西，出问题了）</p>
+<p>    4. 检查python是否只有一个版本，建议安装anaconda？</p>
+<p>    5. 检查自己的环境变量，对于cl.exe,python.exe,cmake.exe,ninja.exe是否找到？</p>
+<p>    6. 最后，不想折腾就尽量按照帮助文档，一个钉子一个眼的做法，这样会少很多错误？</p>
+<ol>
+<li>下载caffe,切换分支,运行脚本,一切顺利，你就是幸运的那个人。执行以下命令以前，保证注意事项都看了，想要加速的，自己确定自己的cuda和cudnn配置好了。</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/BVLC/caffe.git</span><br><span class="line"><span class="built_in">cd</span> caffe</span><br><span class="line">git checkout windows</span><br><span class="line">./scripts/build_win.cmd</span><br><span class="line">（喝口水）</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>WindowsDownloadPrebuiltDependencies.cmake 此脚本报错，报找不到服务器</li>
+</ol>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">原因：主要是天朝牌防火墙</span><br><span class="line">方法：</span><br><span class="line">1 开vpn或者其他工具翻墙。</span><br><span class="line">2 自己想办法去下对应的文件（自己分析以下这段文字），放到.caffe/download目录（一般在用户目录下）</span><br><span class="line">我的下载地址：https://github.com/willyd/caffe-builder/releases/download/v1.1.0/libraries_v140_x64_py35_1.1.0.tar.bz2(对应vs2015,python3.5)</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(DEPENDENCIES_VERSION <span class="number">1.1</span>.<span class="number">0</span>)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_NAME_1800_27 libraries_v120_x64_py27_<span class="variable">$&#123;DEPENDENCIES_VERSION&#125;</span>)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_NAME_1900_27 libraries_v140_x64_py27_<span class="variable">$&#123;DEPENDENCIES_VERSION&#125;</span>)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_NAME_1900_35 libraries_v140_x64_py35_<span class="variable">$&#123;DEPENDENCIES_VERSION&#125;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_URL_BASE https://github.com/willyd/caffe-builder/releases/download)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_FILE_EXT .tar.bz2)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_URL_1800_27 <span class="string">&quot;$&#123;DEPENDENCIES_URL_BASE&#125;/v$&#123;DEPENDENCIES_VERSION&#125;/$&#123;DEPENDENCIES_NAME_1800_27&#125;$&#123;DEPENDENCIES_FILE_EXT&#125;&quot;</span>)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_SHA_1800_27 <span class="string">&quot;ba833d86d19b162a04d68b09b06df5e0dad947d4&quot;</span>)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_URL_1900_27 <span class="string">&quot;$&#123;DEPENDENCIES_URL_BASE&#125;/v$&#123;DEPENDENCIES_VERSION&#125;/$&#123;DEPENDENCIES_NAME_1900_27&#125;$&#123;DEPENDENCIES_FILE_EXT&#125;&quot;</span>)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_SHA_1900_27 <span class="string">&quot;17eecb095bd3b0774a87a38624a77ce35e497cd2&quot;</span>)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_URL_1900_35 <span class="string">&quot;$&#123;DEPENDENCIES_URL_BASE&#125;/v$&#123;DEPENDENCIES_VERSION&#125;/$&#123;DEPENDENCIES_NAME_1900_35&#125;$&#123;DEPENDENCIES_FILE_EXT&#125;&quot;</span>)</span><br><span class="line"><span class="keyword">set</span>(DEPENDENCIES_SHA_1900_35 <span class="string">&quot;f060403fd1a7448d866d27c0e5b7dced39c0a607&quot;</span>)</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>.\caffe/export.hpp(7): fatal error C1083: 无法打开包括文件: “caffe/include_symbols.hpp”: No such file or directory</li>
+</ol>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">此文件在caffe/build 目录，自己拷贝到caffe/include/caffe/下，就好了。</span><br><span class="line">这个bug主要是由于没有把build目录传递给cl.exe,导致找不到文件。</span><br><span class="line">（参考此问题https://github.com/BVLC/caffe/issues/5840，我也提交了可能的解决方法，希望帮助你们）</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>caffe mnist数据集的train 和test</li>
+</ol>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">首先请下载mnist数据集，这里我打包上传了四个文件，下载地址。http://download.csdn.net/download/u011728480/10163922（下载地址参考caffe/data/mnist/get_mnist.sh文件，在原生的win下，wget是找不到的，所以，自己去下载吧）</span><br></pre></td></tr></table></figure>
+<p>如图</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/dataset.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 做以下操作时，保证caffe已经正常编译通过。</span></span><br><span class="line"><span class="comment"># 首先把数据集转为lmdb格式存放，这是caffe支持的存储格式。</span></span><br><span class="line"><span class="comment"># 转换：</span></span><br><span class="line">./convert_mnist_data.exe ../../../data/mnist/train-images-idx3-ubyte ../../../data/mnist/train-labels-idx1-ubyte ./mnist_train_lmdb --backend=lmdb</span><br><span class="line"></span><br><span class="line">./convert_mnist_data.exe ../../../data/mnist/t10k-images-idx3-ubyte ../../../data/mnist/t10k-labels-idx1-ubyte ./mnist_test_lmdb --backend=lmdb</span><br><span class="line"><span class="comment"># 生成如图A两个文件夹</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># train:</span></span><br><span class="line">./build/tools/caffe.exe train --solver=examples/mnist/lenet_solver.prototxt</span><br><span class="line"><span class="comment"># 生成如图B四个文件</span></span><br><span class="line"><span class="comment"># 结果如图C，迭代10000,准确率99.03%.</span></span><br><span class="line"><span class="comment"># test:</span></span><br><span class="line">./build/tools/caffe.exe <span class="built_in">test</span> -model=examples/mnist/lenet_train_test.prototxt -weights=examples/mnist/lenet_iter_10000.caffemodel -gpu=0</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试结果如图D,测试集,准确率98.56%</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>图A</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/lmdb.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>图B</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/model.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>图C</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/train.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>图D</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/test.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<ol start="5">
+<li>Caffe Python 接口测试</li>
+</ol>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(我用的anaconda环境,开vpn执行，</span><br><span class="line">conda config --add channels conda-forge</span><br><span class="line">conda config --add channels willyd</span><br><span class="line">conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz)</span><br><span class="line">把caffe/python/caffe目录放到python的site-packages目录。</span><br><span class="line">把caffe/python目录添加到PYTHONPATH环境变量</span><br></pre></td></tr></table></figure>
+<p>  准备一个py文件吧，迭代10000次。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> caffe</span><br><span class="line">caffe.set_device(<span class="number">0</span>)</span><br><span class="line">caffe.set_mode_gpu()</span><br><span class="line">solver = caffe.SGDSolver(<span class="string">&#x27;examples/mnist/lenet_solver.prototxt&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">iter</span> = solver.<span class="built_in">iter</span></span><br><span class="line"><span class="keyword">while</span> <span class="built_in">iter</span>&lt;<span class="number">10000</span>:</span><br><span class="line">    solver.step(<span class="number">1</span>)</span><br><span class="line">    <span class="built_in">iter</span> = solver.<span class="built_in">iter</span></span><br><span class="line">    input_data = solver.net.blobs[<span class="string">&#x27;data&#x27;</span>].data  </span><br><span class="line">    loss = solver.net.blobs[<span class="string">&#x27;loss&#x27;</span>].data</span><br><span class="line">    accuracy = solver.test_nets[<span class="number">0</span>].blobs[<span class="string">&#x27;accuracy&#x27;</span>].data</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;iter:&#x27;</span>, <span class="built_in">iter</span>, <span class="string">&#x27;loss:&#x27;</span>, loss,<span class="string">&#x27;accuracy:&#x27;</span>,accuracy)</span><br></pre></td></tr></table></figure>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_048/iter.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  注意：这里很有可能要报一个错误，PIL模块中的Image模块加载失败，提示核心提示：from PIL import Image ， DLL 加载失败。我把PIL模块降级到4.2左右就可以了，具体看你python版本，不要用最新的，不知道降到哪个版本就自己一个一个的降级。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  说真的，没有特别需求，别在windows下用源码折腾caffe，太坑。不喜欢折腾的人可以去下载已经编译好的二进制文件。最后说一句，在Linux下用caffe真的很简单的，点F*ck。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul>
+<li>无</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/12/15/blog_idx_047/" rel="prev" title="LeNet-5 论文及原理分析(笨鸟角度)">
+      <i class="fa fa-chevron-left"></i> LeNet-5 论文及原理分析(笨鸟角度)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/12/22/blog_idx_049/" rel="next" title="反编译和逆向出现:java.lang.VerifyError(新问题样本)">
+      反编译和逆向出现:java.lang.VerifyError(新问题样本) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#caffe-windows-%E7%BC%96%E8%AF%91"><span class="nav-number"></span> <span class="nav-text">caffe windows 编译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

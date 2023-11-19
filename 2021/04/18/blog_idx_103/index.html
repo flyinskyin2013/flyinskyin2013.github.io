@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"flyinskyin2013.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Ubuntu 18.04 gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04) OpenGl ES 3.1 or 3.1+ RK3399PRO 板卡  前言    由于我们小组的产品落地越来越多，以前（2018年）我搭">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel)">
+<meta property="og:url" content="https://flyinskyin2013.github.io/2021/04/18/blog_idx_103/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明  Ubuntu 18.04 gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04) OpenGl ES 3.1 or 3.1+ RK3399PRO 板卡  前言    由于我们小组的产品落地越来越多，以前（2018年）我搭">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/prj_framework.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/facedetect_cpu.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/facedetect_gpu.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/pose_cpu.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/pose_gpu.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/mp_bazel_version.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/bazel_help.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/solution_eg.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/opencv_dep.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/opengles_ver.png">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2021-04-18T11:39:44.000Z">
+<meta property="article:modified_time" content="2023-11-19T05:00:05.882Z">
+<meta property="article:author" content="Sky">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/prj_framework.png">
+
+<link rel="canonical" href="https://flyinskyin2013.github.io/2021/04/18/blog_idx_103/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-10808246727"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-10808246727');
+</script>
+  <title>Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel) | Sky's Blogs</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-80RLMJ8DQP');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Sky's Blogs</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://flyinskyin2013.github.io/2021/04/18/blog_idx_103/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Sky">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-18 19:39:44" itemprop="dateCreated datePublished" datetime="2021-04-18T19:39:44+08:00">2021-04-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-11-19 13:00:05" itemprop="dateModified" datetime="2023-11-19T13:00:05+08:00">2023-11-19</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>16k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>15 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:06:21
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
+<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=103）
+&emsp;&emsp;本文发布于 2021-04-18 19:39:44     （BlogID=103） -->
+<h6 id="环境说明">环境说明</h6>
+<ul>
+<li>Ubuntu 18.04</li>
+<li>gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04)</li>
+<li>OpenGl ES 3.1 or 3.1+</li>
+<li>RK3399PRO 板卡</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  由于我们小组的产品落地越来越多，以前（2018年）我搭建的老旧产品框架已经有点日落西山的感觉了。倒不是说产品业务不能支撑了，只是随着使用的时间增多，逐渐的感觉框架比较’LOW’，全靠使用者调教的怎么样，缺少了很多公共的组件。我倒是觉得这是必然的，因为当时我们小组的产品功能还比较的单一，随着产品功能多样化，产品迭代的频率越来越高，使得我们现有的框架在对付当前的产品的时候，有点落后了。最主要的就是我们的框架代码复用率有点低，导致快速开发的时候，那叫一个不爽。在我们都是打工仔的前提下，这一致命缺陷让我很难受，项目Code&amp;Debug的时间成本越来越高。还有一个原因就是当时我设计这个框架的时候，自己的想法很单纯，也很简单。<br>
+  下图是当时我设计的框架的一个简单示意图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/prj_framework.png" alt="prj_framework"/></center>
+    </div>
+</div>   
+父进程对子进程的所有行为进行监控和处理，子进程进行实际的逻辑开发。
+<p>  因此，我们小组内部决定要预研和引入一套开源的比较好使的框架，在后面如果上大项目的时候，可能就要上这个预研的新框架，经过了一圈调研，可能觉得Mediapipe和我们的业务很耦合，应该是可以使用的。于是乎，就有了我来踩一踩这个大坑。</p>
+<p>  好的多说无益，直接看运行Demo效果（包含FaceDetectDemo 和 HolisticDemo）,截图来自于我录制的4个视频。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/facedetect_cpu.png" alt="facedetect_cpu"/></center>
+    </div>
+	<div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/facedetect_gpu.png" alt="facedetect_gpu"/></center>
+    </div>
+</div>    
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/pose_cpu.png" alt="pose_cpu"/></center>
+    </div>
+	<div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/pose_gpu.png" alt="pose_gpu"/></center>
+    </div>
+</div>    
+<p>  由于Mediapipe使用的是一个名为bazel的编译管理工具，可以说是大大增加了我们解决问题的难度。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="安装Bazel-4-0-0">安装Bazel 4.0.0</h3>
+<hr>
+<p>  注意，Mediapipe使用的是bazel来编译的，如果以前没有接触过，可能使用起来不是那么的友好。而且Mediapipe基本是和特定版本的bazel是绑定的，所以在安装bazel之前，建议大家去看看你要使用的mediapipe版本所依赖的bazel版本是多少。你可以去看 ‘gay-hub’ 上面Mediapipe 的关于bazel的说明。如下图类似的说明：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/mp_bazel_version.png" alt="mp_bazel_version"/></center>
+    </div>
+</div>   
+<p>一般来说，Mediapipe依赖的bazel比较新，可能常见的发行版里面自带的bazel版本比较低，所以一般都需要从源码开始从零编译bazel，如果系统已有bazel等，可以用其他方式编译，详见后文链接的文档内容。下面的内容一般都是copy来自于 <a target="_blank" rel="noopener" href="https://docs.bazel.build/versions/4.0.0/install-compile-source.html">https://docs.bazel.build/versions/4.0.0/install-compile-source.html</a> 。<br>
+<br/><br>
+<br/></p>
+<h5 id="安装依赖">安装依赖</h5>
+<p>安装依赖</p>
+<ul>
+<li>sudo apt-get install build-essential openjdk-11-jdk python zip unzip</li>
+</ul>
+<br/>
+<br/>
+<h5 id="编译和部署-bazel">编译和部署 bazel</h5>
+<p>编译bazel</p>
+<ul>
+<li>cd bazel-src-dir</li>
+<li>env EXTRA_BAZEL_ARGS=“–host_javabase=@local_jdk//:jdk” bash ./compile.sh</li>
+</ul>
+<p>编译生成的bazel二进制文件在bazel-src-dir/output/ 目录。</p>
+<p>  这时我们可以选择将bazel安装到/usr/bin or /usr/local/bin或者把bazel-src-dir/output/ 添加到PATH环境变量。</p>
+<p>  然后运行可以得到如下图的内容：</p>
+<ul>
+<li>bazel --help</li>
+</ul>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/bazel_help.png" alt="bazel_help"/></center>
+    </div>
+</div>   
+<p>至此，bazel安装完毕，这里我就不详细介绍bazel了，网上有许多的介绍资料。这里可以简单的记住这两点就够了：bazel build target 和 bazel run target。bazel build target是编译目标。bazel run target 是编译并运行目标。<br>
+<br/><br>
+<br/><br>
+<br/><br>
+<br/></p>
+<h3 id="在rk3399pro上编译Mediapipe-Demo">在rk3399pro上编译Mediapipe Demo</h3>
+<hr>
+<p>  首先我们要下载好源码,并切换到对应的版本：</p>
+<ul>
+<li>git clone <a target="_blank" rel="noopener" href="https://github.com/google/mediapipe">https://github.com/google/mediapipe</a></li>
+<li>git checkout 0.8.3.2</li>
+</ul>
+<p>  然后，根据网页 <a target="_blank" rel="noopener" href="https://google.github.io/mediapipe/solutions/face_detection.html">https://google.github.io/mediapipe/solutions/face_detection.html</a> 的Example Apps-&gt; Desktop 小节里面，我们可以看到如下图的内容：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/solution_eg.png" alt="solution_eg"/></center>
+    </div>
+</div>   
+<p>  图中给出了关于人脸检测的demo的target 和 对应的graph-cfg文件。类似的说明，在每个solution下面都有。我推荐大家优先从hello_world开始编译，因为这个target简单，出错也好排查。此外，一些可以复用的文件，只要你不修改，就只会编译一次。</p>
+<p>  此外，我们编译的平台是aarch64+ubuntu18.04，而官方的编译结构带的是x86-64 + ubuntu 18.04，所以在链接一些第三方库的时候，例如：opencv，我们需要改一下路径才行，如下图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/opencv_dep.png" alt="opencv_dep"/></center>
+    </div>
+</div>   
+<p>可能在编译的过程中还会遇到其他的错误，大家就按着修改就好了。后面我会列出一些可能的错误及参考解决方法。</p>
+<br/>
+<br/>
+<h5 id="HelloWorld-编译和运行">HelloWorld 编译和运行</h5>
+<p>  进入mediapipe的源码根目录开始编译运行CPU版本。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; bazel build --define MEDIAPIPE_DISABLE_GPU=1 mediapipe/examples/desktop/hello_world:hello_world --local_cpu_resources=1</span><br><span class="line">&gt; bazel run   --define MEDIAPIPE_DISABLE_GPU=1 mediapipe/examples/desktop/hello_world:hello_world</span><br></pre></td></tr></table></figure>
+<p>  进入mediapipe的源码根目录开始编译运行GPU版本。(注意，这里的helloworld并没有gpu加速，这里这是演示怎么编译一些公共的包含gpu的代码)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; bazel build --define MEDIAPIPE_DISABLE_GPU=1 mediapipe/examples/desktop/hello_world:hello_world --local_cpu_resources=1</span><br><span class="line">&gt; bazel run   --define MEDIAPIPE_DISABLE_GPU=1 mediapipe/examples/desktop/hello_world:hello_world</span><br></pre></td></tr></table></figure>
+<p>–local_cpu_resources 是为了指定线程个数，一般来说，编译这个东西比较耗费内存，建议大家合力设定。如果不指定这个参数，bazel 按照 nproc 开启多线程编译。这样可能在某些情况下要爆内存。</p>
+<p>  在bazel build 之后，第一次编译可能要耗费大量的时间，我建议去干干别的，休息一会儿。<br>
+  在bazel run 之后，会打印一串helloworld。</p>
+<br/>
+<br/>
+<h5 id="人脸检测demo编译和运行">人脸检测demo编译和运行</h5>
+<p>  进入mediapipe的源码根目录开始编译运行CPU版本。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; bazel build --define MEDIAPIPE_DISABLE_GPU=1 --copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11 mediapipe/examples/desktop/face_detection:face_detection_cpu --local_ram_resources=1500  --local_cpu_resources=1</span><br><span class="line"></span><br><span class="line">&gt; ./bazel-bin/mediapipe/examples/desktop/face_detection/face_detection_cpu -calculator_graph_config_file=./mediapipe/graphs/face_detection/face_detection_desktop_live.pbtxt -input_video_path=./TestVideos/out.mp4</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  进入mediapipe的源码根目录开始编译运行GPU版本。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; bazel build --copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11 mediapipe/examples/desktop/face_detection:face_detection_gpu --local_ram_resources=1500  --local_cpu_resources=1</span><br><span class="line"></span><br><span class="line">&gt; ./bazel-bin/mediapipe/examples/desktop/face_detection/face_detection_gpu -calculator_graph_config_file=./mediapipe/graphs/face_detection/face_detection_mobile_gpu.pbtxt -input_video_path=./TestVideos/out.mp4</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>   运行之后，就会弹一个框开始检测了。</p>
+<br/>
+<br/>
+<h5 id="姿态demo编译和运行">姿态demo编译和运行</h5>
+<p>  进入mediapipe的源码根目录开始编译运行CPU版本。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bazel build --define MEDIAPIPE_DISABLE_GPU=1 --copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11 mediapipe/examples/desktop/holistic_tracking:holistic_tracking_cpu --local_ram_resources=1500  --local_cpu_resources=1</span><br><span class="line"></span><br><span class="line">./bazel-bin/mediapipe/examples/desktop/holistic_tracking:holistic_tracking_cpu -calculator_graph_config_file=./mediapipe/graphs/holistic_tracking/holistic_tracking_cpu.pbtxt -input_video_path=./TestVideos/out.mp4</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>  进入mediapipe的源码根目录开始编译运行GPU版本。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bazel build --copt -DMESA_EGL_NO_X11_HEADERS --copt -DEGL_NO_X11 mediapipe/examples/desktop/holistic_tracking:holistic_tracking_gpu --local_ram_resources=1500  --local_cpu_resources=1</span><br><span class="line"></span><br><span class="line">./bazel-bin/mediapipe/examples/desktop/holistic_tracking:holistic_tracking_gpu -calculator_graph_config_file=./ mediapipe/graphs/holistic_tracking/holistic_tracking_gpu.pbtxt -input_video_path=./TestVideos/out.mp4</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>   运行之后，就会弹一个框开始检测了。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="RK3399pro-可能遇到的坑">RK3399pro 可能遇到的坑</h3>
+<hr>
+<h5 id="Opencv-问题">Opencv 问题</h5>
+<p>  如上文所说，如果不修改，将会出现undefined symbol xxx 或者 找不到opencv_xxx的库的问题。</p>
+<br/>
+<br/>
+<h5 id="关于Opengl-ES-版本问题">关于Opengl ES 版本问题</h5>
+<p>  根据官方说明，需要Opengl ES 3.1 或者 Opengl ES 3.1+的版本，我这里遇到的问题是，如果版本比这个低，运行GPU版本的demo 的时候，会报错。<br>
+  注意：rk的libmali-rk-midgard-t86x-r14p0版本就支持 Opengl ES 3.1及以上，现在rk已经更新了libmali-rk-midgard-t86x-r18p0，可以暂时不更新也可以用。因为一旦更新了gpu驱动，内核也必须更新，配套的文件系统也得更新。因为我 xxxxxxxxxxxxxx 踩过.</p>
+<p>  关于Opengl ES 版本查看问题，可以使用glxinfo，如果没有这个命令推荐安装。如果使用的ssh来运行glxinfo，保证启用X11-forwarding. 查看到的版本如下图(glxinfo|grep “OpenGL ES”)：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_103/opengles_ver.png" alt="opengles_ver"/></center>
+    </div>
+</div>   
+<br/>
+<br/>
+<h5 id="SSH-模式下运行GPU-Demo报错问题">SSH 模式下运行GPU Demo报错问题</h5>
+<p>   可能会出现以下问题，这个问题好像是多个xclient和xserver连接导致的问题，我也不确定。但是要不报这个错误，请直接将板卡接显示器使用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">I20210417 17:49:08  4016 demo_run_graph_main_gpu.cc:58] Initialize the calculator graph.</span><br><span class="line">I20210417 17:49:08  4016 demo_run_graph_main_gpu.cc:62] Initialize the GPU.</span><br><span class="line">XIO:  fatal IO error 11 (Resource temporarily unavailable) on X server &quot;localhost:12.0&quot;</span><br><span class="line">      after 6 requests (6 known processed) with 0 events remaining.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="关于Mediapipe里面glog-在RK3399pro上无法输出问题">关于Mediapipe里面glog 在RK3399pro上无法输出问题</h5>
+<p>   请在gflags::ParseCommandLineFlags之后，设置如下三个变量的值。。。，这个值是调试出来的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">gflags::ParseCommandLineFlags(&amp;argc, &amp;argv, true);</span><br><span class="line"></span><br><span class="line">FLAGS_minloglevel = 0;</span><br><span class="line">FLAGS_stderrthreshold = 0;</span><br><span class="line">FLAGS_alsologtostderr = 1;</span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<h5 id="关于libEGL的导致编译报错问题">关于libEGL的导致编译报错问题</h5>
+<p>   关于这个问题，我这里只想问问Firefly的厂家，咋们修改开源库的时候，能不能认真点？?? “尽量添加，不要删除”，难道这不是修改开源库的一大原则吗？<br>
+看下边两个文件内容：</p>
+<p>EGL/eglplatform.h 来至于deb包 libmali-rk-dev 1.7-1 <a target="_blank" rel="noopener" href="http://wiki.t-firefly.com/firefly-rk3399-repo">http://wiki.t-firefly.com/firefly-rk3399-repo</a> bionic/main arm64 Packages</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> __eglplatform_h_</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __eglplatform_h_</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** Copyright (c) 2007-2016 The Khronos Group Inc.</span></span><br><span class="line"><span class="comment">**</span></span><br><span class="line"><span class="comment">** Permission is hereby granted, free of charge, to any person obtaining a</span></span><br><span class="line"><span class="comment">** copy of this software and/or associated documentation files (the</span></span><br><span class="line"><span class="comment">** &quot;Materials&quot;), to deal in the Materials without restriction, including</span></span><br><span class="line"><span class="comment">** without limitation the rights to use, copy, modify, merge, publish,</span></span><br><span class="line"><span class="comment">** distribute, sublicense, and/or sell copies of the Materials, and to</span></span><br><span class="line"><span class="comment">** permit persons to whom the Materials are furnished to do so, subject to</span></span><br><span class="line"><span class="comment">** the following conditions:</span></span><br><span class="line"><span class="comment">**</span></span><br><span class="line"><span class="comment">** The above copyright notice and this permission notice shall be included</span></span><br><span class="line"><span class="comment">** in all copies or substantial portions of the Materials.</span></span><br><span class="line"><span class="comment">**</span></span><br><span class="line"><span class="comment">** THE MATERIALS ARE PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,</span></span><br><span class="line"><span class="comment">** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</span></span><br><span class="line"><span class="comment">** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.</span></span><br><span class="line"><span class="comment">** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY</span></span><br><span class="line"><span class="comment">** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,</span></span><br><span class="line"><span class="comment">** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE</span></span><br><span class="line"><span class="comment">** MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Platform-specific types and definitions for egl.h</span></span><br><span class="line"><span class="comment"> * $Revision: 30994 $ on $Date: 2015-04-30 13:36:48 -0700 (Thu, 30 Apr 2015) $</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Adopters may modify khrplatform.h and this file to suit their platform.</span></span><br><span class="line"><span class="comment"> * You are encouraged to submit all modifications to the Khronos group so that</span></span><br><span class="line"><span class="comment"> * they can be included in future versions of this file.  Please submit changes</span></span><br><span class="line"><span class="comment"> * by sending them to the public Khronos Bugzilla (http://khronos.org/bugzilla)</span></span><br><span class="line"><span class="comment"> * by filing a bug against product &quot;EGL&quot; component &quot;Registry&quot;.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;KHR/khrplatform.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Macros used in EGL function prototype declarations.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * EGL functions should be prototyped as:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * EGLAPI return-type EGLAPIENTRY eglFunction(arguments);</span></span><br><span class="line"><span class="comment"> * typedef return-type (EXPAPIENTRYP PFNEGLFUNCTIONPROC) (arguments);</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * KHRONOS_APICALL and KHRONOS_APIENTRY are defined in KHR/khrplatform.h</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> EGLAPI</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGLAPI KHRONOS_APICALL</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> EGLAPIENTRY</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGLAPIENTRY  KHRONOS_APIENTRY</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGLAPIENTRYP EGLAPIENTRY*</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* The types NativeDisplayType, NativeWindowType, and NativePixmapType</span></span><br><span class="line"><span class="comment"> * are aliases of window-system-dependent types, such as X Display * or</span></span><br><span class="line"><span class="comment"> * Windows Device Context. They must be defined in platform-specific</span></span><br><span class="line"><span class="comment"> * code below. The EGL-prefixed versions of Native*Type are the same</span></span><br><span class="line"><span class="comment"> * types, renamed in EGL 1.3 so all types in the API start with &quot;EGL&quot;.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Khronos STRONGLY RECOMMENDS that you use the default definitions</span></span><br><span class="line"><span class="comment"> * provided below, since these changes affect both binary and source</span></span><br><span class="line"><span class="comment"> * portability of applications using EGL running on different EGL</span></span><br><span class="line"><span class="comment"> * implementations.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">gbm_device</span>;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">gbm_surface</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined(WL_EGL_PLATFORM)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">wl_display</span>     *EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">wl_egl_pixmap</span>  *EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">wl_egl_window</span>  *EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__GBM__)</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">gbm_device</span> * EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">gbm_surface</span> * EGLNativeWindowType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span> * EGLNativePixmapType;</span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__unix__)</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;X11/Xlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;X11/Xutil.h&gt;</span></span></span><br><span class="line"><span class="keyword">typedef</span> Display *EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> Pixmap EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> Window EGLNativeWindowType;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* EGL 1.2 types, renamed for consistency in EGL 1.3 */</span></span><br><span class="line"><span class="keyword">typedef</span> EGLNativeDisplayType NativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> EGLNativePixmapType  NativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> EGLNativeWindowType  NativeWindowType;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Define EGLint. This must be a signed integral type large enough to contain</span></span><br><span class="line"><span class="comment"> * all legal attribute names and values passed into and out of EGL, whether</span></span><br><span class="line"><span class="comment"> * their type is boolean, bitmask, enumerant (symbolic constant), integer,</span></span><br><span class="line"><span class="comment"> * handle, or other.  While in general a 32-bit integer will suffice, if</span></span><br><span class="line"><span class="comment"> * handles are 64 bit types, then EGLint should be defined as a signed 64-bit</span></span><br><span class="line"><span class="comment"> * integer type.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">khronos_int32_t</span> EGLint;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/* C++ / C typecast macros for special EGL handle values */</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined(__cplusplus)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGL_CAST(type, value) (static_cast<span class="string">&lt;type&gt;</span>(value))</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGL_CAST(type, value) ((type) (value))</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* __eglplatform_h */</span></span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>EGL/eglplatform.h 来至于deb包 libegl1-mesa-dev ubuntu 官方，甚至 <a target="_blank" rel="noopener" href="https://github.com/rockchip-linux/libmali">https://github.com/rockchip-linux/libmali</a> 人家rockchip官方带的东西至少没有乱删东西吧。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifndef</span> __eglplatform_h_</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __eglplatform_h_</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">** Copyright (c) 2007-2016 The Khronos Group Inc.</span></span><br><span class="line"><span class="comment">**</span></span><br><span class="line"><span class="comment">** Permission is hereby granted, free of charge, to any person obtaining a</span></span><br><span class="line"><span class="comment">** copy of this software and/or associated documentation files (the</span></span><br><span class="line"><span class="comment">** &quot;Materials&quot;), to deal in the Materials without restriction, including</span></span><br><span class="line"><span class="comment">** without limitation the rights to use, copy, modify, merge, publish,</span></span><br><span class="line"><span class="comment">** distribute, sublicense, and/or sell copies of the Materials, and to</span></span><br><span class="line"><span class="comment">** permit persons to whom the Materials are furnished to do so, subject to</span></span><br><span class="line"><span class="comment">** the following conditions:</span></span><br><span class="line"><span class="comment">**</span></span><br><span class="line"><span class="comment">** The above copyright notice and this permission notice shall be included</span></span><br><span class="line"><span class="comment">** in all copies or substantial portions of the Materials.</span></span><br><span class="line"><span class="comment">**</span></span><br><span class="line"><span class="comment">** THE MATERIALS ARE PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,</span></span><br><span class="line"><span class="comment">** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</span></span><br><span class="line"><span class="comment">** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.</span></span><br><span class="line"><span class="comment">** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY</span></span><br><span class="line"><span class="comment">** CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,</span></span><br><span class="line"><span class="comment">** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE</span></span><br><span class="line"><span class="comment">** MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Platform-specific types and definitions for egl.h</span></span><br><span class="line"><span class="comment"> * $Revision: 30994 $ on $Date: 2015-04-30 13:36:48 -0700 (Thu, 30 Apr 2015) $</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Adopters may modify khrplatform.h and this file to suit their platform.</span></span><br><span class="line"><span class="comment"> * You are encouraged to submit all modifications to the Khronos group so that</span></span><br><span class="line"><span class="comment"> * they can be included in future versions of this file.  Please submit changes</span></span><br><span class="line"><span class="comment"> * by sending them to the public Khronos Bugzilla (http://khronos.org/bugzilla)</span></span><br><span class="line"><span class="comment"> * by filing a bug against product &quot;EGL&quot; component &quot;Registry&quot;.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;KHR/khrplatform.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Macros used in EGL function prototype declarations.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * EGL functions should be prototyped as:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * EGLAPI return-type EGLAPIENTRY eglFunction(arguments);</span></span><br><span class="line"><span class="comment"> * typedef return-type (EXPAPIENTRYP PFNEGLFUNCTIONPROC) (arguments);</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * KHRONOS_APICALL and KHRONOS_APIENTRY are defined in KHR/khrplatform.h</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> EGLAPI</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGLAPI KHRONOS_APICALL</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> EGLAPIENTRY</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGLAPIENTRY  KHRONOS_APIENTRY</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGLAPIENTRYP EGLAPIENTRY*</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined(MESA_EGL_NO_X11_HEADERS) &amp;&amp; !defined(EGL_NO_X11)</span></span><br><span class="line"><span class="meta">#<span class="keyword">warning</span> <span class="string">&quot;`MESA_EGL_NO_X11_HEADERS` is deprecated, and doesn&#x27;t work with the unmodified Khronos header&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">warning</span> <span class="string">&quot;Please use `EGL_NO_X11` instead, as `MESA_EGL_NO_X11_HEADERS` will be removed soon&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGL_NO_X11</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* The types NativeDisplayType, NativeWindowType, and NativePixmapType</span></span><br><span class="line"><span class="comment"> * are aliases of window-system-dependent types, such as X Display * or</span></span><br><span class="line"><span class="comment"> * Windows Device Context. They must be defined in platform-specific</span></span><br><span class="line"><span class="comment"> * code below. The EGL-prefixed versions of Native*Type are the same</span></span><br><span class="line"><span class="comment"> * types, renamed in EGL 1.3 so all types in the API start with &quot;EGL&quot;.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Khronos STRONGLY RECOMMENDS that you use the default definitions</span></span><br><span class="line"><span class="comment"> * provided below, since these changes affect both binary and source</span></span><br><span class="line"><span class="comment"> * portability of applications using EGL running on different EGL</span></span><br><span class="line"><span class="comment"> * implementations.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined(_WIN32) || defined(__VC32__) &amp;&amp; !defined(__CYGWIN__) &amp;&amp; !defined(__SCITECH_SNAP__) <span class="comment">/* Win32 and WinCE */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> WIN32_LEAN_AND_MEAN</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> WIN32_LEAN_AND_MEAN 1</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;windows.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> HDC     EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> HBITMAP EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> HWND    EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__EMSCRIPTEN__)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__WINSCW__) || defined(__SYMBIAN32__)  <span class="comment">/* Symbian */</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">int</span>   EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span> *EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span> *EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(WL_EGL_PLATFORM)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">wl_display</span>     *EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">wl_egl_pixmap</span>  *EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">wl_egl_window</span>  *EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__GBM__)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">gbm_device</span>  *EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">gbm_bo</span>      *EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span>               *EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__ANDROID__) || defined(ANDROID)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ANativeWindow</span>;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">egl_native_pixmap_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span>*                           EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">egl_native_pixmap_t</span>*     EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">ANativeWindow</span>*           EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(USE_OZONE)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">intptr_t</span> EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">intptr_t</span> EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">intptr_t</span> EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__unix__) &amp;&amp; defined(EGL_NO_X11)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span>             *EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">khronos_uintptr_t</span> EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">khronos_uintptr_t</span> EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__unix__) || defined(USE_X11)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* X11 (tentative)  */</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;X11/Xlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;X11/Xutil.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> Display *EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> Pixmap   EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> Window   EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__APPLE__)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">int</span>   EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span> *EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span> *EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">elif</span> defined(__HAIKU__)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;kernel/image.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">void</span>              *EGLNativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">khronos_uintptr_t</span>  EGLNativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">khronos_uintptr_t</span>  EGLNativeWindowType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">error</span> <span class="string">&quot;Platform not recognized&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* EGL 1.2 types, renamed for consistency in EGL 1.3 */</span></span><br><span class="line"><span class="keyword">typedef</span> EGLNativeDisplayType NativeDisplayType;</span><br><span class="line"><span class="keyword">typedef</span> EGLNativePixmapType  NativePixmapType;</span><br><span class="line"><span class="keyword">typedef</span> EGLNativeWindowType  NativeWindowType;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Define EGLint. This must be a signed integral type large enough to contain</span></span><br><span class="line"><span class="comment"> * all legal attribute names and values passed into and out of EGL, whether</span></span><br><span class="line"><span class="comment"> * their type is boolean, bitmask, enumerant (symbolic constant), integer,</span></span><br><span class="line"><span class="comment"> * handle, or other.  While in general a 32-bit integer will suffice, if</span></span><br><span class="line"><span class="comment"> * handles are 64 bit types, then EGLint should be defined as a signed 64-bit</span></span><br><span class="line"><span class="comment"> * integer type.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">khronos_int32_t</span> EGLint;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/* C++ / C typecast macros for special EGL handle values */</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined(__cplusplus)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGL_CAST(type, value) (static_cast<span class="string">&lt;type&gt;</span>(value))</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EGL_CAST(type, value) ((type) (value))</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* __eglplatform_h */</span></span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这文件被删改的谁都不认识了好吧！！！你说气不气，关键是Mediapipe编译GPU 版本的时候，还得用到这个EGL_NO_X11宏。我真的是无fuck说。</p>
+<p>出现问题的根源是：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">  In file EGL/egl.h: #include &lt;EGL/eglplatform.h&gt;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  In file EGL/eglplatform.h: #include &lt;X11/Xlib.h&gt;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  In file X11/Xlib.h(line:83): #define Status int</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  当我们include 了 egl.h 这个文件后，会引入一个Status的宏。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  在我们使用google的工程的时候，还有一个class 叫做 absl::Status。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  如果项目中定义一个变量：</span></span><br><span class="line"><span class="comment">  absl::Status TestVal;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  会被预编译为:</span></span><br><span class="line"><span class="comment">  absl::int TestVal;</span></span><br><span class="line"><span class="comment">  </span></span><br><span class="line"><span class="comment">  然后就会编译报错。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  好了，这就是我初探Mediapipe的故事。初次接触的话，我觉得最恼火的还是它的编译问题（对我来说：bazel是真的难用），其实编译问题解决了，还是很友好的，这些代码都封装的很好。</p>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/07/blog_idx_102/" rel="prev" title="Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)">
+      <i class="fa fa-chevron-left"></i> Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/24/blog_idx_104/" rel="next" title="Mediapipe 在RK3399PRO上的初探（二）(自定义Calculator)">
+      Mediapipe 在RK3399PRO上的初探（二）(自定义Calculator) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+  <script src="https://utteranc.es/client.js"
+          repo="flyinskyin2013/blog_issues_rep"
+          issue-term="pathname"
+          theme="github-dark"
+          crossorigin="anonymous"
+          async>
+  </script>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85Bazel-4-0-0"><span class="nav-number"></span> <span class="nav-text">安装Bazel 4.0.0</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96"><span class="nav-number"></span> <span class="nav-text">安装依赖</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%92%8C%E9%83%A8%E7%BD%B2-bazel"><span class="nav-number"></span> <span class="nav-text">编译和部署 bazel</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8rk3399pro%E4%B8%8A%E7%BC%96%E8%AF%91Mediapipe-Demo"><span class="nav-number"></span> <span class="nav-text">在rk3399pro上编译Mediapipe Demo</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#HelloWorld-%E7%BC%96%E8%AF%91%E5%92%8C%E8%BF%90%E8%A1%8C"><span class="nav-number"></span> <span class="nav-text">HelloWorld 编译和运行</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BA%BA%E8%84%B8%E6%A3%80%E6%B5%8Bdemo%E7%BC%96%E8%AF%91%E5%92%8C%E8%BF%90%E8%A1%8C"><span class="nav-number"></span> <span class="nav-text">人脸检测demo编译和运行</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%A7%BF%E6%80%81demo%E7%BC%96%E8%AF%91%E5%92%8C%E8%BF%90%E8%A1%8C"><span class="nav-number"></span> <span class="nav-text">姿态demo编译和运行</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RK3399pro-%E5%8F%AF%E8%83%BD%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91"><span class="nav-number"></span> <span class="nav-text">RK3399pro 可能遇到的坑</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Opencv-%E9%97%AE%E9%A2%98"><span class="nav-number"></span> <span class="nav-text">Opencv 问题</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%85%B3%E4%BA%8EOpengl-ES-%E7%89%88%E6%9C%AC%E9%97%AE%E9%A2%98"><span class="nav-number"></span> <span class="nav-text">关于Opengl ES 版本问题</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#SSH-%E6%A8%A1%E5%BC%8F%E4%B8%8B%E8%BF%90%E8%A1%8CGPU-Demo%E6%8A%A5%E9%94%99%E9%97%AE%E9%A2%98"><span class="nav-number"></span> <span class="nav-text">SSH 模式下运行GPU Demo报错问题</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%85%B3%E4%BA%8EMediapipe%E9%87%8C%E9%9D%A2glog-%E5%9C%A8RK3399pro%E4%B8%8A%E6%97%A0%E6%B3%95%E8%BE%93%E5%87%BA%E9%97%AE%E9%A2%98"><span class="nav-number"></span> <span class="nav-text">关于Mediapipe里面glog 在RK3399pro上无法输出问题</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%85%B3%E4%BA%8ElibEGL%E7%9A%84%E5%AF%BC%E8%87%B4%E7%BC%96%E8%AF%91%E6%8A%A5%E9%94%99%E9%97%AE%E9%A2%98"><span class="nav-number"></span> <span class="nav-text">关于libEGL的导致编译报错问题</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">119</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sky</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">537k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">8:08</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
