@@ -1,249 +1,443 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
 <head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 6.3.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+    <meta charset="utf-8">
+    
+    <meta name="keywords" content="常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）, Sky&#39;s Blogs">
+    <meta name="description" content=" 
+PS：要转载请注明出处，本人版权所有。
+PS: 这个只是基于《我自己》的理解，如果和你的原则及想法相冲突，请谅解，勿喷。
 
-<link rel="stylesheet" href="/css/main.css">
+环境说明
+  无
+前言
 
+  在之前，一直是通过生活、工作零零碎碎接触过加密及加密算法相关的信息，但是也只是听说">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
 
-<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
 
-<script id="hexo-configurations">
-    var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"e-x.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
-  </script>
-
-  <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在之前，一直是通过生活、工作零零碎碎接触过加密及加密算法相关的信息，但是也只是听说过，并不知道这些算法用处和区别。   最近由于工作安排，需要将Fernet算法实现一版C++的加解密定制程序，由于Fernet组合了许多的基础加密算法，因此在这">
-<meta property="og:type" content="article">
-<meta property="og:title" content="常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）">
-<meta property="og:url" content="https://e-x.top/2024/03/16/blog_idx_127/index.html">
-<meta property="og:site_name" content="Sky&#39;s Blogs">
-<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解， 如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在之前，一直是通过生活、工作零零碎碎接触过加密及加密算法相关的信息，但是也只是听说过，并不知道这些算法用处和区别。   最近由于工作安排，需要将Fernet算法实现一版C++的加解密定制程序，由于Fernet组合了许多的基础加密算法，因此在这">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
-<meta property="article:published_time" content="2024-03-16T03:18:00.000Z">
-<meta property="article:modified_time" content="2024-04-21T09:06:07.910Z">
-<meta property="article:author" content="Sky">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
-
-<link rel="canonical" href="https://e-x.top/2024/03/16/blog_idx_127/">
-
-
-<script id="page-configurations">
-  // https://hexo.io/docs/variables.html
-  CONFIG.page = {
-    sidebar: "",
-    isHome : false,
-    isPost : true,
-    lang   : 'en'
-  };
+    gtag('js', new Date());
+    gtag('config', 'G-80RLMJ8DQP');
 </script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
-  <title>常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充） | Sky's Blogs</title>
-  
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80RLMJ8DQP"></script>
-    <script>
-      if (CONFIG.hostname === location.hostname) {
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-80RLMJ8DQP');
-      }
-    </script>
 
 
-  <script>
-    var _hmt = _hmt || [];
-    (function() {
-      var hm = document.createElement("script");
-      hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(hm, s);
-    })();
-  </script>
+    <title>常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充） | Sky&#39;s Blogs</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    
+
+
+    <!-- bg-cover style     -->
+
+
+
+<link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+<link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+<link rel="stylesheet" type="text/css" href="/css/matery.css">
+<link rel="stylesheet" type="text/css" href="/css/my.css">
+<link rel="stylesheet" type="text/css" href="/css/dark.css" media="none" onload="if(media!='all')media='all'">
 
 
 
 
-  <noscript>
-  <style>
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-header { opacity: initial; }
-
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
-
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage">
-  <div class="container use-motion">
-    <div class="headband"></div>
-
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar">
-      <span class="toggle-line toggle-line-first"></span>
-      <span class="toggle-line toggle-line-middle"></span>
-      <span class="toggle-line toggle-line-last"></span>
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">Sky's Blogs</h1>
-      <span class="logo-line-after"><i></i></span>
-    </a>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger">
-    </div>
-  </div>
-</div>
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+    <link rel="stylesheet" href="/css/post.css">
 
 
 
-
-<nav class="site-nav">
-  <ul id="menu" class="main-menu menu">
-        <li class="menu-item menu-item-home">
-
-    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
-
-  </li>
-        <li class="menu-item menu-item-archives">
-
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
-
-  </li>
-        <li class="menu-item menu-item-about">
-
-    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
-
-  </li>
-        <li class="menu-item menu-item-tags">
-
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
-
-  </li>
-        <li class="menu-item menu-item-categories">
-
-    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
-
-  </li>
-  </ul>
-</nav>
-
-
-
-
-</div>
-    </header>
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
+        <link rel="stylesheet" type="text/css" href="/css/reward.css">
+    
 
 
-    <main class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
 
-          <div class="content post posts-expand">
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028" crossorigin="anonymous"></script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.jpg" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Sky&#39;s Blogs</span>
+                </a>
+            </div>
             
 
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
     
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
   
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2024/03/16/blog_idx_127/">
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+  <li>
+    <a href="javascript:;" class="waves-effect waves-light" onclick="switchNightMode()" title="深色/浅色模式" >
+      <i id="sum-moon-icon" class="fas fa-sun" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Sky">
-      <meta itemprop="description" content="">
-    </span>
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）
-        </h1>
+<div id="mobile-nav" class="side-nav sidenav">
 
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.jpg" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Sky&#39;s Blogs</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
+    </div>
 
-              <time title="Created: 2024-03-16 11:18:00" itemprop="dateCreated datePublished" datetime="2024-03-16T11:18:00+08:00">2024-03-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-04-21 17:06:07" itemprop="dateModified" datetime="2024-04-21T17:06:07+08:00">2024-04-21</time>
-              </span>
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/flyinskyin2013" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Follow Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
 
-          <br>
-            <span class="post-meta-item" title="Symbols count in article">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>4.5k</span>
-            </span>
-            <span class="post-meta-item" title="Reading time">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">Reading time &asymp;</span>
-              <span>4 mins.</span>
-            </span>
 
         </div>
-      </header>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/flyinskyin2013" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Follow Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
 
     
-    
-    
-    <div class="post-body" itemprop="articleBody">
 
-      
-        <!--
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/4.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E5%8A%A0%E5%AF%86/">
+                                <span class="chip bg-color">加密</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/" class="post-category">
+                                常识
+                            </a>
+                        
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/C-CPP/" class="post-category">
+                                C&CPP
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2024-03-16
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.min.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <script src="\assets\js\APlayer.min.js"> </script><!--
  * @Description: 
  * @Author: Sky
  * @Date: 2020-08-24 16:37:34
@@ -252,8 +446,7 @@
  * @Github: https://github.com/flyinskyin2013/
 -->
 <p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><br>
-<font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
 <!-- ###### 前置说明
 &emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=127） 
 &emsp;&emsp;本文发布于 2024-03-16 11:18:00             （BlogID=127） 
@@ -287,7 +480,14 @@
 <h5 id="AES加密">AES加密</h5>
 <p>  高级加密标准（Advanced Encryption Standard，AES），是一种区块加密标准。从它的定义来看，其特点是区块加密，一般来说，我们常见的有AES128和AES256。</p>
 <p>  例如我们可以用如下的openssl提供的方法进行AES的加解密：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">AES_set_encrypt_key</span><span class="params">(<span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *userKey, <span class="type">const</span> <span class="type">int</span> bits,</span></span><br><span class="line"><span class="params">                        AES_KEY *key)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">AES_set_decrypt_key</span><span class="params">(<span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *userKey, <span class="type">const</span> <span class="type">int</span> bits,</span></span><br><span class="line"><span class="params">                        AES_KEY *key)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//注意这里只是一种cbc加密方法，aes还有很多其他加密方法</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">AES_cbc_encrypt</span><span class="params">(<span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *in, <span class="type">unsigned</span> <span class="type">char</span> *out,</span></span><br><span class="line"><span class="params">                     <span class="type">size_t</span> length, <span class="type">const</span> AES_KEY *key,</span></span><br></pre></td></tr></table></figure>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">AES_set_encrypt_key</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>userKey<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">int</span> bits<span class="token punctuation">,</span>
+                        AES_KEY <span class="token operator">*</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">AES_set_decrypt_key</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>userKey<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">int</span> bits<span class="token punctuation">,</span>
+                        AES_KEY <span class="token operator">*</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//注意这里只是一种cbc加密方法，aes还有很多其他加密方法</span>
+<span class="token keyword">void</span> <span class="token function">AES_cbc_encrypt</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>in<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>out<span class="token punctuation">,</span>
+                     <span class="token class-name">size_t</span> length<span class="token punctuation">,</span> <span class="token keyword">const</span> AES_KEY <span class="token operator">*</span>key<span class="token punctuation">,</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>  其实我们从上面的描述来看，就知道AES一般以16字节或者32字节为一组（我们将其定义为区块大小），进行加密。这里就会引申出一个问题，如果我们的数据（最后一组消息）不够一个区块大小，我们应该怎么办？这里提供的常见方案就是做填充。</p>
 <br/>
 <br/>
@@ -302,14 +502,31 @@
 <h5 id="RSA-加密算法">RSA 加密算法</h5>
 <p>  简介（来自于Wikipedia）：RSA加密算法是一种非对称加密算法。RSA是由罗纳德·李维斯特（Ron Rivest）、阿迪·萨莫尔（Adi Shamir）和伦纳德·阿德曼（Leonard Adleman）在1977年一起提出的。当时他们三人都在麻省理工学院工作。RSA 就是他们三人姓氏开头字母拼在一起组成的。</p>
 <p>  RSA只从使用的角度来说，只需要了解如下的大致的概念：</p>
-<ul>
-<li>模数N、公钥指数pubE、私钥指数priE</li>
-<li>加密：秘文=明文^priE mod N，秘文=明文^pubE mod N</li>
-<li>解密：明文=秘文^pubE mod N，明文=秘文^priE mod N</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>模数N、公钥指数pubE、私钥指数priE</p>
+</li>
+<li class="lvl-2">
+<p>加密：秘文=明文^priE mod N，秘文=明文^pubE mod N</p>
+</li>
+<li class="lvl-2">
+<p>解密：明文=秘文^pubE mod N，明文=秘文^priE mod N</p>
+</li>
 </ul>
 <p>  从上面来看，私钥= 私钥指数priE + 模数N，公钥= 公钥指数pubE + 模数N。至于公钥，私钥，模数怎么来的，网上已有许多资料，有兴趣可以去看看。</p>
 <p>  基于openssl的RSA代码节选：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 生成秘钥，秘钥里面包含了私钥+公钥</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_generate_key_ex</span><span class="params">(RSA *rsa, <span class="type">int</span> bits, BIGNUM *e, BN_GENCB *cb)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 基于公钥和私钥的加解密</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_public_encrypt</span><span class="params">(<span class="type">int</span> flen, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *from,</span></span><br><span class="line"><span class="params">                       <span class="type">unsigned</span> <span class="type">char</span> *to, RSA *rsa, <span class="type">int</span> padding)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_private_encrypt</span><span class="params">(<span class="type">int</span> flen, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *from,</span></span><br><span class="line"><span class="params">                        <span class="type">unsigned</span> <span class="type">char</span> *to, RSA *rsa, <span class="type">int</span> padding)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_public_decrypt</span><span class="params">(<span class="type">int</span> flen, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *from,</span></span><br><span class="line"><span class="params">                       <span class="type">unsigned</span> <span class="type">char</span> *to, RSA *rsa, <span class="type">int</span> padding)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">RSA_private_decrypt</span><span class="params">(<span class="type">int</span> flen, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *from,</span></span><br><span class="line"><span class="params">                        <span class="type">unsigned</span> <span class="type">char</span> *to, RSA *rsa, <span class="type">int</span> padding)</span>;</span><br></pre></td></tr></table></figure>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// 生成秘钥，秘钥里面包含了私钥+公钥</span>
+<span class="token keyword">int</span> <span class="token function">RSA_generate_key_ex</span><span class="token punctuation">(</span>RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> bits<span class="token punctuation">,</span> BIGNUM <span class="token operator">*</span>e<span class="token punctuation">,</span> BN_GENCB <span class="token operator">*</span>cb<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 基于公钥和私钥的加解密</span>
+<span class="token keyword">int</span> <span class="token function">RSA_public_encrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
+                       <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">RSA_private_encrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
+                        <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">RSA_public_decrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
+                       <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">RSA_private_decrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
+                        <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <br/>
 <br/>
 <br/>
@@ -320,7 +537,15 @@
 <p>  此外，如果散列函数不够健壮，可能会出现碰撞的可能性。</p>
 <p>  意义：由于其不同的数据输入会得到不同的散列值，因此主要用来校验数据的完整性。</p>
 <p>  基于openssl的常见散列函数代码节选：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA1_Init</span><span class="params">(SHA_CTX *c)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA1_Update</span><span class="params">(SHA_CTX *c, <span class="type">const</span> <span class="type">void</span> *data, <span class="type">size_t</span> len)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA1_Final</span><span class="params">(<span class="type">unsigned</span> <span class="type">char</span> *md, SHA_CTX *c)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA256_Init</span><span class="params">(SHA256_CTX *c)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA256_Update</span><span class="params">(SHA256_CTX *c, <span class="type">const</span> <span class="type">void</span> *data, <span class="type">size_t</span> len)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">SHA256_Final</span><span class="params">(<span class="type">unsigned</span> <span class="type">char</span> *md, SHA256_CTX *c)</span>;</span><br></pre></td></tr></table></figure>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span>
+<span class="token keyword">int</span> <span class="token function">SHA1_Init</span><span class="token punctuation">(</span>SHA_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">SHA1_Update</span><span class="token punctuation">(</span>SHA_CTX <span class="token operator">*</span>c<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>data<span class="token punctuation">,</span> <span class="token class-name">size_t</span> len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">SHA1_Final</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>md<span class="token punctuation">,</span> SHA_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span>
+<span class="token keyword">int</span> <span class="token function">SHA256_Init</span><span class="token punctuation">(</span>SHA256_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">SHA256_Update</span><span class="token punctuation">(</span>SHA256_CTX <span class="token operator">*</span>c<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>data<span class="token punctuation">,</span> <span class="token class-name">size_t</span> len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">SHA256_Final</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>md<span class="token punctuation">,</span> SHA256_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>  其实做过编程的人，对hash这个概念并不陌生。</p>
 <br/>
 <br/>
@@ -331,7 +556,10 @@
 <p>  含义：使用 散列函数+秘钥来生成认证码（MAC）。相较于散列函数来说，对于同一个消息，需要指定的秘钥+散列函数才能够得到最终的认证码。</p>
 <p>  意义：在散列函数中，原始数据和散列值是绑定的。在一个消息传递系统中，散列函数只解决了数据完整性的问题，并没有解决数据来源是否可靠的问题（可以伪造原始数据+新散列值）。 通过消息验证码，由于有了秘钥的保护， 解决了 散列值+消息 来源不可靠的问题。</p>
 <p>  基于openssl的消息认证码代码节选：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//这里的evp_md用来描述不同的散列函数</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">char</span> *<span class="title function_">HMAC</span><span class="params">(<span class="type">const</span> EVP_MD *evp_md, <span class="type">const</span> <span class="type">void</span> *key,</span></span><br><span class="line"><span class="params">                     <span class="type">int</span> key_len, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *d, <span class="type">size_t</span> n,</span></span><br><span class="line"><span class="params">                     <span class="type">unsigned</span> <span class="type">char</span> *md, <span class="type">unsigned</span> <span class="type">int</span> *md_len)</span>;</span><br></pre></td></tr></table></figure>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//这里的evp_md用来描述不同的散列函数</span>
+<span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token function">HMAC</span><span class="token punctuation">(</span><span class="token keyword">const</span> EVP_MD <span class="token operator">*</span>evp_md<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>key<span class="token punctuation">,</span>
+                     <span class="token keyword">int</span> key_len<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>d<span class="token punctuation">,</span> <span class="token class-name">size_t</span> n<span class="token punctuation">,</span>
+                     <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>md<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> <span class="token operator">*</span>md_len<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 <br/>
 <br/>
 <br/>
@@ -339,11 +567,19 @@
 <h3 id="签名算法">签名算法</h3>
 <hr>
 <p>  下面是签名的一个简单流程：</p>
-<ul>
-<li>基于公钥加密系统，生成秘钥对（公钥、私钥）。</li>
-<li>对消息进行数字摘要计算。</li>
-<li>对数字摘要进行私钥加密，得到数字签名。</li>
-<li>将信息、数字签名、公钥发给接收者，接收者可以验证：信息的完整性+发送者的身份。</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>基于公钥加密系统，生成秘钥对（公钥、私钥）。</p>
+</li>
+<li class="lvl-2">
+<p>对消息进行数字摘要计算。</p>
+</li>
+<li class="lvl-2">
+<p>对数字摘要进行私钥加密，得到数字签名。</p>
+</li>
+<li class="lvl-2">
+<p>将信息、数字签名、公钥发给接收者，接收者可以验证：信息的完整性+发送者的身份。</p>
+</li>
 </ul>
 <p>  从这里来看，我们可以知道，签名其实和消息认证码具有相同的意义，都能够验证：完整性+发送者的身份。但是由于其原理，导致其应用场景不一致。例如：数字签名由于使用非对称加密，而消息认证码可以认为是使用了对称加密，导致他们的使用场景是不一样的。</p>
 <br/>
@@ -353,9 +589,13 @@
 <h3 id="CA机构与数字证书">CA机构与数字证书</h3>
 <hr>
 <p>  其实从名字上来看，就知道CA机构与数字证书和签名算法相关，为了解决公钥加密系统中，公钥是否可信的问题。下面是它们的一些概念：</p>
-<ul>
-<li>CA（Certificate Authority）是“证书颁发机构”的简称，它是“受信任”的第三方组织，负责验证申请者身份并发放数字证书。</li>
-<li>数字证书是：特定用户或系统身份信息（如域名、组织名等）+ 该用户公钥 + 由权威机构（CA）签署的数字签名（对用户的信息+公钥） 组成的数据结构。</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>CA（Certificate Authority）是“证书颁发机构”的简称，它是“受信任”的第三方组织，负责验证申请者身份并发放数字证书。</p>
+</li>
+<li class="lvl-2">
+<p>数字证书是：特定用户或系统身份信息（如域名、组织名等）+ 该用户公钥 + 由权威机构（CA）签署的数字签名（对用户的信息+公钥） 组成的数据结构。</p>
+</li>
 </ul>
 <p>  简单来说，由于我们信任了CA的证书（CA的公钥），我们可以用CA的公钥解密出 数字证书用户的公钥，然后我们用 数字证书用户的公钥 和 数字证书用户加密通信。总的来说，数字证书其实是一个信任链的问题。</p>
 <br/>
@@ -375,15 +615,25 @@
 <p>  特别说明，PKCS是一系列公钥密码标准，里面具备很多的内容，其大概有15个标准，分别是pkcs1,pkcs2 … … pkcs14,pkcs15</p>
 <p>  从上面我们知道，现在常用的填充方法是：公钥加密标准（PKCS，Public-Key Cryptography Standards）里面的节选内容。其有很多填充类别，例如：PKCS1-padding节选, PKCS5-padding节选, PKCS7-padding节选，我们这里只讨论pkcs5和pkcs7。（注意，这些标准除了数据填充，还有其他定义内容。）</p>
 <p>  下面先介绍PKCS5-padding，先定义数据区块大小为SIZE，pkcs5和pkcs7的填充说明，下面以SIZE=8字节举例：</p>
-<ul>
-<li>要填充7个字节,那么填入的值就是0×07;</li>
-<li>如果只填充１个字节，那么填入的值就是0×01;</li>
-<li>数据恰好是8的倍数时还要补8个字节的0×08。</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>要填充7个字节,那么填入的值就是0×07;</p>
+</li>
+<li class="lvl-2">
+<p>如果只填充１个字节，那么填入的值就是0×01;</p>
+</li>
+<li class="lvl-2">
+<p>数据恰好是8的倍数时还要补8个字节的0×08。</p>
+</li>
 </ul>
 <p>  从上面的PKCS5-padding，我们可以知道，这里需要数据区块固定为8字节。如果我们想给其他大小的数据区块做数据对齐，那么PKCS5-padding就不满足要求，因此就有PKCS7-padding的填充方法：</p>
-<ul>
-<li>PKCS7-padding的数据区块大小可以是：1-255字节。</li>
-<li>其他的，PKCS7-padding填充原理和PKCS5一样。</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>PKCS7-padding的数据区块大小可以是：1-255字节。</p>
+</li>
+<li class="lvl-2">
+<p>其他的，PKCS7-padding填充原理和PKCS5一样。</p>
+</li>
 </ul>
 <p>  从上面可知，PKCS7-padding节选包含了PKCS5-padding节选，且适用性范围更加的广泛。</p>
 <p>  到了这里，我们就能够对AES128或者AES256做基于PKCS7-padding的16字节对齐或者32字节对齐的操作了。</p>
@@ -395,17 +645,19 @@
 <h3 id="后记">后记</h3>
 <hr>
 <p>  其实，我们从上面的内容来看，能发现一些规律：</p>
-<ul>
-<li>
+<ul class="lvl-0">
+<li class="lvl-2">
 <p>由于信任链的存在，因此有了CA机构和数字证书，而数字证书与签名算法相关，而签名算法又与 非对称加密和散列函数强相关。</p>
 </li>
-<li>
+<li class="lvl-2">
 <p>然后为了实现我们现在常见的加密系统，我们使用了：对称加密、非对称加密、散列函数、消息认证码和base64编码等手段。</p>
 </li>
 </ul>
 <h3 id="参考文献">参考文献</h3>
-<ul>
-<li>无</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
 </ul>
 <br/>
 <br/>
@@ -427,156 +679,557 @@
 <font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
 <font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
 
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Sky</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://e-x.top/2024/03/16/blog_idx_127/">https://e-x.top/2024/03/16/blog_idx_127/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Sky</a>
+                    !
+                </span>
+            </div>
+        
     </div>
 
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/%E5%8A%A0%E5%AF%86/">
+                                    <span class="chip bg-color">加密</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
     
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
     
+
     
 
-      <footer class="post-footer">
+</div>
 
-        
+                </div>
+            </div>
 
 
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/2023/11/19/blog_idx_126/" rel="prev" title="初识uds之abstract socket">
-      <i class="fa fa-chevron-left"></i> 初识uds之abstract socket
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/2024/03/17/blog_idx_128/" rel="next" title="关于进程同步与互斥的一些概念（锁、cas、futex）">
-      关于进程同步与互斥的一些概念（锁、cas、futex） <i class="fa fa-chevron-right"></i>
-    </a></div>
+
+            
+                <div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.jpg" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-      </footer>
-    
-  </article>
-  
-  
-  
 
 
-
-          </div>
-          
-  <script src="https://utteranc.es/client.js"
-          repo="flyinskyin2013/blog_issues_rep"
-          issue-term="pathname"
-          theme="github-dark"
-          crossorigin="anonymous"
-          async>
-  </script>
+</div>
 
 <script>
-  window.addEventListener('tabs:register', () => {
-    let { activeClass } = CONFIG.comments;
-    if (CONFIG.comments.storage) {
-      activeClass = localStorage.getItem('comments_active') || activeClass;
-    }
-    if (activeClass) {
-      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
-      if (activeTab) {
-        activeTab.click();
-      }
-    }
-  });
-  if (CONFIG.comments.storage) {
-    window.addEventListener('tabs:click', event => {
-      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
-      let commentClass = event.target.classList[1];
-      localStorage.setItem('comments_active', commentClass);
+    $(function () {
+        $('.tabs').tabs();
     });
-  }
 </script>
 
+            
+
+
+            
+                <div class="card" data-aos="fade-up">
+    <div id="utteranc-container" class="card-content">
+        <script src="https://utteranc.es/client.js"
+        repo="flyinskyin2013/blog_issues_rep"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+        </script>
+    </div>
+</div>
+
+            
+
         </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line toggle-line-first"></span>
-    <span class="toggle-line toggle-line-middle"></span>
-    <span class="toggle-line toggle-line-last"></span>
-  </div>
+    </div>
 
-  <aside class="sidebar">
-    <div class="sidebar-inner">
+    
 
-      <ul class="sidebar-nav motion-element">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
+    
 
-      <!--noindex-->
-      <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">环境说明</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number"></span> <span class="nav-text">加密是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86"><span class="nav-number"></span> <span class="nav-text">对称加密</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#AES%E5%8A%A0%E5%AF%86"><span class="nav-number"></span> <span class="nav-text">AES加密</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%EF%BC%88%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">非对称加密（公钥加密算法）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#RSA-%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="nav-number"></span> <span class="nav-text">RSA 加密算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%A3%E5%88%97%E5%87%BD%E6%95%B0%EF%BC%88Hash-function%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">散列函数（Hash function）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E8%AE%A4%E8%AF%81%E7%A0%81"><span class="nav-number"></span> <span class="nav-text">消息认证码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%BE%E5%90%8D%E7%AE%97%E6%B3%95"><span class="nav-number"></span> <span class="nav-text">签名算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CA%E6%9C%BA%E6%9E%84%E4%B8%8E%E6%95%B0%E5%AD%97%E8%AF%81%E4%B9%A6"><span class="nav-number"></span> <span class="nav-text">CA机构与数字证书</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Base64-%E7%BC%96%E7%A0%81"><span class="nav-number"></span> <span class="nav-text">Base64 编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9D%97%E5%A1%AB%E5%85%85%EF%BC%8CPKCS%EF%BC%88Public-Key-Cryptography-Standards%EF%BC%89"><span class="nav-number"></span> <span class="nav-text">数据区块填充，PKCS（Public-Key Cryptography Standards）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number"></span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
-      </div>
-      <!--/noindex-->
+    
 
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-    <img class="site-author-image" itemprop="image" alt="Sky"
-      src="/images/avatar.gif">
-  <p class="site-author-name" itemprop="name">Sky</p>
-  <div class="site-description" itemprop="description"></div>
-</div>
-<div class="site-state-wrap motion-element">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-          <a href="/archives/">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
         
-          <span class="site-state-item-count">124</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-  </nav>
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2024/03/17/blog_idx_128/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/8.jpg" class="responsive-img" alt="关于进程同步与互斥的一些概念（锁、cas、futex）">
+                        
+                        <span class="card-title">关于进程同步与互斥的一些概念（锁、cas、futex）</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2024-03-17
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/" class="post-category">
+                                    常识
+                                </a>
+                            
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/linux/" class="post-category">
+                                    linux
+                                </a>
+                            
+                            <a href="/categories/%E5%B8%B8%E8%AF%86/linux/C-CPP/" class="post-category">
+                                    C&CPP
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E8%BF%9B%E7%A8%8B%E5%90%8C%E6%AD%A5%E4%B8%8E%E4%BA%92%E6%96%A5/">
+                        <span class="chip bg-color">进程同步与互斥</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2023/11/19/blog_idx_126/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="初识uds之abstract socket">
+                        
+                        <span class="card-title">初识uds之abstract socket</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2023-11-19
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/C-CPP/" class="post-category">
+                                    C&CPP
+                                </a>
+                            
+                            <a href="/categories/C-CPP/android/" class="post-category">
+                                    android
+                                </a>
+                            
+                            <a href="/categories/C-CPP/android/linux/" class="post-category">
+                                    linux
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/uds/">
+                        <span class="chip bg-color">uds</span>
+                    </a>
+                    
+                    <a href="/tags/abstract-socket/">
+                        <span class="chip bg-color">abstract socket</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
 </div>
 
 
 
-      </div>
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+
+  <!-- 是否加载使用自带的 prismjs. -->
+  <script type="text/javascript" src="/libs/prism/prism.min.js"></script>
+
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
 
     </div>
-  </aside>
-  <div id="sidebar-dimmer"></div>
-
-
-      </div>
-    </main>
-
-    <footer class="footer">
-      <div class="footer-inner">
-        
-
-        
-
-<div class="copyright">
-  
-  &copy; 
-  <span itemprop="copyrightYear">2024</span>
-  <span class="with-love">
-    <i class="fa fa-heart"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">Sky</span>
-    <span class="post-meta-divider">|</span>
-    <span class="post-meta-item-icon">
-      <i class="fa fa-chart-area"></i>
-    </span>
-    <span title="Symbols count total">598k</span>
-    <span class="post-meta-divider">|</span>
-    <span class="post-meta-item-icon">
-      <i class="fa fa-coffee"></i>
-    </span>
-    <span title="Reading time total">9:03</span>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
 </div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
-  </div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
 
         
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="song"
+                   id="26545309"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="/libs/aplayer/Meting.min.js"></script>
+
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2014-2024</span>
+            
+            <a href="/about" target="_blank">Sky</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            
+            <br>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2014";
+                        var startMonth = "7";
+                        var startDate = "3";
+                        var startHour = "20";
+                        var startMinute = "45";
+                        var startSecond = "27";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/flyinskyin2013" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
 
 
 
@@ -585,29 +1238,6 @@
 
 
 
-      </div>
-    </footer>
-  </div>
-
-  
-  <script src="/lib/anime.min.js"></script>
-  <script src="/lib/velocity/velocity.min.js"></script>
-  <script src="/lib/velocity/velocity.ui.min.js"></script>
-
-<script src="/js/utils.js"></script>
-
-<script src="/js/motion.js"></script>
-
-
-<script src="/js/schemes/pisces.js"></script>
-
-
-<script src="/js/next-boot.js"></script>
-
-
-
-
-  
 
 
 
@@ -615,17 +1245,237 @@
 
 
 
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
 
 
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 白天和黑夜主题 -->
+<div class="stars-con">
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>  
+</div>
+
+<script>
+    function switchNightMode() {
+        $('<div class="Cuteen_DarkSky"><div class="Cuteen_DarkPlanet"></div></div>').appendTo($('body')),
+        setTimeout(function () {
+            $('body').hasClass('DarkMode') 
+            ? ($('body').removeClass('DarkMode'), localStorage.setItem('isDark', '0'), $('#sum-moon-icon').removeClass("fa-sun").addClass('fa-moon')) 
+            : ($('body').addClass('DarkMode'), localStorage.setItem('isDark', '1'), $('#sum-moon-icon').addClass("fa-sun").removeClass('fa-moon')),
+            
+            setTimeout(function () {
+            $('.Cuteen_DarkSky').fadeOut(1e3, function () {
+                $(this).remove()
+            })
+            }, 2e3)
+        })
+    }
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
 
 
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
 
+    
 
+    
+    
+    
 
+    <!-- 雪花特效 -->
+    
 
-  
+    <!-- 鼠标星星特效 -->
+     
+        <script type="text/javascript">
+            // 只在桌面版网页启用特效
+            var windowWidth = $(window).width();
+            if (windowWidth > 768) {
+                document.write('<script type="text/javascript" src="/libs/others/star.js"><\/script>');
+            }
+        </script>
+    
 
-  
+     
+        <script src="https://ssl.captcha.qq.com/TCaptcha.js"></script>
+        <script src="/libs/others/TencentCaptcha.js"></script>
+        <button id="TencentCaptcha" data-appid="xxxxxxxxxx" data-cbfn="callback" type="button" hidden></button>
+    
 
-</body>
+    <!-- Baidu Analytics -->
+
+<script>
+    var _hmt = _hmt || [];
+    (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?33f6329a2e264bb97f4f37ee8ddec093";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":250,"hOffset":50,"vOffset":5},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.8},"log":false});</script></body>
+
 </html>
