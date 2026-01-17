@@ -439,9 +439,9 @@
             
             <tag> linux驱动 </tag>
             
-            <tag> UEFI </tag>
-            
             <tag> CFI </tag>
+            
+            <tag> UEFI </tag>
             
         </tags>
       
@@ -3302,9 +3302,9 @@
             
             <tag> Ubuntu </tag>
             
-            <tag> pyqt </tag>
-            
             <tag> ui </tag>
+            
+            <tag> pyqt </tag>
             
             <tag> pyuic </tag>
             
@@ -4073,9 +4073,9 @@
             
             <tag> Ubuntu </tag>
             
-            <tag> linux </tag>
-            
             <tag> 省电 </tag>
+            
+            <tag> linux </tag>
             
             <tag> 显卡 </tag>
             
@@ -4106,9 +4106,9 @@
       
         <tags>
             
-            <tag> 开源软件 </tag>
-            
             <tag> Ubuntu </tag>
+            
+            <tag> 开源软件 </tag>
             
             <tag> qtcreator </tag>
             
