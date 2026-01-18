@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"e-x.top","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":false,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"e-x.top","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":false,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
 
     <meta property="og:type" content="website">
 <meta property="og:title" content="Sky&#39;s Blogs">
@@ -49,20 +49,25 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
 <script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
   
-
-
-
-
-
-
-  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
 
 
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028"
      crossorigin="anonymous"></script>
+
+
   <noscript>
     <link rel="stylesheet" href="/css/noscript.css">
   </noscript>
@@ -91,16 +96,84 @@
 
   <div class="site-nav-right">
     <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
     </div>
   </div>
 </div>
 
 
 
+<nav class="site-nav">
+  <ul class="main-menu menu">
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
 
 
 
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+<div class="custom-middle-nav animated fadeInDown">
+  <div class="custom-nav-item">
+    <a href="/archives/"><i class="fa fa-archive"></i> 日志历程</a>
+  </div>
+  <div class="custom-nav-item">
+    <a href="/categories/"><i class="fa fa-th"></i> 全部分类</a>
+  </div>
+  <div class="custom-nav-item">
+    <a href="/tags/"><i class="fa fa-tags"></i> 热门标签</a>
+  </div>
+  <div class="custom-nav-item">
+    <a href="javascript:;" class="my-search-btn"><i class="fa fa-search"></i> 本站搜索</a>
+  </div>
+</div>
 
+
+<script>
+// 使用脚本手动触发 NexT 的搜索弹窗
+document.addEventListener('DOMContentLoaded', () => {
+  const customBtn = document.querySelector('.my-search-btn');
+  customBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // 找到 NexT 原生的那个搜索触发按钮并模拟点击
+    const originalBtn = document.querySelector('.site-nav-right .popup-trigger');
+    if (originalBtn) {
+      originalBtn.click();
+    } else {
+      // 如果原生的没找到，尝试直接调用 NexT 的 Search 内部变量（针对某些版本）
+      if (typeof CONFIG.local_search !== 'undefined') {
+        // 尝试手动激活弹窗
+        document.querySelector('.search-pop-overlay').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        document.querySelector('.search-input').focus();
+      }
+    }
+  });
+});
+</script>
 </header>
         
   
@@ -124,6 +197,8 @@
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.jpg">
   <p class="site-author-name" itemprop="name">Sky</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -147,9 +222,34 @@
       </div>
   </nav>
 </div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/flyinskyin2013" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;flyinskyin2013" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+<div id="days" style="margin-top: 10px; font-size: 13px; color: #555;"></div>
+<script>
+  function show_date_time(){
+    window.setTimeout("show_date_time()", 1000);
+    BirthDay=new Date("01/07/2014 00:00:00"); // 这里改成你建站的时间
+    today=new Date();
+    timeold=(today.getTime()-BirthDay.getTime());
+    sectimeold=timeold/1000
+    secondsold=Math.floor(sectimeold);
+    msPerDay=24*60*60*1000
+    e_daysold=timeold/msPerDay
+    daysold=Math.floor(e_daysold);
+    document.getElementById("days").innerHTML="本站已运行 "+daysold+" 天";
+  }
+  show_date_time();
+</script>
 
         </div>
       </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
     </div>
 
     
@@ -171,7 +271,7 @@
     <link itemprop="mainEntityOfPage" href="https://e-x.top/2023/11/19/blog_idx_126/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Sky">
     </span>
 
@@ -439,7 +539,7 @@
     <link itemprop="mainEntityOfPage" href="https://e-x.top/2023/11/19/blog_idx_125/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Sky">
     </span>
 
@@ -773,7 +873,7 @@ pm8150_rtc: qcom,pm8150_rtc &#123;
     <link itemprop="mainEntityOfPage" href="https://e-x.top/2023/10/22/blog_idx_124/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Sky">
     </span>
 
@@ -1123,379 +1223,10 @@ Disassembly of section <span class="token punctuation">.</span>text<span class="
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2023/07/02/blog_idx_122/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/07/02/blog_idx_122/" class="post-title-link" itemprop="url">LinuxDNS分析从入门到放弃（记一次有趣的dns问题排查记录，ping 源码分析，getaddrinfo源码分析）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-07-02 16:25:00" itemprop="dateCreated datePublished" datetime="2023-07-02T16:25:00+08:00">2023-07-02</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/linux/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/" itemprop="url" rel="index"><span itemprop="name">网络协议</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>3.2k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>12 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky
- * @LastEditTime: 2021-06-29 15:04:48
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=122） 
-&emsp;&emsp;本文发布于 2023-07-02 16:25             （BlogID=122） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  ubuntu 18.04</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  我们这里有一块嵌入式板卡，当我们通过PING测试内网IP时，发现外网IP访问正常，但是测试域名访问一直报unknown host。一般来说，在ubuntu里面，我们遇到域名不能访问，反手就是去设置/etc/resolv.conf文件里面的nameserver为114.114.114.114。但是万万没有想到，这次我们这样改了之后，还是访问报unknown host。</p>
-<p>  当时我就人麻了，但是我仿佛灵光一闪，想到了一个问题：为何以前我们修改了/etc/resolv.conf文件就DNS就正常了，但是这里同样修改了这个文件，就不正常工作？此外，/etc/resolv.conf文件是干嘛的，为何改了DNS就有效了？</p>
-<p>  要回答以上问题，根本原因就是要了解Linux平台里面DNS的详细工作流程，于是我踏上了看源码之旅。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="探索之旅">探索之旅</h3>
-<hr>
-<p>  在这里，我们第一件事情就是想到，当我们ping一个域名，或者我们在浏览器里面输入了一个域名，然后访问的那一刻发生了什么？</p>
-<p>  首先，当我们进行网络编程的时候，我们不管是send udp msg还是send tcp msg，我们都是需要构建一个struct sockaddr结构，这个结构里面包含了访问的地址，端口等等信息。但是这里的地址是ip地址，并不是域名地址，因此可以猜测，在浏览器访问或者ping域名之前，肯定做了dns查询工作，然后将域名转换之后，得到ip地址才构建出struct sockaddr结构，然后才开始网络访问的操作的。</p>
-<p>  下面我去翻阅了ping的源码，在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/libping.c?h=v2.4">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/libping.c?h=v2.4</a> 中的ping_set_dest 函数中，有一个将host转换为struct sockaddr的方法引起了我的注意，他就是：getaddrinfo / gethostbyname。下面是ping的简要工作流程：</p>
-<ol>
-<li class="lvl-3">
-<p>在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping.c?h=v2.4%E4%B8%AD%EF%BC%8Cmain%E5%87%BD%E6%95%B0%E4%B8%AD%E8%B0%83%E7%94%A8%E4%BA%86argp_parse%EF%BC%8C%E8%BF%99%E9%87%8C%E9%9D%A2%E4%BC%9A%E8%B0%83%E7%94%A8parse_opt%EF%BC%8C%E5%9C%A8%E8%BF%99%E9%87%8C%E6%9C%89%E4%B8%80%E4%B8%AA%E9%87%8D%E8%A6%81%E7%9A%84ping_type%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E5%9C%A8%E8%BF%99%E9%87%8C%E8%AE%BE%E7%BD%AE%E4%BA%86%EF%BC%8C%E5%A6%82%E6%9E%9C%E6%88%91%E4%BB%AC%E4%B8%8D%E9%85%8D%E7%BD%AE%E4%BB%BB%E4%BD%95%E5%8F%82%E6%95%B0%E7%9A%84%E8%AF%9D%EF%BC%8C%E9%82%A3%E4%B9%88%E5%B0%B1%E6%98%AF%E8%B0%83%E7%94%A8%E7%9A%84ping_echo%E5%87%BD%E6%95%B0%E3%80%82">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping.c?h=v2.4中，main函数中调用了argp_parse，这里面会调用parse_opt，在这里有一个重要的ping_type函数指针在这里设置了，如果我们不配置任何参数的话，那么就是调用的ping_echo函数。</a></p>
-</li>
-<li class="lvl-3">
-<p>在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping.c?h=v2.4%E4%B8%AD%EF%BC%8Cmain%E5%87%BD%E6%95%B0%E4%B8%AD%E8%B0%83%E7%94%A8%E4%BA%86ping_init%EF%BC%8C%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BA%86ICMP%E7%9A%84socket%EF%BC%8C%E5%B9%B6%E8%AE%B0%E5%BD%95%E5%88%B0%E5%8F%A5%E6%9F%84PING%E4%B8%AD%E3%80%82">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping.c?h=v2.4中，main函数中调用了ping_init，初始化了ICMP的socket，并记录到句柄PING中。</a></p>
-</li>
-<li class="lvl-3">
-<p>在经历各种初始化后，就会调用ping_type，后面我们默认分析ping_echo。</p>
-</li>
-<li class="lvl-3">
-<p>在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping_echo.c?h=v2.4%E4%B8%AD%EF%BC%8Cping_echo%E4%B8%AD%E5%9B%9E%E5%8E%BB%E8%B0%83%E7%94%A8ping_set_dest%E8%AE%BE%E7%BD%AE%E5%8F%82%E6%95%B0%EF%BC%8C%E5%90%8C%E6%97%B6%E8%B0%83%E7%94%A8ping_run%E5%BE%AA%E7%8E%AF%E9%80%9A%E8%BF%87send_to%E5%8F%91%E9%80%81ping">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping_echo.c?h=v2.4中，ping_echo中回去调用ping_set_dest设置参数，同时调用ping_run循环通过send_to发送ping</a> icmp报文。</p>
-</li>
-<li class="lvl-3">
-<p>在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/libping.c?h=v2.4%E4%B8%AD%EF%BC%8Cping_set_dest">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/libping.c?h=v2.4中，ping_set_dest</a> 调用getaddrinfo解析域名。</p>
-</li>
-</ol>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="getaddrinfo-gethostbyname">getaddrinfo / gethostbyname</h3>
-<hr>
-<p>  首先，我们在查这两个方法之前，可以猜测他们的一个功能就是：这两个函数可能拿着域名，去访问了域名服务器，然后解析出ip地址，并且构造了struct sockaddr结构并返回。</p>
-<p>  因此我们去看看这两个函数相关的man介绍和源码：根据man手册：<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man3/getaddrinfo.3.html">https://man7.org/linux/man-pages/man3/getaddrinfo.3.html</a> ，我们可以知道，getaddrinfo已经包含了gethostbyname的工作，因此我们就只需要分析这个方法就行。</p>
-<br/>
-<br/>
-<h5 id="getaddrinfo-参数分析">getaddrinfo 参数分析</h5>
-<p>  我们先来看看这个函数的参数含义</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//重要的参数结构体</span>
-<span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token punctuation">&#123;</span>
-    <span class="token keyword">int</span>              ai_flags<span class="token punctuation">;</span>
-    <span class="token keyword">int</span>              ai_family<span class="token punctuation">;</span>
-    <span class="token keyword">int</span>              ai_socktype<span class="token punctuation">;</span>
-    <span class="token keyword">int</span>              ai_protocol<span class="token punctuation">;</span>
-    <span class="token class-name">socklen_t</span>        ai_addrlen<span class="token punctuation">;</span>
-    <span class="token keyword">struct</span> <span class="token class-name">sockaddr</span> <span class="token operator">*</span>ai_addr<span class="token punctuation">;</span>
-    <span class="token keyword">char</span>            <span class="token operator">*</span>ai_canonname<span class="token punctuation">;</span>
-    <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token operator">*</span>ai_next<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
-
-<span class="token keyword">int</span> <span class="token function">getaddrinfo</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>name<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>service<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token operator">*</span>hints<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token operator">*</span><span class="token operator">*</span>pai<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token comment">//根据https://man7.org/linux/man-pages/man3/getaddrinfo.3.html，我们可以知道：</span>
-<span class="token comment">//name: 域名</span>
-<span class="token comment">//service: 服务，注意这里这个服务会让我们重新复习一遍计算机网络。</span>
-<span class="token comment">//hints: 就是填写struct addrinfo里面的属性，然后getaddrinfo根据这些特殊指定的属性，将对应的struct addrinfo返回回来。</span>
-<span class="token comment">//pai: 此函数返回的一个链表，其中包含了符合要求的struct addrinfo信息。</span>
-<span class="token comment">//其实我们从pai可以知道，当返回有值时，意味着我们知道了一个域名和服务对应的网络地址，然后我们就可以在connect,bind中使用pai->ai_addr了。</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="getaddrinfo-例子调试分析">getaddrinfo 例子调试分析</h5>
-<p>  注意：我这里是事后写本文的时候，才发现需要下面的内容。由于getaddrinfo的实现特殊性，其不是很方便查看源码，因此采取strace + gdb + simple example方式来分析此函数的实现。</p>
-<p>  首先下面是我的simple example</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/types.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/socket.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;netdb.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/socket.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;netinet/in.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;arpa/inet.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
-
-<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span> argv<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
-<span class="token punctuation">&#123;</span>
-		<span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> hints<span class="token punctuation">,</span> <span class="token operator">*</span>res<span class="token punctuation">;</span>
-		  <span class="token function">memset</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>hints<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span> <span class="token punctuation">(</span>hints<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  hints<span class="token punctuation">.</span>ai_family <span class="token operator">=</span> AF_INET<span class="token punctuation">;</span>
-  hints<span class="token punctuation">.</span>ai_flags <span class="token operator">=</span> AI_CANONNAME<span class="token punctuation">;</span>
-
-	<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token number">0</span> <span class="token operator">></span> <span class="token function">getaddrinfo</span><span class="token punctuation">(</span><span class="token string">"baidu.com"</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>hints<span class="token punctuation">,</span> <span class="token operator">&amp;</span>res<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-		<span class="token function">perror</span><span class="token punctuation">(</span><span class="token string">"get error:"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-		<span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
-	<span class="token punctuation">&#125;</span>
-	<span class="token keyword">struct</span> <span class="token class-name">sockaddr_in</span> <span class="token operator">*</span> get_addr <span class="token operator">=</span> res<span class="token operator">-></span>ai_addr<span class="token punctuation">;</span>
-	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"ip for baidu: %s\n"</span><span class="token punctuation">,</span> <span class="token function">inet_ntoa</span><span class="token punctuation">(</span>get_addr<span class="token operator">-></span>sin_addr<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  然后gcc test.c -o test -g 生成此执行文件。下面是执行此函数的结果图片：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_122/dns_query_result.png" alt="rep_img"/></center>
-    </div>
-</div>    
-<p>  下面是一些读取源码需要的单词简写：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>IDNA: Internationalizing Domain Names in Applications</p>
-</li>
-<li class="lvl-2">
-<p>NSCD: name service cache daemon</p>
-</li>
-<li class="lvl-2">
-<p>NSS:  Name Services Switch</p>
-</li>
-<li class="lvl-2">
-<p>CNAME: canonical name (规范化名字)</p>
-</li>
-</ul>
-<p>  下面是resolv.conf的文件内容：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># resolve.conf 内容</span>
-<span class="token comment"># This file is managed by man:systemd-resolved(8). Do not edit.</span>
-<span class="token comment">#</span>
-<span class="token comment"># This is a dynamic resolv.conf file for connecting local clients to the</span>
-<span class="token comment"># internal DNS stub resolver of systemd-resolved. This file lists all</span>
-<span class="token comment"># configured search domains.</span>
-<span class="token comment">#</span>
-<span class="token comment"># Run "systemd-resolve --status" to see details about the uplink DNS servers</span>
-<span class="token comment"># currently in use.</span>
-<span class="token comment">#</span>
-<span class="token comment"># Third party programs must not access this file directly, but only through the</span>
-<span class="token comment"># symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a different way,</span>
-<span class="token comment"># replace this symlink by a static file or a different symlink.</span>
-<span class="token comment">#</span>
-<span class="token comment"># See man:systemd-resolved.service(8) for details about the supported modes of</span>
-<span class="token comment"># operation for /etc/resolv.conf.</span>
-
-<span class="token comment"># nameserver 127.0.0.53</span>
-nameserver <span class="token number">8.8</span>.8.8
-options edns0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  下面是strace ./test 输出的部分节选（包含了/etc/resolv.conf的内容）</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//打开resolve.conf</span>
-<span class="token function">openat</span><span class="token punctuation">(</span>AT_FDCWD<span class="token punctuation">,</span> <span class="token string">"/etc/resolv.conf"</span><span class="token punctuation">,</span> O_RDONLY<span class="token operator">|</span>O_CLOEXEC<span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">3</span>
-<span class="token function">fstat</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token punctuation">&#123;</span>st_mode<span class="token operator">=</span>S_IFREG<span class="token operator">|</span><span class="token number">0644</span><span class="token punctuation">,</span> st_size<span class="token operator">=</span><span class="token number">736</span><span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span>
-<span class="token function">read</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">"# This file is managed by man:sy"</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">4096</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">736</span>
-<span class="token function">read</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">,</span> <span class="token number">4096</span><span class="token punctuation">)</span>                       <span class="token operator">=</span> <span class="token number">0</span>
-<span class="token function">close</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>
-
-<span class="token comment">//通过resolve.conf的dns服务器，查询dns</span>
-<span class="token comment">//这里有个小知识：dns服务器的默认端口是53，详细可以通过/etc/protocol，/etc/services查看</span>
-<span class="token function">socket</span><span class="token punctuation">(</span>AF_INET<span class="token punctuation">,</span> SOCK_DGRAM<span class="token operator">|</span>SOCK_CLOEXEC<span class="token operator">|</span>SOCK_NONBLOCK<span class="token punctuation">,</span> IPPROTO_IP<span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">3</span>
-<span class="token function">connect</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token punctuation">&#123;</span>sa_family<span class="token operator">=</span>AF_INET<span class="token punctuation">,</span> sin_port<span class="token operator">=</span><span class="token function">htons</span><span class="token punctuation">(</span><span class="token number">53</span><span class="token punctuation">)</span><span class="token punctuation">,</span> sin_addr<span class="token operator">=</span><span class="token function">inet_addr</span><span class="token punctuation">(</span><span class="token string">"8.8.8.8"</span><span class="token punctuation">)</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span>
-<span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">&#123;</span>fd<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> events<span class="token operator">=</span>POLLOUT<span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>    <span class="token operator">=</span> <span class="token number">1</span> <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">&#123;</span>fd<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> revents<span class="token operator">=</span>POLLOUT<span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
-<span class="token function">sendto</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">"5\244\1\0\0\1\0\0\0\0\0\1\5baidu\3com\0\0\1\0\1\0\0)\4\260"</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">38</span><span class="token punctuation">,</span> MSG_NOSIGNAL<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">38</span>
-<span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">&#123;</span>fd<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> events<span class="token operator">=</span>POLLIN<span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5000</span><span class="token punctuation">)</span>  <span class="token operator">=</span> <span class="token number">1</span> <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">&#123;</span>fd<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> revents<span class="token operator">=</span>POLLIN<span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
-<span class="token function">ioctl</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> FIONREAD<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">70</span><span class="token punctuation">]</span><span class="token punctuation">)</span>                <span class="token operator">=</span> <span class="token number">0</span>
-<span class="token function">recvfrom</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">"5\244\201\200\0\1\0\2\0\0\0\1\5baidu\3com\0\0\1\0\1\300\f\0\1\0"</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token punctuation">&#123;</span>sa_family<span class="token operator">=</span>AF_INET<span class="token punctuation">,</span> sin_port<span class="token operator">=</span><span class="token function">htons</span><span class="token punctuation">(</span><span class="token number">53</span><span class="token punctuation">)</span><span class="token punctuation">,</span> sin_addr<span class="token operator">=</span><span class="token function">inet_addr</span><span class="token punctuation">(</span><span class="token string">"8.8.8.8"</span><span class="token punctuation">)</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">28</span><span class="token operator">-></span><span class="token number">16</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">70</span>
-<span class="token function">close</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>                                <span class="token operator">=</span> <span class="token number">0</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  首先我们要调试glibc的话，需要安装glibc的调试符号：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> libc6-dbg
-<span class="token builtin class-name">cd</span> /usr/src/glibc
-<span class="token function">tar</span> <span class="token parameter variable">-xf</span> glibc-<span class="token punctuation">&#123;</span>version<span class="token punctuation">&#125;</span>.tar.xz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-<p>  下面通过GDB 结合 GLIBC的debug info开始调试程序，分析出getaddrinfo中我想关注的部分。</p>
-<p>  首先我们调试得到打开/etc/resolv.conf的实现：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">gdb ./test
-b fopen
-<span class="token comment"># 设置gdb搜索源文件目录，注意你下断点时，对应源码的相对路径</span>
-<span class="token punctuation">(</span>gdb<span class="token punctuation">)</span> <span class="token builtin class-name">set</span> directories /usr/src/glibc/glibc-2.27/xxxx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-<p>在多次运行后，抓到打开/etc/resolv.conf的地方，其堆栈如下：</p>
-<pre class="line-numbers language-txt" data-language="txt"><code class="language-txt">#0  _IO_new_fopen (filename=filename@entry=0x7ffff7b98cea "/etc/resolv.conf", mode=mode@entry=0x7ffff7b9578c "rce") at iofopen.c:88
-#1  0x00007ffff7b25c0f in __resolv_conf_load (preinit=preinit@entry=0x0) at res_init.c:553
-#2  0x00007ffff7b28459 in __resolv_conf_get_current () at resolv_conf.c:162
-#3  0x00007ffff7b26cad in __res_vinit (statp=0x7ffff7dd1bc0 &lt;_res>, preinit=preinit@entry=0) at res_init.c:609
-#4  0x00007ffff7b27e50 in maybe_init (preinit=false, ctx=0x555555756530) at resolv_context.c:122
-#5  context_get (preinit=false) at resolv_context.c:184
-#6  __GI___resolv_context_get () at resolv_context.c:195
-#7  0x00007ffff7ae790e in gaih_inet (name=name@entry=0x555555554924 "baidu.com", service=&lt;optimized out>, req=req@entry=0x7fffffffdeb0, pai=pai@entry=0x7fffffffd9c8, 
-    naddrs=naddrs@entry=0x7fffffffd9c4, tmpbuf=tmpbuf@entry=0x7fffffffda30) at ../sysdeps/posix/getaddrinfo.c:767
-#8  0x00007ffff7ae9c84 in __GI_getaddrinfo (name=&lt;optimized out>, service=&lt;optimized out>, hints=0x7fffffffdeb0, pai=0x7fffffffdea0) at ../sysdeps/posix/getaddrinfo.c:2300
-#9  0x000055555555483b in main (argc=1, argv=0x7fffffffdfd8) at test.c:17<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>因此我们得到了getaddrinfo的打开resolv.conf的调用路径，其值如下：<br>
-getaddrinfo–&gt;gaih_inet-&gt;__resolv_context_get()-&gt;context_get()-&gt;maybe_init()-&gt;__res_vinit()-&gt;__resolv_conf_get_current()-&gt;__resolv_conf_load() 这里面会打开resolv.conf</p>
-<p>注意，当真正的打开了resolv.conf后，其还会解析此文件，这个部分就不在本文进行分析了。</p>
-<p>用同样的方法，对connect下断点，得到了访问dns服务器的堆栈信息：</p>
-<pre class="line-numbers language-txt" data-language="txt"><code class="language-txt">#0  __libc_connect (fd=3, addr=addr@entry=..., len=16) at ../sysdeps/unix/sysv/linux/connect.c:26
-#1  0x00007ffff71b4b20 in reopen (statp=statp@entry=0x7ffff7dd1bc0 &lt;_res>, terrno=terrno@entry=0x7fffffffc0a8, ns=ns@entry=0) at res_send.c:977
-#2  0x00007ffff71b5e0b in send_dg (ansp2_malloced=0x0, resplen2=0x0, anssizp2=0x0, ansp2=0x0, anscp=0x7fffffffd168, gotsomewhere=&lt;synthetic pointer>, 
-    v_circuit=&lt;synthetic pointer>, ns=0, terrno=0x7fffffffc0a8, anssizp=0x7fffffffc1d0, ansp=0x7fffffffc098, buflen2=0, buf2=0x0, buflen=38, 
-    buf=0x7fffffffc200 "\254\212\001", statp=&lt;optimized out>) at res_send.c:1078
-#3  __res_context_send (ctx=ctx@entry=0x555555756530, buf=buf@entry=0x7fffffffc200 "\254\212\001", buflen=buflen@entry=38, buf2=buf2@entry=0x0, buflen2=buflen2@entry=0, 
-    ans=&lt;optimized out>, ans@entry=0x7fffffffcd10 "cxaPfi", anssiz=&lt;optimized out>, ansp=&lt;optimized out>, ansp2=&lt;optimized out>, nansp2=&lt;optimized out>, 
-    resplen2=&lt;optimized out>, ansp2_malloced=&lt;optimized out>) at res_send.c:522
-#4  0x00007ffff71b34d1 in __GI___res_context_query (ctx=ctx@entry=0x555555756530, name=name@entry=0x555555554924 "baidu.com", class=class@entry=1, type=type@entry=1, 
-    answer=answer@entry=0x7fffffffcd10 "cxaPfi", anslen=anslen@entry=1024, answerp=0x7fffffffd168, answerp2=0x0, nanswerp2=0x0, resplen2=0x0, answerp2_malloced=0x0)
-    at res_query.c:216
-#5  0x00007ffff71b428d in __res_context_querydomain (domain=0x0, answerp2_malloced=0x0, resplen2=0x0, nanswerp2=0x0, answerp2=0x0, answerp=0x7fffffffd168, anslen=1024, 
-    answer=0x7fffffffcd10 "cxaPfi", type=1, class=1, name=0x555555554924 "baidu.com", ctx=0x555555756530) at res_query.c:601
-#6  __GI___res_context_search (ctx=ctx@entry=0x555555756530, name=name@entry=0x555555554924 "baidu.com", class=class@entry=1, type=type@entry=1, 
-    answer=answer@entry=0x7fffffffcd10 "cxaPfi", anslen=anslen@entry=1024, answerp=0x7fffffffd168, answerp2=0x0, nanswerp2=0x0, resplen2=0x0, answerp2_malloced=0x0)
-    at res_query.c:370
-#7  0x00007ffff73c7f0c in gethostbyname3_context (ctx=ctx@entry=0x555555756530, name=name@entry=0x555555554924 "baidu.com", af=af@entry=2, 
-    result=result@entry=0x7fffffffd7d0, buffer=buffer@entry=0x7fffffffda40 "\377\002", buflen=buflen@entry=1024, errnop=0x7ffff7fca440, h_errnop=0x7ffff7fca4a4, ttlp=0x0, 
-    canonp=0x7fffffffd7c8) at nss_dns/dns-host.c:218
-#8  0x00007ffff73c8928 in _nss_dns_gethostbyname3_r (name=name@entry=0x555555554924 "baidu.com", af=af@entry=2, result=result@entry=0x7fffffffd7d0, 
-    buffer=0x7fffffffda40 "\377\002", buflen=1024, errnop=errnop@entry=0x7ffff7fca440, h_errnop=0x7ffff7fca4a4, ttlp=0x0, canonp=0x7fffffffd7c8) at nss_dns/dns-host.c:164
-#9  0x00007ffff7ae7e6f in gaih_inet (name=name@entry=0x555555554924 "baidu.com", service=&lt;optimized out>, req=req@entry=0x7fffffffdeb0, pai=pai@entry=0x7fffffffd9c8, 
-    naddrs=naddrs@entry=0x7fffffffd9c4, tmpbuf=tmpbuf@entry=0x7fffffffda30) at ../sysdeps/posix/getaddrinfo.c:885
-#10 0x00007ffff7ae9c84 in __GI_getaddrinfo (name=&lt;optimized out>, service=&lt;optimized out>, hints=0x7fffffffdeb0, pai=0x7fffffffdea0) at ../sysdeps/posix/getaddrinfo.c:2300
-#11 0x000055555555483b in main (argc=1, argv=0x7fffffffdfd8) at test.c:17<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  注意，这里connect的堆栈信息由于struct sockaddr的原因，无法判断是否真实访问的是8.8.8.8，因此我们可以尝试将其转换回（通过inet_ntoa转换ip，通过ntohs转换端口）struct sockaddr_in来分析，分析结果（IP地址，端口号）如下图：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_122/extract_connect.png" alt="rep_img"/></center>
-    </div>
-</div>    
-<p>  因此我们得到了getaddrinfo的访问8.8.8.8 dns服务器的调用路径，其值如下：<br>
-getaddrinfo–&gt;gaih_inet-&gt;_nss_dns_gethostbyname3_r-&gt;gethostbyname3_context-&gt;__res_context_search-&gt;__res_context_querydomain-&gt;__res_context_query-&gt;__res_context_send-&gt;send_dg-&gt;reopen-&gt;__libc_connect 连接 dns服务器，解析dns</p>
-<br/>
-<br/>
-<h5 id="特别注意：">特别注意：</h5>
-<p>这里仅仅是描述了通过dns服务器得到ip的过程，其实相对于getaddrinfo的dns解析来说，这只是其中的一部分，还有通过类似nscd（有兴趣可以去看看man systemd-resolved）等等来解析的方式，这些内容感兴趣可以去看看。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  最后，回到了本文的开始，经过上述的分析后，我找到了我的问题的本质原因。我遇到的问题的本质原因是：由于某些特殊原因导致了connect 114.114.114.114:53 服务器的时候报错了，导致解析域名失败，当我换一个域名服务器（8.8.8.8）就解决了。</p>
-<p>  总的来说，本文从ping baidu.com入手，然后分析了ping的源码，得到了我们要分析的重点getaddrinfo。然后我们由于构造一个小例子来分析getaddrinfo的源码，最终得到了/etc/resolv.conf是因为什么原因生效的。</p>
-<p>  通过本文的分析，相信我们对DNS的解析过程是有了一个比较清晰的了解了，以后遇到类似的问题也能够有一个好的思路来解决问题。</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://e-x.top/2023/07/02/blog_idx_123/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Sky">
     </span>
 
@@ -2008,10 +1739,379 @@ getaddrinfo–&gt;gaih_inet-&gt;_nss_dns_gethostbyname3_r-&gt;gethostbyname3_con
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2023/07/02/blog_idx_122/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/07/02/blog_idx_122/" class="post-title-link" itemprop="url">LinuxDNS分析从入门到放弃（记一次有趣的dns问题排查记录，ping 源码分析，getaddrinfo源码分析）</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-07-02 16:25:00" itemprop="dateCreated datePublished" datetime="2023-07-02T16:25:00+08:00">2023-07-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/" itemprop="url" rel="index"><span itemprop="name">网络协议</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>12 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=122） 
+&emsp;&emsp;本文发布于 2023-07-02 16:25             （BlogID=122） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  ubuntu 18.04</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  我们这里有一块嵌入式板卡，当我们通过PING测试内网IP时，发现外网IP访问正常，但是测试域名访问一直报unknown host。一般来说，在ubuntu里面，我们遇到域名不能访问，反手就是去设置/etc/resolv.conf文件里面的nameserver为114.114.114.114。但是万万没有想到，这次我们这样改了之后，还是访问报unknown host。</p>
+<p>  当时我就人麻了，但是我仿佛灵光一闪，想到了一个问题：为何以前我们修改了/etc/resolv.conf文件就DNS就正常了，但是这里同样修改了这个文件，就不正常工作？此外，/etc/resolv.conf文件是干嘛的，为何改了DNS就有效了？</p>
+<p>  要回答以上问题，根本原因就是要了解Linux平台里面DNS的详细工作流程，于是我踏上了看源码之旅。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="探索之旅">探索之旅</h3>
+<hr>
+<p>  在这里，我们第一件事情就是想到，当我们ping一个域名，或者我们在浏览器里面输入了一个域名，然后访问的那一刻发生了什么？</p>
+<p>  首先，当我们进行网络编程的时候，我们不管是send udp msg还是send tcp msg，我们都是需要构建一个struct sockaddr结构，这个结构里面包含了访问的地址，端口等等信息。但是这里的地址是ip地址，并不是域名地址，因此可以猜测，在浏览器访问或者ping域名之前，肯定做了dns查询工作，然后将域名转换之后，得到ip地址才构建出struct sockaddr结构，然后才开始网络访问的操作的。</p>
+<p>  下面我去翻阅了ping的源码，在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/libping.c?h=v2.4">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/libping.c?h=v2.4</a> 中的ping_set_dest 函数中，有一个将host转换为struct sockaddr的方法引起了我的注意，他就是：getaddrinfo / gethostbyname。下面是ping的简要工作流程：</p>
+<ol>
+<li class="lvl-3">
+<p>在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping.c?h=v2.4%E4%B8%AD%EF%BC%8Cmain%E5%87%BD%E6%95%B0%E4%B8%AD%E8%B0%83%E7%94%A8%E4%BA%86argp_parse%EF%BC%8C%E8%BF%99%E9%87%8C%E9%9D%A2%E4%BC%9A%E8%B0%83%E7%94%A8parse_opt%EF%BC%8C%E5%9C%A8%E8%BF%99%E9%87%8C%E6%9C%89%E4%B8%80%E4%B8%AA%E9%87%8D%E8%A6%81%E7%9A%84ping_type%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E5%9C%A8%E8%BF%99%E9%87%8C%E8%AE%BE%E7%BD%AE%E4%BA%86%EF%BC%8C%E5%A6%82%E6%9E%9C%E6%88%91%E4%BB%AC%E4%B8%8D%E9%85%8D%E7%BD%AE%E4%BB%BB%E4%BD%95%E5%8F%82%E6%95%B0%E7%9A%84%E8%AF%9D%EF%BC%8C%E9%82%A3%E4%B9%88%E5%B0%B1%E6%98%AF%E8%B0%83%E7%94%A8%E7%9A%84ping_echo%E5%87%BD%E6%95%B0%E3%80%82">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping.c?h=v2.4中，main函数中调用了argp_parse，这里面会调用parse_opt，在这里有一个重要的ping_type函数指针在这里设置了，如果我们不配置任何参数的话，那么就是调用的ping_echo函数。</a></p>
+</li>
+<li class="lvl-3">
+<p>在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping.c?h=v2.4%E4%B8%AD%EF%BC%8Cmain%E5%87%BD%E6%95%B0%E4%B8%AD%E8%B0%83%E7%94%A8%E4%BA%86ping_init%EF%BC%8C%E5%88%9D%E5%A7%8B%E5%8C%96%E4%BA%86ICMP%E7%9A%84socket%EF%BC%8C%E5%B9%B6%E8%AE%B0%E5%BD%95%E5%88%B0%E5%8F%A5%E6%9F%84PING%E4%B8%AD%E3%80%82">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping.c?h=v2.4中，main函数中调用了ping_init，初始化了ICMP的socket，并记录到句柄PING中。</a></p>
+</li>
+<li class="lvl-3">
+<p>在经历各种初始化后，就会调用ping_type，后面我们默认分析ping_echo。</p>
+</li>
+<li class="lvl-3">
+<p>在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping_echo.c?h=v2.4%E4%B8%AD%EF%BC%8Cping_echo%E4%B8%AD%E5%9B%9E%E5%8E%BB%E8%B0%83%E7%94%A8ping_set_dest%E8%AE%BE%E7%BD%AE%E5%8F%82%E6%95%B0%EF%BC%8C%E5%90%8C%E6%97%B6%E8%B0%83%E7%94%A8ping_run%E5%BE%AA%E7%8E%AF%E9%80%9A%E8%BF%87send_to%E5%8F%91%E9%80%81ping">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/ping_echo.c?h=v2.4中，ping_echo中回去调用ping_set_dest设置参数，同时调用ping_run循环通过send_to发送ping</a> icmp报文。</p>
+</li>
+<li class="lvl-3">
+<p>在<a target="_blank" rel="noopener" href="https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/libping.c?h=v2.4%E4%B8%AD%EF%BC%8Cping_set_dest">https://git.savannah.gnu.org/cgit/inetutils.git/tree/ping/libping.c?h=v2.4中，ping_set_dest</a> 调用getaddrinfo解析域名。</p>
+</li>
+</ol>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="getaddrinfo-gethostbyname">getaddrinfo / gethostbyname</h3>
+<hr>
+<p>  首先，我们在查这两个方法之前，可以猜测他们的一个功能就是：这两个函数可能拿着域名，去访问了域名服务器，然后解析出ip地址，并且构造了struct sockaddr结构并返回。</p>
+<p>  因此我们去看看这两个函数相关的man介绍和源码：根据man手册：<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man3/getaddrinfo.3.html">https://man7.org/linux/man-pages/man3/getaddrinfo.3.html</a> ，我们可以知道，getaddrinfo已经包含了gethostbyname的工作，因此我们就只需要分析这个方法就行。</p>
+<br/>
+<br/>
+<h5 id="getaddrinfo-参数分析">getaddrinfo 参数分析</h5>
+<p>  我们先来看看这个函数的参数含义</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//重要的参数结构体</span>
+<span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span>              ai_flags<span class="token punctuation">;</span>
+    <span class="token keyword">int</span>              ai_family<span class="token punctuation">;</span>
+    <span class="token keyword">int</span>              ai_socktype<span class="token punctuation">;</span>
+    <span class="token keyword">int</span>              ai_protocol<span class="token punctuation">;</span>
+    <span class="token class-name">socklen_t</span>        ai_addrlen<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">sockaddr</span> <span class="token operator">*</span>ai_addr<span class="token punctuation">;</span>
+    <span class="token keyword">char</span>            <span class="token operator">*</span>ai_canonname<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token operator">*</span>ai_next<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">getaddrinfo</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>name<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>service<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token operator">*</span>hints<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token operator">*</span><span class="token operator">*</span>pai<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//根据https://man7.org/linux/man-pages/man3/getaddrinfo.3.html，我们可以知道：</span>
+<span class="token comment">//name: 域名</span>
+<span class="token comment">//service: 服务，注意这里这个服务会让我们重新复习一遍计算机网络。</span>
+<span class="token comment">//hints: 就是填写struct addrinfo里面的属性，然后getaddrinfo根据这些特殊指定的属性，将对应的struct addrinfo返回回来。</span>
+<span class="token comment">//pai: 此函数返回的一个链表，其中包含了符合要求的struct addrinfo信息。</span>
+<span class="token comment">//其实我们从pai可以知道，当返回有值时，意味着我们知道了一个域名和服务对应的网络地址，然后我们就可以在connect,bind中使用pai->ai_addr了。</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="getaddrinfo-例子调试分析">getaddrinfo 例子调试分析</h5>
+<p>  注意：我这里是事后写本文的时候，才发现需要下面的内容。由于getaddrinfo的实现特殊性，其不是很方便查看源码，因此采取strace + gdb + simple example方式来分析此函数的实现。</p>
+<p>  首先下面是我的simple example</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/types.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/socket.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;netdb.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/socket.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;netinet/in.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;arpa/inet.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span> argv<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+		<span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> hints<span class="token punctuation">,</span> <span class="token operator">*</span>res<span class="token punctuation">;</span>
+		  <span class="token function">memset</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>hints<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span> <span class="token punctuation">(</span>hints<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  hints<span class="token punctuation">.</span>ai_family <span class="token operator">=</span> AF_INET<span class="token punctuation">;</span>
+  hints<span class="token punctuation">.</span>ai_flags <span class="token operator">=</span> AI_CANONNAME<span class="token punctuation">;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token number">0</span> <span class="token operator">></span> <span class="token function">getaddrinfo</span><span class="token punctuation">(</span><span class="token string">"baidu.com"</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>hints<span class="token punctuation">,</span> <span class="token operator">&amp;</span>res<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+		<span class="token function">perror</span><span class="token punctuation">(</span><span class="token string">"get error:"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">sockaddr_in</span> <span class="token operator">*</span> get_addr <span class="token operator">=</span> res<span class="token operator">-></span>ai_addr<span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"ip for baidu: %s\n"</span><span class="token punctuation">,</span> <span class="token function">inet_ntoa</span><span class="token punctuation">(</span>get_addr<span class="token operator">-></span>sin_addr<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  然后gcc test.c -o test -g 生成此执行文件。下面是执行此函数的结果图片：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_122/dns_query_result.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  下面是一些读取源码需要的单词简写：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>IDNA: Internationalizing Domain Names in Applications</p>
+</li>
+<li class="lvl-2">
+<p>NSCD: name service cache daemon</p>
+</li>
+<li class="lvl-2">
+<p>NSS:  Name Services Switch</p>
+</li>
+<li class="lvl-2">
+<p>CNAME: canonical name (规范化名字)</p>
+</li>
+</ul>
+<p>  下面是resolv.conf的文件内容：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># resolve.conf 内容</span>
+<span class="token comment"># This file is managed by man:systemd-resolved(8). Do not edit.</span>
+<span class="token comment">#</span>
+<span class="token comment"># This is a dynamic resolv.conf file for connecting local clients to the</span>
+<span class="token comment"># internal DNS stub resolver of systemd-resolved. This file lists all</span>
+<span class="token comment"># configured search domains.</span>
+<span class="token comment">#</span>
+<span class="token comment"># Run "systemd-resolve --status" to see details about the uplink DNS servers</span>
+<span class="token comment"># currently in use.</span>
+<span class="token comment">#</span>
+<span class="token comment"># Third party programs must not access this file directly, but only through the</span>
+<span class="token comment"># symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a different way,</span>
+<span class="token comment"># replace this symlink by a static file or a different symlink.</span>
+<span class="token comment">#</span>
+<span class="token comment"># See man:systemd-resolved.service(8) for details about the supported modes of</span>
+<span class="token comment"># operation for /etc/resolv.conf.</span>
+
+<span class="token comment"># nameserver 127.0.0.53</span>
+nameserver <span class="token number">8.8</span>.8.8
+options edns0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  下面是strace ./test 输出的部分节选（包含了/etc/resolv.conf的内容）</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//打开resolve.conf</span>
+<span class="token function">openat</span><span class="token punctuation">(</span>AT_FDCWD<span class="token punctuation">,</span> <span class="token string">"/etc/resolv.conf"</span><span class="token punctuation">,</span> O_RDONLY<span class="token operator">|</span>O_CLOEXEC<span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">3</span>
+<span class="token function">fstat</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token punctuation">&#123;</span>st_mode<span class="token operator">=</span>S_IFREG<span class="token operator">|</span><span class="token number">0644</span><span class="token punctuation">,</span> st_size<span class="token operator">=</span><span class="token number">736</span><span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token function">read</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">"# This file is managed by man:sy"</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">4096</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">736</span>
+<span class="token function">read</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">,</span> <span class="token number">4096</span><span class="token punctuation">)</span>                       <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token function">close</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>
+
+<span class="token comment">//通过resolve.conf的dns服务器，查询dns</span>
+<span class="token comment">//这里有个小知识：dns服务器的默认端口是53，详细可以通过/etc/protocol，/etc/services查看</span>
+<span class="token function">socket</span><span class="token punctuation">(</span>AF_INET<span class="token punctuation">,</span> SOCK_DGRAM<span class="token operator">|</span>SOCK_CLOEXEC<span class="token operator">|</span>SOCK_NONBLOCK<span class="token punctuation">,</span> IPPROTO_IP<span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">3</span>
+<span class="token function">connect</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token punctuation">&#123;</span>sa_family<span class="token operator">=</span>AF_INET<span class="token punctuation">,</span> sin_port<span class="token operator">=</span><span class="token function">htons</span><span class="token punctuation">(</span><span class="token number">53</span><span class="token punctuation">)</span><span class="token punctuation">,</span> sin_addr<span class="token operator">=</span><span class="token function">inet_addr</span><span class="token punctuation">(</span><span class="token string">"8.8.8.8"</span><span class="token punctuation">)</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">&#123;</span>fd<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> events<span class="token operator">=</span>POLLOUT<span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>    <span class="token operator">=</span> <span class="token number">1</span> <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">&#123;</span>fd<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> revents<span class="token operator">=</span>POLLOUT<span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token function">sendto</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">"5\244\1\0\0\1\0\0\0\0\0\1\5baidu\3com\0\0\1\0\1\0\0)\4\260"</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">38</span><span class="token punctuation">,</span> MSG_NOSIGNAL<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">38</span>
+<span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">&#123;</span>fd<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> events<span class="token operator">=</span>POLLIN<span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5000</span><span class="token punctuation">)</span>  <span class="token operator">=</span> <span class="token number">1</span> <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">&#123;</span>fd<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> revents<span class="token operator">=</span>POLLIN<span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token function">ioctl</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> FIONREAD<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">70</span><span class="token punctuation">]</span><span class="token punctuation">)</span>                <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token function">recvfrom</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">"5\244\201\200\0\1\0\2\0\0\0\1\5baidu\3com\0\0\1\0\1\300\f\0\1\0"</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token punctuation">&#123;</span>sa_family<span class="token operator">=</span>AF_INET<span class="token punctuation">,</span> sin_port<span class="token operator">=</span><span class="token function">htons</span><span class="token punctuation">(</span><span class="token number">53</span><span class="token punctuation">)</span><span class="token punctuation">,</span> sin_addr<span class="token operator">=</span><span class="token function">inet_addr</span><span class="token punctuation">(</span><span class="token string">"8.8.8.8"</span><span class="token punctuation">)</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">28</span><span class="token operator">-></span><span class="token number">16</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">70</span>
+<span class="token function">close</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>                                <span class="token operator">=</span> <span class="token number">0</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  首先我们要调试glibc的话，需要安装glibc的调试符号：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> libc6-dbg
+<span class="token builtin class-name">cd</span> /usr/src/glibc
+<span class="token function">tar</span> <span class="token parameter variable">-xf</span> glibc-<span class="token punctuation">&#123;</span>version<span class="token punctuation">&#125;</span>.tar.xz<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>  下面通过GDB 结合 GLIBC的debug info开始调试程序，分析出getaddrinfo中我想关注的部分。</p>
+<p>  首先我们调试得到打开/etc/resolv.conf的实现：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">gdb ./test
+b fopen
+<span class="token comment"># 设置gdb搜索源文件目录，注意你下断点时，对应源码的相对路径</span>
+<span class="token punctuation">(</span>gdb<span class="token punctuation">)</span> <span class="token builtin class-name">set</span> directories /usr/src/glibc/glibc-2.27/xxxx<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>在多次运行后，抓到打开/etc/resolv.conf的地方，其堆栈如下：</p>
+<pre class="line-numbers language-txt" data-language="txt"><code class="language-txt">#0  _IO_new_fopen (filename=filename@entry=0x7ffff7b98cea "/etc/resolv.conf", mode=mode@entry=0x7ffff7b9578c "rce") at iofopen.c:88
+#1  0x00007ffff7b25c0f in __resolv_conf_load (preinit=preinit@entry=0x0) at res_init.c:553
+#2  0x00007ffff7b28459 in __resolv_conf_get_current () at resolv_conf.c:162
+#3  0x00007ffff7b26cad in __res_vinit (statp=0x7ffff7dd1bc0 &lt;_res>, preinit=preinit@entry=0) at res_init.c:609
+#4  0x00007ffff7b27e50 in maybe_init (preinit=false, ctx=0x555555756530) at resolv_context.c:122
+#5  context_get (preinit=false) at resolv_context.c:184
+#6  __GI___resolv_context_get () at resolv_context.c:195
+#7  0x00007ffff7ae790e in gaih_inet (name=name@entry=0x555555554924 "baidu.com", service=&lt;optimized out>, req=req@entry=0x7fffffffdeb0, pai=pai@entry=0x7fffffffd9c8, 
+    naddrs=naddrs@entry=0x7fffffffd9c4, tmpbuf=tmpbuf@entry=0x7fffffffda30) at ../sysdeps/posix/getaddrinfo.c:767
+#8  0x00007ffff7ae9c84 in __GI_getaddrinfo (name=&lt;optimized out>, service=&lt;optimized out>, hints=0x7fffffffdeb0, pai=0x7fffffffdea0) at ../sysdeps/posix/getaddrinfo.c:2300
+#9  0x000055555555483b in main (argc=1, argv=0x7fffffffdfd8) at test.c:17<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>因此我们得到了getaddrinfo的打开resolv.conf的调用路径，其值如下：<br>
+getaddrinfo–&gt;gaih_inet-&gt;__resolv_context_get()-&gt;context_get()-&gt;maybe_init()-&gt;__res_vinit()-&gt;__resolv_conf_get_current()-&gt;__resolv_conf_load() 这里面会打开resolv.conf</p>
+<p>注意，当真正的打开了resolv.conf后，其还会解析此文件，这个部分就不在本文进行分析了。</p>
+<p>用同样的方法，对connect下断点，得到了访问dns服务器的堆栈信息：</p>
+<pre class="line-numbers language-txt" data-language="txt"><code class="language-txt">#0  __libc_connect (fd=3, addr=addr@entry=..., len=16) at ../sysdeps/unix/sysv/linux/connect.c:26
+#1  0x00007ffff71b4b20 in reopen (statp=statp@entry=0x7ffff7dd1bc0 &lt;_res>, terrno=terrno@entry=0x7fffffffc0a8, ns=ns@entry=0) at res_send.c:977
+#2  0x00007ffff71b5e0b in send_dg (ansp2_malloced=0x0, resplen2=0x0, anssizp2=0x0, ansp2=0x0, anscp=0x7fffffffd168, gotsomewhere=&lt;synthetic pointer>, 
+    v_circuit=&lt;synthetic pointer>, ns=0, terrno=0x7fffffffc0a8, anssizp=0x7fffffffc1d0, ansp=0x7fffffffc098, buflen2=0, buf2=0x0, buflen=38, 
+    buf=0x7fffffffc200 "\254\212\001", statp=&lt;optimized out>) at res_send.c:1078
+#3  __res_context_send (ctx=ctx@entry=0x555555756530, buf=buf@entry=0x7fffffffc200 "\254\212\001", buflen=buflen@entry=38, buf2=buf2@entry=0x0, buflen2=buflen2@entry=0, 
+    ans=&lt;optimized out>, ans@entry=0x7fffffffcd10 "cxaPfi", anssiz=&lt;optimized out>, ansp=&lt;optimized out>, ansp2=&lt;optimized out>, nansp2=&lt;optimized out>, 
+    resplen2=&lt;optimized out>, ansp2_malloced=&lt;optimized out>) at res_send.c:522
+#4  0x00007ffff71b34d1 in __GI___res_context_query (ctx=ctx@entry=0x555555756530, name=name@entry=0x555555554924 "baidu.com", class=class@entry=1, type=type@entry=1, 
+    answer=answer@entry=0x7fffffffcd10 "cxaPfi", anslen=anslen@entry=1024, answerp=0x7fffffffd168, answerp2=0x0, nanswerp2=0x0, resplen2=0x0, answerp2_malloced=0x0)
+    at res_query.c:216
+#5  0x00007ffff71b428d in __res_context_querydomain (domain=0x0, answerp2_malloced=0x0, resplen2=0x0, nanswerp2=0x0, answerp2=0x0, answerp=0x7fffffffd168, anslen=1024, 
+    answer=0x7fffffffcd10 "cxaPfi", type=1, class=1, name=0x555555554924 "baidu.com", ctx=0x555555756530) at res_query.c:601
+#6  __GI___res_context_search (ctx=ctx@entry=0x555555756530, name=name@entry=0x555555554924 "baidu.com", class=class@entry=1, type=type@entry=1, 
+    answer=answer@entry=0x7fffffffcd10 "cxaPfi", anslen=anslen@entry=1024, answerp=0x7fffffffd168, answerp2=0x0, nanswerp2=0x0, resplen2=0x0, answerp2_malloced=0x0)
+    at res_query.c:370
+#7  0x00007ffff73c7f0c in gethostbyname3_context (ctx=ctx@entry=0x555555756530, name=name@entry=0x555555554924 "baidu.com", af=af@entry=2, 
+    result=result@entry=0x7fffffffd7d0, buffer=buffer@entry=0x7fffffffda40 "\377\002", buflen=buflen@entry=1024, errnop=0x7ffff7fca440, h_errnop=0x7ffff7fca4a4, ttlp=0x0, 
+    canonp=0x7fffffffd7c8) at nss_dns/dns-host.c:218
+#8  0x00007ffff73c8928 in _nss_dns_gethostbyname3_r (name=name@entry=0x555555554924 "baidu.com", af=af@entry=2, result=result@entry=0x7fffffffd7d0, 
+    buffer=0x7fffffffda40 "\377\002", buflen=1024, errnop=errnop@entry=0x7ffff7fca440, h_errnop=0x7ffff7fca4a4, ttlp=0x0, canonp=0x7fffffffd7c8) at nss_dns/dns-host.c:164
+#9  0x00007ffff7ae7e6f in gaih_inet (name=name@entry=0x555555554924 "baidu.com", service=&lt;optimized out>, req=req@entry=0x7fffffffdeb0, pai=pai@entry=0x7fffffffd9c8, 
+    naddrs=naddrs@entry=0x7fffffffd9c4, tmpbuf=tmpbuf@entry=0x7fffffffda30) at ../sysdeps/posix/getaddrinfo.c:885
+#10 0x00007ffff7ae9c84 in __GI_getaddrinfo (name=&lt;optimized out>, service=&lt;optimized out>, hints=0x7fffffffdeb0, pai=0x7fffffffdea0) at ../sysdeps/posix/getaddrinfo.c:2300
+#11 0x000055555555483b in main (argc=1, argv=0x7fffffffdfd8) at test.c:17<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  注意，这里connect的堆栈信息由于struct sockaddr的原因，无法判断是否真实访问的是8.8.8.8，因此我们可以尝试将其转换回（通过inet_ntoa转换ip，通过ntohs转换端口）struct sockaddr_in来分析，分析结果（IP地址，端口号）如下图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_122/extract_connect.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  因此我们得到了getaddrinfo的访问8.8.8.8 dns服务器的调用路径，其值如下：<br>
+getaddrinfo–&gt;gaih_inet-&gt;_nss_dns_gethostbyname3_r-&gt;gethostbyname3_context-&gt;__res_context_search-&gt;__res_context_querydomain-&gt;__res_context_query-&gt;__res_context_send-&gt;send_dg-&gt;reopen-&gt;__libc_connect 连接 dns服务器，解析dns</p>
+<br/>
+<br/>
+<h5 id="特别注意：">特别注意：</h5>
+<p>这里仅仅是描述了通过dns服务器得到ip的过程，其实相对于getaddrinfo的dns解析来说，这只是其中的一部分，还有通过类似nscd（有兴趣可以去看看man systemd-resolved）等等来解析的方式，这些内容感兴趣可以去看看。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  最后，回到了本文的开始，经过上述的分析后，我找到了我的问题的本质原因。我遇到的问题的本质原因是：由于某些特殊原因导致了connect 114.114.114.114:53 服务器的时候报错了，导致解析域名失败，当我换一个域名服务器（8.8.8.8）就解决了。</p>
+<p>  总的来说，本文从ping baidu.com入手，然后分析了ping的源码，得到了我们要分析的重点getaddrinfo。然后我们由于构造一个小例子来分析getaddrinfo的源码，最终得到了/etc/resolv.conf是因为什么原因生效的。</p>
+<p>  通过本文的分析，相信我们对DNS的解析过程是有了一个比较清晰的了解了，以后遇到类似的问题也能够有一个好的思路来解决问题。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://e-x.top/2023/07/02/blog_idx_121/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Sky">
     </span>
 
@@ -2433,7 +2533,7 @@ wayland_architecture.png</p>
     <link itemprop="mainEntityOfPage" href="https://e-x.top/2022/07/31/blog_idx_117/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Sky">
     </span>
 
@@ -2709,7 +2809,7 @@ uint64 <span class="token function">HAP_perf_get_pcycles</span><span class="toke
     <link itemprop="mainEntityOfPage" href="https://e-x.top/2022/07/03/blog_idx_116/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Sky">
     </span>
 
@@ -2975,7 +3075,7 @@ py<span class="token double-colon punctuation">::</span><span class="token gener
     <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/12/26/blog_idx_115/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Sky">
     </span>
 
@@ -3241,7 +3341,7 @@ Point 	offset &#x3D; Point()
     <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/11/28/blog_idx_114/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpg">
       <meta itemprop="name" content="Sky">
     </span>
 
@@ -3712,14 +3812,34 @@ Point 	offset &#x3D; Point()
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
+      <span>站点总字数：</span>
     <span title="站点总字数">286k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
+      <span>站点阅读时长 &asymp;</span>
     <span title="站点阅读时长">17:19</span>
   </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
@@ -3734,10 +3854,6 @@ Point 	offset &#x3D; Point()
     <span class="toggle-line"></span>
   </div>
   <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="返回顶部">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
 
 <noscript>
   <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
