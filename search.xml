@@ -37427,4 +37427,396 @@ PS: 有问题请留言，看到后我会第一时间回复。
         <tag>Exception</tag>
       </tags>
   </entry>
+  <entry>
+    <title>pybind11函数指针入门到放弃</title>
+    <url>/2026/05/17/blog_idx_147/</url>
+    <content><![CDATA[ 
+PS：要转载请注明出处，本人版权所有。
+PS: 这个只是基于《我自己》的理解，如果和你的原则及想法相冲突，请谅解，勿喷。
+
+环境说明
+  无
+前言
+
+  在我们想把底层C++/C的接口暴露给python的时候，我们一般采用的是pybind11框架，可以很方便的让我们暴露接口。对于普通的接口参数类型来说，pybind11也提供了适合的转换类型（例如：std::vector/uint64_t 等等）。但是年前的一个项目中，遇到了一类特别的参数，函数指针，让我一度很头疼，导致我遇到了如下几个问题：
+
+
+问题1：python的函数怎么转换为pybind11中的std::function（底层原理）
+
+
+问题2：pybind11中的std::function 怎么转换为c++层的裸函数
+
+
+问题3：pybind11中的std::function对象复制的注意事项 (问题3出现的原因和我解决问题2有关系，如果不注意，会导致出现python解释器报错)
+
+
+  下面来看看我遇到上面的几个问题的实际例子。
+  事情是这样的，我有一个c++接口，接收一个类似void(*CB)(Data&amp;)的函数指针，当我尝试将此接口暴露给python的时候，AI一步到位给我写好了转换代码如下：
+#include &lt;cstdio&gt;
+#include &lt;pybind11&#x2F;pybind11.h&gt;
+#include &lt;pybind11&#x2F;stl.h&gt;
+#include &lt;pybind11&#x2F;functional.h&gt;
+namespace py &#x3D; pybind11;
+
+typedef void(*CB)(int&amp;);
+
+class Test&#123;
+    public:
+    void test(CB cb)
+    &#123;
+        printf(&quot;printf&quot;);
+    &#125;
+&#125;;
+
+PYBIND11_MODULE(testpy, m) &#123;
+    m.doc() &#x3D; &quot;pybind11 wrapper for testpy class&quot;;
+    py::class_&lt;Test&gt;(m, &quot;Test&quot;)
+    .def(py::init&lt;&gt;(), &quot;Constructor for the Test class&quot;)
+    .def(&quot;test&quot;, [](Test&amp; self, std::function&lt;void(int&amp;)&gt; callback) &#123;
+        &#x2F;&#x2F;... ...
+        auto cb &#x3D; [callback](int&amp;d)&#123;
+            callback(d);
+        &#125;;
+        &#x2F;&#x2F; 下面这行报错，错误信息类似： error: cannot convert ‘pybind11_init_testpy(pybind11::module_&amp;)::&lt;lambda(Test&amp;, std::function&lt;void(int&amp;)&gt;)&gt;::&lt;lambda(int&amp;)&gt;’ to ‘CB’ &#123;aka ‘void (*)(int&amp;)’&#125;
+        return self.test(cb);
+    &#125;
+
+&#125;            
+import testpy
+def test_cb(i):
+    print(f'test_cb i = &#123;i&#125;')
+t = testpy.Test()
+t.test()
+  首先，这里有个结论，AI给出的代码是错误的(带捕获参数的lambda不能直接转换为裸指针，可看注释部分)，但是形式上面给出了转换代码的大致框架，这里精简后，整个问题的核心就是：pybind11的std::function怎么转换为函数指针。
+  下面我们看看怎么解决上面3个问题，并解决最终问题。
+
+
+
+
+问题1：python的函数怎么转换为pybind11中的std::function（底层原理）
+
+  要解决这个问题，我们得了解python的函数传递过来，这里的callback到底是什么东西？由于pybind11是大量的宏来生成代码，为了快速得到我们要的内容，我们使用gdb来对堆栈进行分析。
+#0  test_cb (i=@0x7fffffffd714: 9999) at testpy.cpp:19
+#1  0x00007ffff73bfded in Test::test (this=0xc49820, cb=0x7ffff73ab120 &lt;test_cb(int&amp;)>) at testpy.cpp:13
+#2  0x00007ffff73ab3f7 in operator()(Test &amp;, std::function&lt;void(int&amp;)>) const (__closure=0xc49678, self=..., callback=...) at testpy.cpp:33
+#3  0x00007ffff73ac08c in pybind11::detail::argument_loader&lt;Test&amp;, std::function&lt;void(int&amp;)> >::call_impl&lt;void, pybind11_init_testpy(pybind11::module_&amp;)::&lt;lambda(Test&amp;, std::function&lt;void(int&amp;)>)>&amp;, 0, 1, pybind11::detail::void_type>(struct &#123;...&#125; &amp;, std::index_sequence, pybind11::detail::void_type &amp;&amp;) (this=0x7fffffffd8a0, f=...) at /usr/include/pybind11/cast.h:1480
+#4  0x00007ffff73abd00 in pybind11::detail::argument_loader&lt;Test&amp;, std::function&lt;void(int&amp;)> >::call&lt;void, pybind11::detail::void_type, pybind11_init_testpy(pybind11::module_&amp;)::&lt;lambda(Test&amp;, std::function&lt;void(int&amp;)>)>&amp;>(struct &#123;...&#125; &amp;) (this=0x7fffffffd8a0, f=...) at /usr/include/pybind11/cast.h:1454
+#5  0x00007ffff73ab9b7 in operator() (__closure=0x0, call=...) at /usr/include/pybind11/pybind11.h:254
+#6  0x00007ffff73aba6c in _FUN () at /usr/include/pybind11/pybind11.h:224
+#7  0x00007ffff73bd52c in pybind11::cpp_function::dispatcher (self=0x7ffff75fedc0, args_in=0x7ffff7421f80, kwargs_in=0x0) at /usr/include/pybind11/pybind11.h:946
+#8  0x0000000000581ecf in cfunction_call (func=0x7ffff740ba10, args=&lt;optimized out>, kwargs=&lt;optimized out>) at ../Objects/methodobject.c:537
+#9  0x0000000000549205 in _PyObject_MakeTpCall (tstate=0xba5748 &lt;_PyRuntime+459656>, callable=0x7ffff740ba10, args=&lt;optimized out>, nargs=2, keywords=0x0) at ../Objects/call.c:240
+#10 0x0000000000549c3d in _PyObject_VectorcallTstate (kwnames=&lt;optimized out>, nargsf=&lt;optimized out>, args=&lt;optimized out>, callable=&lt;optimized out>, tstate=&lt;optimized out>) at ../Include/internal/pycore_call.h:90
+#11 0x00000000005d7109 in _PyEval_EvalFrameDefault (tstate=tstate@entry=0xba5748 &lt;_PyRuntime+459656>, frame=&lt;optimized out>, frame@entry=0x7ffff7fb2020, throwflag=throwflag@entry=0) at Python/bytecodes.c:2706
+#12 0x00000000005d564b in _PyEval_EvalFrame (throwflag=0, frame=0x7ffff7fb2020, tstate=0xba5748 &lt;_PyRuntime+459656>) at ../Include/internal/pycore_ceval.h:89
+#13 _PyEval_Vector (kwnames=0x0, argcount=0, args=0x0, locals=0x7ffff75f9a80, func=0x7ffff75da160, tstate=0xba5748 &lt;_PyRuntime+459656>) at ../Python/ceval.c:1683
+#14 PyEval_EvalCode (co=co@entry=0x7ffff75604b0, globals=globals@entry=0x7ffff75f9a80, locals=locals@entry=0x7ffff75f9a80) at ../Python/ceval.c:578
+#15 0x00000000006087b2 in run_eval_code_obj (locals=0x7ffff75f9a80, globals=0x7ffff75f9a80, co=0x7ffff75604b0, tstate=0xba5748 &lt;_PyRuntime+459656>) at ../Python/pythonrun.c:1722
+#16 run_mod (mod=&lt;optimized out>, filename=&lt;optimized out>, globals=0x7ffff75f9a80, locals=0x7ffff75f9a80, flags=&lt;optimized out>, arena=&lt;optimized out>) at ../Python/pythonrun.c:1743
+#17 0x00000000006b4853 in pyrun_file (fp=fp@entry=0xbf6480, filename=filename@entry=0x7ffff7409ca0, start=start@entry=257, globals=globals@entry=0x7ffff75f9a80, locals=locals@entry=0x7ffff75f9a80, closeit=closeit@entry=1, flags=0x7fffffffe0a8) at ../Python/pythonrun.c:1643
+#18 0x00000000006b45ba in _PyRun_SimpleFileObject (fp=fp@entry=0xbf6480, filename=filename@entry=0x7ffff7409ca0, closeit=closeit@entry=1, flags=flags@entry=0x7fffffffe0a8) at ../Python/pythonrun.c:433
+#19 0x00000000006b43ef in _PyRun_AnyFileObject (fp=0xbf6480, filename=filename@entry=0x7ffff7409ca0, closeit=closeit@entry=1, flags=flags@entry=0x7fffffffe0a8) at ../Python/pythonrun.c:78
+#20 0x00000000006bc455 in pymain_run_file_obj (skip_source_first_line=0, filename=0x7ffff7409ca0, program_name=0x7ffff75f9bf0) at ../Modules/main.c:360
+#21 pymain_run_file (config=0xb48328 &lt;_PyRuntime+77672>) at ../Modules/main.c:379
+#22 pymain_run_python (exitcode=0x7fffffffe09c) at ../Modules/main.c:629
+#23 Py_RunMain () at ../Modules/main.c:709
+#24 0x00000000006bbf3d in Py_BytesMain (argc=&lt;optimized out>, argv=&lt;optimized out>) at ../Modules/main.c:763
+#25 0x00007ffff7c2a1ca in __libc_start_call_main (main=main@entry=0x518ac0 &lt;main>, argc=argc@entry=2, argv=argv@entry=0x7fffffffe2e8) at ../sysdeps/nptl/libc_start_call_main.h:58
+#26 0x00007ffff7c2a28b in __libc_start_main_impl (main=0x518ac0 &lt;main>, argc=2, argv=0x7fffffffe2e8, init=&lt;optimized out>, fini=&lt;optimized out>, rtld_fini=&lt;optimized out>, stack_end=0x7fffffffe2d8) at ../csu/libc-start.c:360
+#27 0x00000000006574f5 in _start ()
+  从上面看，核心就是从python解释器，到了pybind11::cpp_function::dispatcher，然后到了我们的test函数。如果我们对pybind11不熟悉的话，我们还是需要深入去看pybind11才能回答我们上面的问题，但是我这里想到了另外一个办法。
+  我们都知道，pybind11底层是由cpython实现的，因此我们通过cpython来实现上面的同样的功能是什么样子的呢？直接让AI生成示例如下：
+
+ #define PY_SSIZE_T_CLEAN
+#include &lt;Python.h>
+#include &lt;cstdio>
+#include &lt;functional>
+
+// --- C++ 逻辑模拟部分 ---
+typedef void(*CB)(int&amp;);
+
+class Test&#123;
+    public:
+    void test(CB cb)
+    &#123;
+        int i = 9999;
+        cb(i);
+    &#125;
+&#125;;
+
+void test_cb(int&amp; i)
+&#123;
+    printf("test_cb from cxx i = %d\n", i);
+&#125;
+
+// --- CPython 包装部分 ---
+
+// 定义 Python 中的 Test 对象结构
+typedef struct &#123;
+    PyObject_HEAD
+    Test* cpp_obj; // 指向实际的 C++ 对象
+&#125; PyTestObject;
+
+void pybind11_like_func(Test&amp; self, std::function&lt;void(int&amp;)> callback)
+&#123;
+    //... ...
+    auto cb = [callback](int&amp;d)&#123;
+        callback(d);
+    &#125;;
+    int i = 8888;
+    cb(i);
+    // return self.test(cb);
+    return self.test(test_cb);
+&#125;
+
+// Test.test(callback) 的实现
+static PyObject* PyTest_test(PyTestObject* self, PyObject* args) &#123;
+    PyObject* pycallback = NULL;
+
+    // 1. 解析参数，期望得到一个可调用对象
+    if (!PyArg_ParseTuple(args, "O", &amp;pycallback)) &#123;
+        return NULL;
+    &#125;
+
+    if (!PyCallable_Check(pycallback)) &#123;
+        PyErr_SetString(PyExc_TypeError, "Parameter must be callable");
+        return NULL;
+    &#125;
+
+    // 2. 核心：模拟 std::function&lt;void(int&amp;)> 的构造
+    // 我们在这里捕获 py_callback 指针。注意：实际生产中需要处理引用计数
+    std::function&lt;void(int&amp;)> cpp_callback = [pycallback](int&amp; d) &#123;
+        // A. 必须获取 GIL，因为回调可能由 C++ 触发
+        PyGILState_STATE gstate = PyGILState_Ensure();
+
+        // B. 参数转换：C++ int&amp; -> Python Long
+        PyObject* arg = PyLong_FromLong((long)d);
+        PyObject* arg_tuple = PyTuple_Pack(1, arg);
+
+        // C. 调用 Python 函数
+        PyObject* result = PyObject_CallObject(pycallback, arg_tuple);
+
+        // D. 错误处理与清理
+        if (!result) &#123;
+            PyErr_Print(); 
+        &#125;
+
+        Py_XDECREF(result);
+        Py_DECREF(arg_tuple);
+        Py_DECREF(arg);
+
+        // E. 释放 GIL
+        PyGILState_Release(gstate);
+    &#125;;
+
+    pybind11_like_func(*self->cpp_obj, cpp_callback);
+    Py_RETURN_NONE;
+&#125;
+
+// --- 类型与模块定义 ---
+
+static PyMethodDef PyTest_methods[] = &#123;
+    &#123;"test", (PyCFunction)PyTest_test, METH_VARARGS, "Execute test with callback"&#125;,
+    &#123;NULL, NULL, 0, NULL&#125;
+&#125;;
+
+
+static PyTypeObject PyTestType = &#123;
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "testcpy.Test",
+    .tp_basicsize = sizeof(PyTestObject),
+    .tp_itemsize = 0,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_methods = PyTest_methods,
+    .tp_new = PyType_GenericNew,
+&#125;;
+
+
+static struct PyModuleDef testcpymodule = &#123;
+    PyModuleDef_HEAD_INIT,
+    "testcpy",
+    "CPython version of testcpy",
+    -1,
+    NULL
+&#125;;
+
+
+PyMODINIT_FUNC PyInit_testcpy(void) &#123;
+    PyObject* m;
+    if (PyType_Ready(&amp;PyTestType) &lt; 0) return NULL;
+    m = PyModule_Create(&amp;testcpymodule);
+    if (m == NULL) return NULL;
+
+    Py_INCREF(&amp;PyTestType);
+    PyModule_AddObject(m, "Test", (PyObject*)&amp;PyTestType);
+    return m;
+&#125;
+  其实我们已经看到了，我们用cpython来实现的话，调用的std::function一定是一个带状态的callable obj。至此，我们已经解决了问题1。
+
+
+
+
+问题2：pybind11中的std::function 怎么转换为c++层的裸函数
+
+  实际的方法就是在pybind11代码层，添加一个全局静态变量进行转换，参考如下代码(重点查看PyCBWrapper相关的内容)：
+#include &lt;cstdio&gt;
+#include &lt;pybind11&#x2F;pybind11.h&gt;
+#include &lt;pybind11&#x2F;stl.h&gt;
+#include &lt;pybind11&#x2F;functional.h&gt;
+
+#include &lt;functional&gt;
+namespace py &#x3D; pybind11;
+typedef void(*CB)(int&amp;);
+
+class Test&#123;
+    public:
+    void test(CB cb)
+    &#123;
+        int i &#x3D; 9999;
+        cb(i);
+    &#125;
+&#125;;
+
+struct PyCBWrapper &#123;
+
+    static std::function&lt;void(int&amp;)&gt; py_cb;
+
+    static void trampoline(int&amp; i) &#123;
+        
+        if (nullptr !&#x3D; py_cb)
+            PyCBWrapper::py_cb(i);
+        
+    &#125;
+&#125;;
+
+
+std::function&lt;void(int&amp;)&gt; PyCBWrapper::py_cb &#x3D; nullptr;
+
+
+void test_cb(int&amp; i)
+&#123;
+    printf(&quot;test_cb from cxx i &#x3D; %d\n&quot;, i);
+&#125;
+
+PYBIND11_MODULE(testpy, m) &#123;
+    m.doc() &#x3D; &quot;pybind11 wrapper for testpy class&quot;;
+    py::class_&lt;Test&gt;(m, &quot;Test&quot;)
+    .def(py::init&lt;&gt;(), &quot;Constructor for the Test class&quot;)
+    .def(&quot;test&quot;, [](Test&amp; self, std::function&lt;void(int&amp;)&gt; callback) &#123;
+        &#x2F;&#x2F;... ...
+        auto cb &#x3D; [callback](int&amp;d)&#123;
+            callback(d);
+        &#125;;
+        int i &#x3D; 8888;
+        cb(i);
+        PyCBWrapper::py_cb &#x3D; callback;
+        &#x2F;&#x2F; return self.test(cb);
+        return self.test(PyCBWrapper::trampoline);
+    &#125;);
+
+&#125;    
+
+
+
+
+问题3：pybind11中的std::function对象复制的注意事项
+
+  问题2的这段代码会直接运行报错，堆栈如下
+#0  __pthread_kill_implementation (no_tid=0, signo=6, threadid=&lt;optimized out>) at ./nptl/pthread_kill.c:44
+#1  __pthread_kill_internal (signo=6, threadid=&lt;optimized out>) at ./nptl/pthread_kill.c:78
+#2  __GI___pthread_kill (threadid=&lt;optimized out>, signo=signo@entry=6) at ./nptl/pthread_kill.c:89
+#3  0x00007ffff7c4527e in __GI_raise (sig=sig@entry=6) at ../sysdeps/posix/raise.c:26
+#4  0x00007ffff7c288ff in __GI_abort () at ./stdlib/abort.c:79
+#5  0x00000000004b1252 in ?? ()
+#6  0x00000000004b2908 in _Py_FatalErrorFunc ()
+#7  0x00000000004b2cd2 in ?? ()
+#8  0x000000000060861e in ?? ()
+#9  0x00000000006a6e93 in PyEval_AcquireThread ()
+#10 0x00007ffff73b9d20 in pybind11::gil_scoped_acquire::gil_scoped_acquire (this=0x7fffffffd760) at /usr/include/pybind11/gil.h:82
+#11 0x00007ffff73dd1b1 in pybind11::detail::type_caster&lt;std::function&lt;void (int&amp;)>, void>::load(pybind11::handle, bool)::func_handle::~func_handle() (this=0xc49870, __in_chrg=&lt;optimized out>)
+    at /usr/include/pybind11/functional.h:97
+#12 0x00007ffff73dd324 in pybind11::detail::type_caster&lt;std::function&lt;void (int&amp;)>, void>::load(pybind11::handle, bool)::func_wrapper::~func_wrapper() (this=0xc49870, __in_chrg=&lt;optimized out>)
+    at /usr/include/pybind11/functional.h:103
+#13 0x00007ffff73e0ff2 in std::_Function_base::_Base_manager&lt;pybind11::detail::type_caster&lt;std::function&lt;void(int&amp;)>, void>::load(pybind11::handle, bool)::func_wrapper>::_M_destroy (__victim=...)
+    at /usr/include/c++/13/bits/std_function.h:175
+--Type &lt;RET> for more, q to quit, c to continue without paging--
+#14 0x00007ffff73e0ce4 in std::_Function_base::_Base_manager&lt;pybind11::detail::type_caster&lt;std::function&lt;void(int&amp;)>, void>::load(pybind11::handle, bool)::func_wrapper>::_M_manager (__dest=..., __source=..., 
+    __op=std::__destroy_functor) at /usr/include/c++/13/bits/std_function.h:203
+#15 0x00007ffff73e02aa in std::_Function_handler&lt;void(int&amp;), pybind11::detail::type_caster&lt;std::function&lt;void(int&amp;)>, void>::load(pybind11::handle, bool)::func_wrapper>::_M_manager (__dest=..., __source=..., 
+    __op=std::__destroy_functor) at /usr/include/c++/13/bits/std_function.h:282
+#16 0x00007ffff73b62c1 in std::_Function_base::~_Function_base (this=0x7ffff73ff440 &lt;PyCBWrapper::py_cb>, __in_chrg=&lt;optimized out>) at /usr/include/c++/13/bits/std_function.h:244
+#17 0x00007ffff73bff78 in std::function&lt;void(int&amp;)>::~function (this=0x7ffff73ff440 &lt;PyCBWrapper::py_cb>, __in_chrg=&lt;optimized out>) at /usr/include/c++/13/bits/std_function.h:334
+#18 0x00007ffff7c47a76 in __run_exit_handlers (status=0, listp=&lt;optimized out>, run_list_atexit=run_list_atexit@entry=true, run_dtors=run_dtors@entry=true) at ./stdlib/exit.c:108
+#19 0x00007ffff7c47bbe in __GI_exit (status=&lt;optimized out>) at ./stdlib/exit.c:138
+#20 0x00007ffff7c2a1d1 in __libc_start_call_main (main=main@entry=0x518c60, argc=argc@entry=2, argv=argv@entry=0x7fffffffda28) at ../sysdeps/nptl/libc_start_call_main.h:74
+#21 0x00007ffff7c2a28b in __libc_start_main_impl (main=0x518c60, argc=2, argv=0x7fffffffda28, init=&lt;optimized out>, fini=&lt;optimized out>, rtld_fini=&lt;optimized out>, stack_end=0x7fffffffda18)
+    at ../csu/libc-start.c:360
+#22 0x0000000000657b05 in _start ()
+  从堆栈分析可知，问题出在程序退出的时候，PyCBWrapper::py_cb（全局静态变量）析构的时候，这个时候其实python解释器已经退出了，再使用python解释器相关的资源，就会报错。这个其实就是问题3。由于从上面的例子可以知道，这个时候的PyCBWrapper::py_cb是一个捕获了python函数的PyObject的std::function，那么解决方案也很简单，那就是在上面的pybind11代码层中添加如下核心代码：
+PYBIND11_MODULE(testpy, m) &#123;
+    m.doc() = "pybind11 wrapper for testpy class";
+    py::class_&lt;Test>(m, "Test")
+    .def(py::init&lt;>(), "Constructor for the Test class")
+    .def("test", [](Test&amp; self, std::function&lt;void(int&amp;)> callback) &#123;
+        //... ...
+        auto cb = [callback](int&amp;d)&#123;
+            callback(d);
+        &#125;;
+        int i = 8888;
+        cb(i);
+        PyCBWrapper::py_cb = callback;
+        // return self.test(cb);
+        self.test(PyCBWrapper::trampoline);
+        // 核心代码
+        PyCBWrapper::py_cb = nullptr;
+        return;
+    &#125;);
+
+&#125;    
+  这里的核心就是将PyCBWrapper::py_cb = nullptr;置为空，保证pyobject变量在python解释器还正常的工作时候进行析构。问题3解决，完结散花。
+
+
+
+
+后记
+
+  其实在了解了cpython转换python函数为std::function的细节，解决这些奇怪的问题还是很简单的。
+  在AI的帮助下，解决这些问题只需要有方向即可，验证时间及方法已经非常的快了。
+参考文献
+
+
+https://pybind11.readthedocs.io/en/stable/advanced/cast/index.html
+
+
+
+
+
+
+
+    
+        
+        打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）
+    
+
+
+    
+        
+    
+
+
+PS: 请尊重原创，不喜勿喷。
+PS: 要转载请注明出处，本人版权所有。
+PS: 有问题请留言，看到后我会第一时间回复。
+]]></content>
+      <categories>
+        <category>C++</category>
+        <category>python</category>
+        <category>pybind11</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>python</tag>
+        <tag>pybind11</tag>
+      </tags>
+  </entry>
 </search>

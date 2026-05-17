@@ -206,13 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">139</span>
+          <span class="site-state-item-count">140</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-count">95</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -259,6 +259,465 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/11/28/blog_idx_114/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2021/11/28/blog_idx_114/" class="post-title-link" itemprop="url">寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-11-28 19:01:17" itemprop="dateCreated datePublished" datetime="2021-11-28T19:01:17+08:00">2021-11-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/" itemprop="url" rel="index"><span itemprop="name">DL</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/%E5%B8%B8%E8%AF%86/" itemprop="url" rel="index"><span itemprop="name">常识</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>13 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2023-04-08 11:14:43
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=114） 
+&emsp;&emsp;本文发布于 2021-11-28 19:01:17     （BlogID=114）
+-->
+<h6 id="环境说明">环境说明</h6>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>MLU220 开发板</p>
+</li>
+<li class="lvl-2">
+<p>Ubuntu18.04 + MLU270开发主机一台</p>
+</li>
+<li class="lvl-2">
+<p>aarch64-linux-gnu-gcc 6.x 交叉编译环境</p>
+</li>
+</ul>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  阅读本文前，请务必须知以下前置文章概念：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</p>
+</li>
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</p>
+</li>
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121456789">https://blog.csdn.net/u011728480/article/details/121456789</a> ）</p>
+</li>
+</ul>
+<p>  这里再次回顾一下《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》的内容，寒武纪加速卡是一个硬件平台，是最底层的存在，在硬件平台之上，有驱动，在驱动之上，有运行时。本文的离线模型就是基于运行时的api进行调用和处理，得到模型结果。</p>
+<p>  本文作为本系列的终篇，将会从上文的离线模型开始，从头开始搭建我们的离线模型推理代码结构，经过合理的部署，能够在MLU220开发板正常的运行。</p>
+<p>  若文中引用部分存在侵权，请及时联系我删除。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="离线模型推理前置须知">离线模型推理前置须知</h3>
+<hr>
+<p>  经过前文相关的介绍，我们可以知道我们主要调用的是运行时相关的api。这里存在两套api可以使用，一个是cnrt，一个是easydk。easydk是基于cnrt封装的api，大大简化了离线模型推理的开发流程。但是我们的开发主线是一致的，就是初始化mlu设备，加载模型，预处理，模型推理，后处理，处理结果。</p>
+<p>  此外，寒武纪还提供了CNStream程序框架，基于EasyDk开发，以pipeline+observer的方式，提供了一个简单易用的框架，如果有兴趣，请查看其官网 <a target="_blank" rel="noopener" href="https://github.com/Cambricon/CNStream">https://github.com/Cambricon/CNStream</a> 。</p>
+<p>  我们其实要用的是EasyDK+CNRT的这种开发方式，构造一个类似CNStream这样的程序。</p>
+<br/>
+<br/>
+<h5 id="EasyDK简介与编译">EasyDK简介与编译</h5>
+<p>  首先其官网是：<a target="_blank" rel="noopener" href="https://github.com/Cambricon/easydk%E3%80%82">https://github.com/Cambricon/easydk。</a></p>
+<p>  其除了CNToolKit的依赖（neuware）之外，还依赖于glog,gflags,opencv，这些需要提前安装好。至于CNToolKit x86的版本的相关介绍已经在模型移植环境部分介绍过了。</p>
+<p>  由于我们要开发边缘端离线模型推理程序，一般来说，我们主要还是使用到EasyDK里面的EasyInfer部分的内容。其编译流程的话就如其官方介绍：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>cmake …</p>
+</li>
+<li class="lvl-2">
+<p>make</p>
+</li>
+</ul>
+<p>  如果熟悉cmake的编译流程的话，其实就知道上面的流程是非常普遍的。对于EasyDK的编译来说，在x86下面进行编译是很简单的，但是如果要进行交叉编译的话，最好只生成核心库，其他的sample和test都关闭。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="完成离线模型在MLU270上的运行">完成离线模型在MLU270上的运行</h3>
+<hr>
+<p>  还记得在《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》一文中，我们可以看到，通过torch_mlu.core.mlu_model.set_core_version(‘MLU220’)，我们可以调整生成的离线模型运行的平台，可以是边缘端MLU220，可以是服务器部署端的MLU270。对的，没有看错，MLU270既可以做模型移植，也可以做离线模型的部署，就如同本系列的开篇所讲，这几个平台仅仅是部署场景的差异。</p>
+<p>  为什么我们需要在MLU270上调试离线模型呢？因为方便。因为MLU220一般来说都需要交叉编译，特别是相关的依赖库的生成比较麻烦，如果MLU220的板卡也方便调试的话，那也可以直接基于MLU220进行开发和调试。</p>
+<p>  由于我这边是EasyDK+CNRT混合调用的形式，因此我主要根据其官方的CNRT推理代码进行注释和介绍，并在相关位置标注哪些内容是EasyDK可以一步到位的。这里简单的回答几个疑问。为什么需要EasyDK这个库呢？为什么不直接基于CNRT进行开发？我的回答是根据项目推进的需要做出的选择。关于这种程序的最终形态，其实我还是期待直接基于CNRT开发，因为其有效，但是代价是你必须很熟悉的了解相关的内容。</p>
+<p>  下面是官方推理代码介绍（可能会在顺序上做一些变更，其官方代码未处理一些返回值，自己编写的时候需要注意,此外,官方的代码有些遗漏的地方,我进行了修改）：</p>
+ <pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">/* Copyright (C) [2019] by Cambricon, Inc. */</span>
+ <span class="token comment">/* offline_test */</span>
+ <span class="token comment">/*
+  * A test which shows how to load and run an offline model.
+  * This test consists of one operation --mlp.
+  *
+  * This example is used for MLU270 and MLU220.
+  *
+  */</span>
+
+ <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"cnrt.h"</span></span>
+ <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+ <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+ <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+
+ <span class="token keyword">int</span> <span class="token function">offline_test</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>name<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+   <span class="token comment">// This example is used for MLU270 and MLU220. You need to choose the corresponding offline model.</span>
+   <span class="token comment">// when generating an offline model, u need cnml and cnrt both</span>
+   <span class="token comment">// when running an offline model, u need cnrt only</span>
+   <span class="token comment">// 第一步，你必须调用cnrtInit()初始化运行时环境</span>
+   <span class="token function">cnrtInit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// 第二步， 就是检查MLU设备，并设定当前设备，这一步其实是为多设备推理准备的</span>
+   <span class="token class-name">cnrtDev_t</span> dev<span class="token punctuation">;</span>
+   <span class="token function">cnrtGetDeviceHandle</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>dev<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtSetCurrentDevice</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// 这里的第一二步其实可能创建一个EasyInfer对象就完成了，而且具备了完整的错误检查。</span>
+
+   <span class="token comment">// </span>
+   <span class="token comment">// prepare model name</span>
+   <span class="token comment">// load model</span>
+   <span class="token comment">// 第三步，就是加载模型</span>
+   <span class="token class-name">cnrtModel_t</span> model<span class="token punctuation">;</span>
+   <span class="token function">cnrtLoadModel</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>model<span class="token punctuation">,</span> <span class="token string">"test.cambricon"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// get model total memory</span>
+   <span class="token comment">// 第四步，就是获取模型的一些属性，比如内存占用，并行性这些，这一步是可选的。</span>
+   <span class="token class-name">int64_t</span> totalMem<span class="token punctuation">;</span>
+   <span class="token function">cnrtGetModelMemUsed</span><span class="token punctuation">(</span>model<span class="token punctuation">,</span> <span class="token operator">&amp;</span>totalMem<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"total memory used: %ld Bytes\n"</span><span class="token punctuation">,</span> totalMem<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token comment">// get model parallelism</span>
+   <span class="token keyword">int</span> model_parallelism<span class="token punctuation">;</span>
+   <span class="token function">cnrtQueryModelParallelism</span><span class="token punctuation">(</span>model<span class="token punctuation">,</span> <span class="token operator">&amp;</span>model_parallelism<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"model parallelism: %d.\n"</span><span class="token punctuation">,</span> model_parallelism<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// 第五步，是建立推理逻辑流，这一步就是根据离线模型，在内存中动态生成模型推理结构。这里的"subnet0"是一个 kernel-func 名字，非固定，但是常见的名字都是subnet0，</span>
+   <span class="token comment">// 在.cambricon_twins配套文件中有相关定义。</span>
+   <span class="token comment">// 他这个和cuda编程其实比较类似，我们刚刚生成的模型推理结构其实被当做一个内核函数，函数名就是这个。</span>
+   <span class="token comment">// load extract function</span>
+   <span class="token class-name">cnrtFunction_t</span> function<span class="token punctuation">;</span>
+   <span class="token function">cnrtCreateFunction</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>function<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtExtractFunction</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>function<span class="token punctuation">,</span> model<span class="token punctuation">,</span> <span class="token string">"subnet0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+
+   <span class="token comment">// 第六步，获取输入输出节点个数和输入输出数据size。注意许多网络中有多个输入，也可能有多个输出。在次注意这个概念，后续的操作都在多个输入和多个输出的基础上设计的。</span>
+   <span class="token keyword">int</span> inputNum<span class="token punctuation">,</span> outputNum<span class="token punctuation">;</span>
+   <span class="token class-name">int64_t</span> <span class="token operator">*</span>inputSizeS<span class="token punctuation">,</span> <span class="token operator">*</span>outputSizeS<span class="token punctuation">;</span>
+   <span class="token function">cnrtGetInputDataSize</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>inputSizeS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>inputNum<span class="token punctuation">,</span> function<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtGetOutputDataSize</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>outputSizeS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>outputNum<span class="token punctuation">,</span> function<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// prepare data on cpu</span>
+   <span class="token comment">// 第7步，申请cpu上的输入输出内存，这里是二维指针哈，代表多个输入输出</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>inputCpuPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>inputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>outputCpuPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>outputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// allocate I/O data memory on MLU</span>
+   <span class="token comment">// 第8步，申请mlu上的输入输出内存，这里是二维指针哈，代表多个输入输出。</span>
+   <span class="token comment">// 此时还未真正申请数据内存，只是申请了数据节点的句柄（指针）</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>inputMluPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>inputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>outputMluPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>outputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// prepare input buffer</span>
+   <span class="token comment">// 第9步，分别对第8步的数据节点句柄申请真正的内存空间。这里的inputCpuPtrS和inputMluPtrS是一一对应的，这是内存地址不一样，内存管理者不一样。对输出也是同理。</span>
+   <span class="token comment">// malloc是标准c申请堆内存接口</span>
+   <span class="token comment">// cnrtMalloc是申请mlu所管理的内存接口,类比cuda的话,可以直接理解为申请显存</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         <span class="token comment">// converts data format when using new interface model</span>
+         inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token comment">// malloc mlu memory</span>
+         <span class="token function">cnrtMalloc</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token function">cnrtMemcpy</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> CNRT_MEM_TRANS_DIR_HOST2DEV<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+   <span class="token comment">// prepare output buffer</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         outputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>outputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token comment">// malloc mlu memory</span>
+         <span class="token function">cnrtMalloc</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token punctuation">(</span>outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> outputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   
+
+   <span class="token comment">// 第10步,首先将预处理好的图像数据填充inputCpuPtrS, 拷贝cpu输入数据内存到mlu输入数据内存</span>
+   cv<span class="token operator">::</span>Mat _in_img<span class="token punctuation">;</span>
+   _in_img <span class="token operator">=</span> cv<span class="token operator">::</span><span class="token function">imread</span><span class="token punctuation">(</span><span class="token string">"test.jpg"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   _in_img<span class="token punctuation">.</span><span class="token function">convertTo</span><span class="token punctuation">(</span>_in_img<span class="token punctuation">,</span> CV_32FC3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+       <span class="token comment">// 注意这里的memcpy是我添加的，一般来说，模型的数据输入都是fp16或者fp32，但是一般我们的opencv生成的uint8。需要转换成fp32，或者fp16。</span>
+       <span class="token comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span>
+       <span class="token comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span>
+       <span class="token comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span>
+       <span class="token operator">::</span><span class="token function">memcpy</span><span class="token punctuation">(</span> inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> _in_img<span class="token punctuation">.</span>data<span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+       <span class="token function">cnrtMemcpy</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> CNRT_MEM_TRANS_DIR_HOST2DEV<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token comment">// 第10步，主要就是图像预处理，将图像数据传输到mlu上面去。</span>
+
+   <span class="token comment">// 第11步，主要是开始设置推理参数</span>
+   <span class="token comment">// prepare parameters for cnrtInvokeRuntimeContext</span>
+   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>param <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token punctuation">(</span>inputNum <span class="token operator">+</span> outputNum<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         param<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         param<span class="token punctuation">[</span>inputNum <span class="token operator">+</span> i<span class="token punctuation">]</span> <span class="token operator">=</span> outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token comment">// 第12步，绑定设备和设置推理context</span>
+   <span class="token comment">// setup runtime ctx</span>
+   <span class="token class-name">cnrtRuntimeContext_t</span> ctx<span class="token punctuation">;</span>
+   <span class="token function">cnrtCreateRuntimeContext</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ctx<span class="token punctuation">,</span> function<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// compute offline</span>
+   <span class="token class-name">cnrtQueue_t</span> queue<span class="token punctuation">;</span>
+   <span class="token function">cnrtRuntimeContextCreateQueue</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> <span class="token operator">&amp;</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// bind device</span>
+   <span class="token function">cnrtSetRuntimeContextDeviceId</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtInitRuntimeContext</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+   <span class="token comment">// 第13步，推理并等待推理结束。</span>
+   <span class="token comment">// invoke</span>
+   <span class="token function">cnrtInvokeRuntimeContext</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> param<span class="token punctuation">,</span> queue<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// sync</span>
+   <span class="token function">cnrtSyncQueue</span><span class="token punctuation">(</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// 第14步，将数据从mlu拷贝回cpu，然后进行后续的后处理</span>
+   <span class="token comment">// copy mlu result to cpu</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         <span class="token function">cnrtMemcpy</span><span class="token punctuation">(</span>outputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> outputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> CNRT_MEM_TRANS_DIR_DEV2HOST<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token comment">// 第15步，清理环境。</span>
+   <span class="token comment">// free memory space</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         <span class="token function">free</span><span class="token punctuation">(</span>inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token function">cnrtFree</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+         <span class="token function">free</span><span class="token punctuation">(</span>outputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token function">cnrtFree</span><span class="token punctuation">(</span>outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+   <span class="token function">free</span><span class="token punctuation">(</span>inputCpuPtrS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">free</span><span class="token punctuation">(</span>outputCpuPtrS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">free</span><span class="token punctuation">(</span>param<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token function">cnrtDestroyQueue</span><span class="token punctuation">(</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtDestroyRuntimeContext</span><span class="token punctuation">(</span>ctx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtDestroyFunction</span><span class="token punctuation">(</span>function<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtUnloadModel</span><span class="token punctuation">(</span>model<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">cnrtDestroy</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+ <span class="token punctuation">&#125;</span>
+
+ <span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+   <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"mlp offline test\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">offline_test</span><span class="token punctuation">(</span><span class="token string">"mlp"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+ <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>   下面我简单列出一些EasyDK的操作顺序：</p>
+<ul class="lvl-0">
+<li class="lvl-3">
+<p>上文的第三四五步其实对应的是EasyInfer下面的ModelLoader模块，当初始化ModelLoader模块，并传参给EasyInfer实例，就完成了三四五步的内容。其实前面这些内容都是固定形式的，并不是重点。重点是后面的数据输入、推理、数据输出部分。</p>
+</li>
+<li class="lvl-3">
+<p>上文的第6,7,8,9步其实都是在为模型在cpu和mlu上申请相关的内存空间。在EasyDk中有对应的接口直接完成内存申请。</p>
+</li>
+<li class="lvl-3">
+<p>注意上文的第10步，是比较重要的一步，包含了图像数据预处理，到图像数据类型转换，再到图像数据输入到mlu内存。</p>
+</li>
+<li class="lvl-3">
+<p>上文的第11,12步是为推理准备参数</p>
+</li>
+<li class="lvl-3">
+<p>上文的第13步开始推理</p>
+</li>
+<li class="lvl-3">
+<p>上文的第14步从mlu内存中拷贝出推理结果到cpu内存，然后进行后处理。</p>
+</li>
+<li class="lvl-3">
+<p>上文的第15步，清理环境。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="离线模型在MLU220上的部署">离线模型在MLU220上的部署</h3>
+<hr>
+<p>  前一小节，主要还是完成离线模型推理的程序开发，并在MLU270上运行测试。本小节的主要内容是怎么将我们调好的程序部署到MLU220。</p>
+<p>  部署到MLU220，我们面临的第一个问题就是交叉编译生成AARCH64的程序。这里包含3个部分依赖，CNToolkit-aarch64，easydk-aarch64，其他第三方库如opencv-aarch64等。这时，我们得到了aarch64的离线推理程序，并配合之前我们转换得到的mlu220版本的离线模型。</p>
+<p>  当我们把生成好的程序放到mlu220板卡，这个时候，可能程序还是无法跑起来，因为可能驱动未加载，这个时候，建议找到驱动和固件，让mlu220运行起来。然后运行程序即可。</p>
+<p>  下面是无mlu设备的报错示例：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/no_dev.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  下面是加载驱动的最后日志：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/insmod_drv.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  下面是运行程序的输出：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/test_seg.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  对于RK3399pro和寒武纪MLU220平台来说，一些出来时间较为长久的模型，由于优化的比较到位，速度相较于RK3399pro可能有个300%+的性能提升。但是对于一些新的模型和一些非经典（非大众）的模型，由于自带的优化或者网络结构的原因，可能只有30%+的性能提升，但是这也是令人高兴的事情，毕竟硬件升级之后，好多事情可以达到准实时。</p>
+<p>  本系列的基本介绍就这些了，完结撒花~~~ ~~~。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</p>
+</li>
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</p>
+</li>
+<li class="lvl-2">
+<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121456789">https://blog.csdn.net/u011728480/article/details/121456789</a> ）</p>
+</li>
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="https://www.cambricon.com/">https://www.cambricon.com/</a></p>
+</li>
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/cnrt/user_guide_html/example/offline_mode.html">https://www.cambricon.com/docs/cnrt/user_guide_html/example/offline_mode.html</a></p>
+</li>
+<li class="lvl-2">
+<p>其他相关保密资料。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -4102,613 +4561,6 @@ batch_size <span class="token operator">=</span> <span class="token number">200<
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/04/24/blog_idx_104/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/04/24/blog_idx_104/" class="post-title-link" itemprop="url">Mediapipe 在RK3399PRO上的初探（二）(自定义Calculator)</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2021-04-24 19:45:03" itemprop="dateCreated datePublished" datetime="2021-04-24T19:45:03+08:00">2021-04-24</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/linux%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">linux开发</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/%E5%B5%8C%E5%85%A5%E5%BC%8F/linux%E5%BC%80%E5%8F%91/DL/" itemprop="url" rel="index"><span itemprop="name">DL</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>3k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>11 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky
- * @LastEditTime: 2021-06-23 09:56:54
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=104）
-&emsp;&emsp;本文发布于 2021-04-24 19:45:03    （BlogID=104） -->
-<h6 id="环境说明">环境说明</h6>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>Ubuntu 18.04</p>
-</li>
-<li class="lvl-2">
-<p>gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04)</p>
-</li>
-<li class="lvl-2">
-<p>RK3399PRO 板卡</p>
-</li>
-</ul>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  本文有一篇前置文章为《Mediapipe 在RK3399PRO上的初探（一）(编译、运行CPU和GPU Demo, RK OpenglES 填坑，编译bazel)》 <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/115838306">https://blog.csdn.net/u011728480/article/details/115838306</a> ，本文是在前置文章上的一点点探索与发现。</p>
-<p>  在前置文章中，我们介绍了一些编译和使用Mediapipe的注意事项，也初步跑起来了一点点demo，算是对这个框架有了一个初步的认知。但是前置文章也说了，了解这个框架的意义是替换我们小组现有的框架，而且能够支撑我们的板卡产品。于是我们还需要一个最最最最最最重要的功能就是“Custormer Calculator”，就是自定义计算节点，因为这个框架的核心就是计算节点。下文我们将会讲到这个框架的一些基本概念，这些概念都是来至于官方文档的机翻+我自己的理解。同时，我会给出一个我定义的计算节点的实例，算是给大家一个感性认知。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="Mediapipe的一些概念（本小节基本来至于官方文档的机翻-我自己的理解，不感兴趣，请直接看下一小节）">Mediapipe的一些概念（本小节基本来至于官方文档的机翻+我自己的理解，不感兴趣，请直接看下一小节）</h3>
-<hr>
-<p>  本小节内容，主要参考 <a target="_blank" rel="noopener" href="https://github.com/google/mediapipe/tree/master/docs/framework_concepts">https://github.com/google/mediapipe/tree/master/docs/framework_concepts</a> 的几个介绍概念的md文件。<br>
-  MediaPipe 感觉中文直译为“媒体管道”，为啥会有这个名字呢？因为它把数据+处理组合成一个计算节点，然后把一个一个节点连接起来，用数据来驱动整个核心逻辑。如果大家对Caffe、ncnn类似的框架源码有一点点了解的话，就会觉得他们非常像，但是又不像。像是说，都是通过配置文件定义计算节点逻辑图，然后通过运算，得到我们想得到的逻辑图中节点的数据。不像的话，就是说的是Mediapipe的调度机制了，极大的增加了节点计算的并行功能，而那些框架是按照图节点的上下顺序进行执行的。<br>
-  上面这段话可能有点抽象，我想表达的就是 Mediapipe 就是把任何一个“操作”都可以变为一个Calculator，因为我们的每一个项目的逻辑抽象出来都是 Calculator0+Data0-&gt;Calculator1+Data1-&gt;Calculator2+Data2-&gt;… …，然后，Mediapipe 做的是基于这种calculator的调度和执行。这里我举个栗子：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>人脸图+检测算法=人脸检测结果，这是一个Calculator</p>
-</li>
-<li class="lvl-2">
-<p>RTSP流+解码模块=解码之后的图片，这是一个Calculator</p>
-</li>
-</ul>
-<p>好了，其他的就不过分的解读了，下面就使用MediaPipe的helloworld example（ <a target="_blank" rel="noopener" href="https://github.com/google/mediapipe/blob/master/mediapipe/examples/desktop/hello_world/hello_world.cc">https://github.com/google/mediapipe/blob/master/mediapipe/examples/desktop/hello_world/hello_world.cc</a> ）为例，简单的说说以下几个概念。</p>
-<br/>
-<br/>
-<h5 id="Packet">Packet</h5>
-<p>  Packet，是mediapipe中的数据单元，它可以接收任意类型的数据。也是mediapipe中的数据流动单元。就是在mediapipe中，我们设计的Graph中，所有的逻辑流动都是通过packet流动来实现的。</p>
-<p>  实例代码片段：</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">//MakePacket&lt;std::string>("Hello World!") 创建一个packet，顺带说一句，我不喜欢这里的宏，不利于维护</span>
-<span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">AddPacketToInputStream</span><span class="token punctuation">(</span><span class="token string">"in"</span><span class="token punctuation">,</span> <span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token string">"Hello World!"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span><span class="token function">Timestamp</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token comment">//从packet中获取数据</span>
-mediapipe<span class="token double-colon punctuation">::</span>Packet packet<span class="token punctuation">;</span>
-packet<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="Graph">Graph</h5>
-<p>  Graph是由各个Calculator组成的，可以直接把Calculator理解为数据结构中图的节点。而Graph直接把他当做图就行了。Graph是我们定义的逻辑流程的具体载体，也就是说我们的业务逻辑是什么样子的，那么Graph里面就会有相应的逻辑流程。可以具备多输入输出。</p>
-<p>  实例代码片段：</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">CalculatorGraph graph<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="Caculator-Node">Caculator(Node)</h5>
-<p>  上面不是介绍了Graph和Packet嘛，这里的Calculator就是Graph里面的节点，也是处理Packet的具体单元。可以具备多输入输出。</p>
-<p>  实例代码片段：</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">//比如mediapipe/calculators/core/pass_through_calculator.h里面的定义，这个Calculator被Helloworld这个例子使用，作用就是把输入的数据直接传递到输出，不做任何处理，类似NOP</span>
-<span class="token keyword">class</span> <span class="token class-name">PassThroughCalculator</span> <span class="token operator">:</span> <span class="token keyword">public</span> CalculatorBase <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="Stream">Stream</h5>
-<p>  Stream 就是 Caculator 之间的连接起来后，形成的一个数据流动路径。</p>
-<br/>
-<br/>
-<h5 id="Side-packets">Side packets</h5>
-<p>  Side packets 可以直接理解为一些静态的数据packet，在graph创建之后就不会改变的数据。</p>
-<p>… …</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="自定义实现Calculator">自定义实现Calculator</h3>
-<hr>
-<p>  Talk is cheap, show me the code.</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">/*
- * @Description: 
- * @Author: Sky
- * @Date: 
- * @LastEditors: Sky
- * @LastEditTime: 
- * @Github: 
- */</span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cstdio></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/calculator_graph.h"</span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/port/logging.h"</span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/port/parse_text_proto.h"</span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/port/status.h"</span></span>
-
-<span class="token comment">//customer calculator</span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/calculator_framework.h"</span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"mediapipe/framework/port/canonical_errors.h"</span></span>
-
-
-<span class="token keyword">class</span> <span class="token class-name">CustomerDataType</span><span class="token punctuation">&#123;</span>
-
-  <span class="token keyword">public</span><span class="token operator">:</span>
-  <span class="token function">CustomerDataType</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token punctuation">,</span> <span class="token keyword">float</span> f<span class="token punctuation">,</span> <span class="token keyword">bool</span> b<span class="token punctuation">,</span> <span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string <span class="token operator">&amp;</span> str<span class="token punctuation">)</span><span class="token operator">:</span>
-  <span class="token function">val_i</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">,</span>
-  <span class="token function">val_f</span><span class="token punctuation">(</span>f<span class="token punctuation">)</span><span class="token punctuation">,</span>
-  <span class="token function">val_b</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">,</span>
-  <span class="token function">s_str</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span>
-  <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
-  <span class="token keyword">int</span> val_i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
-  <span class="token keyword">float</span> val_f <span class="token operator">=</span> <span class="token number">11.f</span><span class="token punctuation">;</span>
-  <span class="token keyword">bool</span> val_b <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
-  std<span class="token double-colon punctuation">::</span>string s_str <span class="token operator">=</span> <span class="token string">"customer str."</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
-
-
-
-<span class="token keyword">namespace</span> mediapipe <span class="token punctuation">&#123;</span>
-
-  <span class="token keyword">class</span> <span class="token class-name">MyStringProcessCalculator</span> <span class="token operator">:</span> <span class="token base-clause"><span class="token keyword">public</span> <span class="token class-name">CalculatorBase</span></span> <span class="token punctuation">&#123;</span>
-  <span class="token keyword">public</span><span class="token operator">:</span>
-    <span class="token comment">/*
-    Calculator authors can specify the expected types of inputs and outputs of a calculator in GetContract(). 
-    When a graph is initialized, the framework calls a static method to verify if the packet types of the connected inputs and outputs match the information in this specification.
-    */</span>
-    <span class="token keyword">static</span> absl<span class="token double-colon punctuation">::</span>Status <span class="token function">GetContract</span><span class="token punctuation">(</span>CalculatorContract<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-      
-      <span class="token comment">/*
-      class InputStreamShard;
-      typedef internal::Collection&lt;InputStreamShard> InputStreamShardSet;
-      class OutputStreamShard;
-      typedef internal::Collection&lt;OutputStreamShard> OutputStreamShardSet;
-      */</span>
-      <span class="token comment">//cc->Inputs().NumEntries() returns the number of input streams</span>
-      <span class="token comment">// if (!cc->Inputs().TagMap()->SameAs(*cc->Outputs().TagMap())) &#123;</span>
-
-      <span class="token comment">//   return absl::InvalidArgumentError("Input and output streams's TagMap can't be same.");</span>
-      <span class="token comment">// &#125;</span>
-
-      <span class="token comment">//set stream</span>
-      <span class="token comment">// for (CollectionItemId id = cc->Inputs().BeginId(); id &lt; cc->Inputs().EndId(); ++id) &#123;</span>
-
-      <span class="token comment">//   cc->Inputs().Get(id).SetAny();</span>
-      <span class="token comment">//   cc->Outputs().Get(id).SetSameAs(&amp;cc->Inputs().Get(id));</span>
-      <span class="token comment">// &#125;</span>
-      cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetAny</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-      cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Set</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetSameAs</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-
-      <span class="token comment">//set stream package</span>
-      <span class="token comment">// for (CollectionItemId id = cc->InputSidePackets().BeginId(); id &lt; cc->InputSidePackets().EndId(); ++id) &#123;</span>
-        
-      <span class="token comment">//   cc->InputSidePackets().Get(id).SetAny();</span>
-      <span class="token comment">// &#125;</span>
-      <span class="token comment">// cc->InputSidePackets().Index(0).SetAny();</span>
-      <span class="token comment">// cc->InputSidePackets().Index(1).Set&lt;CustomerDataType>();//set customer data-type</span>
-
-
-      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-        <span class="token comment">// if (!cc->InputSidePackets().TagMap()->SameAs(*cc->OutputSidePackets().TagMap())) &#123;</span>
-
-        <span class="token comment">//   return absl::InvalidArgumentError("Input and output side packets's TagMap can't be same.");</span>
-        <span class="token comment">// &#125;</span>
-        
-        <span class="token comment">// for (CollectionItemId id = cc->InputSidePackets().BeginId(); id &lt; cc->InputSidePackets().EndId(); ++id) &#123;</span>
-
-        <span class="token comment">//   cc->OutputSidePackets().Get(id).SetSameAs(&amp;cc->InputSidePackets().Get(id));</span>
-        <span class="token comment">// &#125;</span>
-
-        cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetSameAs</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-      <span class="token punctuation">&#125;</span>      
-
-      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-
-    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Open</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span>
-
-      <span class="token keyword">for</span> <span class="token punctuation">(</span>CollectionItemId id <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">BeginId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>id <span class="token operator">&lt;</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">EndId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>id<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Header</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">IsEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-          cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetHeader</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Header</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
-      <span class="token punctuation">&#125;</span>
-
-      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-        <span class="token keyword">for</span> <span class="token punctuation">(</span>CollectionItemId id <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">BeginId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> id <span class="token operator">&lt;</span> cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">EndId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>id<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-          
-          cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Set</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
-      <span class="token punctuation">&#125;</span>
-
-      <span class="token comment">// Sets this packet timestamp offset for Packets going to all outputs.</span>
-      <span class="token comment">// If you only want to set the offset for a single output stream then</span>
-      <span class="token comment">// use OutputStream::SetOffset() directly.</span>
-      cc<span class="token operator">-></span><span class="token function">SetOffset</span><span class="token punctuation">(</span><span class="token function">TimestampDiff</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-
-    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Process</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span>
-
-      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token keyword">return</span> tool<span class="token double-colon punctuation">::</span><span class="token function">StatusStop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-      <span class="token punctuation">&#125;</span>
-
-      <span class="token comment">//get node input data</span>
-      mediapipe<span class="token double-colon punctuation">::</span>Packet  _data0 <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-      mediapipe<span class="token double-colon punctuation">::</span>Packet  _data1 <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      <span class="token comment">//not safety.</span>
-      <span class="token keyword">char</span> _tmp_buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
-      
-      <span class="token double-colon punctuation">::</span><span class="token function">memset</span><span class="token punctuation">(</span>_tmp_buf<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      <span class="token function">snprintf</span><span class="token punctuation">(</span>_tmp_buf<span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">,</span> _data0<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_i<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_f<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_b<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>s_str<span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      std<span class="token double-colon punctuation">::</span>string _out_data <span class="token operator">=</span> _tmp_buf<span class="token punctuation">;</span>
-      cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">AddPacket</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span>_out_data<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">InputTimestamp</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-
-    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Close</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span> 
-
-      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
-    <span class="token punctuation">&#125;</span>
-  <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
-
-  <span class="token function">REGISTER_CALCULATOR</span><span class="token punctuation">(</span>MyStringProcessCalculator<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
-
-
-
-
-<span class="token keyword">namespace</span> mediapipe <span class="token punctuation">&#123;</span>
-
-  absl<span class="token double-colon punctuation">::</span>Status  <span class="token function">RunMyGraph</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-    <span class="token comment">// Configures a simple graph, which concatenates 2 PassThroughCalculators.</span>
-    CalculatorGraphConfig config <span class="token operator">=</span> <span class="token generic-function"><span class="token function">ParseTextProtoOrDie</span><span class="token generic class-name"><span class="token operator">&lt;</span>CalculatorGraphConfig<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token raw-string string">R"(
-      input_stream: "in"
-      input_stream: "customer_in"
-      output_stream: "out"
-      node &#123;
-        calculator: "PassThroughCalculator"
-        input_stream: "in"
-        output_stream: "out1"
-      &#125;
-      node &#123;
-        calculator: "MyStringProcessCalculator"
-        input_stream: "out1"
-        input_stream: "customer_in"
-        output_stream: "out2"        
-      &#125;      
-      node &#123;
-        calculator: "PassThroughCalculator"
-        input_stream: "out2"
-        output_stream: "out"
-      &#125;
-    )"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"parse graph cfg-str done ... ..."</span><span class="token punctuation">;</span>
-
-    CalculatorGraph graph<span class="token punctuation">;</span>
-    <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">Initialize</span><span class="token punctuation">(</span>config<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"init graph done ... ..."</span><span class="token punctuation">;</span>
-
-    <span class="token function">ASSIGN_OR_RETURN</span><span class="token punctuation">(</span>OutputStreamPoller poller<span class="token punctuation">,</span>
-                    graph<span class="token punctuation">.</span><span class="token function">AddOutputStreamPoller</span><span class="token punctuation">(</span><span class="token string">"out"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"add out-node to output-streampoller done ... ..."</span><span class="token punctuation">;</span>
-
-
-    <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">StartRun</span><span class="token punctuation">(</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"start run graph done ... ..."</span><span class="token punctuation">;</span>
-    
-
-    <span class="token comment">// Give 10 input packets that contains the same std::string "Hello World!".</span>
-    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-      <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">AddPacketToInputStream</span><span class="token punctuation">(</span>
-          <span class="token string">"in"</span><span class="token punctuation">,</span> <span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token string">"CustomerCalculator: val_i %d, val_f %f, val_b %d, val_str %s"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span><span class="token function">Timestamp</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">AddPacketToInputStream</span><span class="token punctuation">(</span>
-          <span class="token string">"customer_in"</span><span class="token punctuation">,</span> <span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1.f</span><span class="token punctuation">,</span> i<span class="token operator">%</span><span class="token number">2</span><span class="token operator">==</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">"s"</span> <span class="token operator">+</span> std<span class="token double-colon punctuation">::</span><span class="token function">to_string</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span><span class="token function">Timestamp</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-    <span class="token comment">// Close the input stream "in".</span>
-    <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">CloseInputStream</span><span class="token punctuation">(</span><span class="token string">"in"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token function">MP_RETURN_IF_ERROR</span><span class="token punctuation">(</span>graph<span class="token punctuation">.</span><span class="token function">CloseInputStream</span><span class="token punctuation">(</span><span class="token string">"customer_in"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-    mediapipe<span class="token double-colon punctuation">::</span>Packet packet<span class="token punctuation">;</span>
-    <span class="token comment">// Get the output packets std::string.</span>
-    <span class="token keyword">while</span> <span class="token punctuation">(</span>poller<span class="token punctuation">.</span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>packet<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-      <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> packet<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span><span class="token operator">&lt;&lt;</span><span class="token string">"RunGraph Done"</span><span class="token punctuation">;</span>
-    <span class="token keyword">return</span> graph<span class="token punctuation">.</span><span class="token function">WaitUntilDone</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
-
-<span class="token punctuation">&#125;</span>  <span class="token comment">// namespace mediapipe</span>
-
-
-
-<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span> <span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">*</span> argv<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-  
-  gflags<span class="token double-colon punctuation">::</span><span class="token function">ParseCommandLineFlags</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>argc<span class="token punctuation">,</span> <span class="token operator">&amp;</span>argv<span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-  FLAGS_minloglevel <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
-  FLAGS_stderrthreshold <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
-  FLAGS_alsologtostderr <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
-
-  google<span class="token double-colon punctuation">::</span><span class="token function">InitGoogleLogging</span><span class="token punctuation">(</span>argv<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-  <span class="token function">LOG</span><span class="token punctuation">(</span>INFO<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token string">"glog init success ... ..."</span><span class="token punctuation">;</span>
-
-  absl<span class="token double-colon punctuation">::</span>Status run_status <span class="token operator">=</span> mediapipe<span class="token double-colon punctuation">::</span><span class="token function">RunMyGraph</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>run_status<span class="token punctuation">.</span><span class="token function">ok</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-    <span class="token function">LOG</span><span class="token punctuation">(</span>ERROR<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token string">"Failed to run the graph: "</span> <span class="token operator">&lt;&lt;</span> run_status<span class="token punctuation">.</span><span class="token function">message</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-  google<span class="token double-colon punctuation">::</span><span class="token function">ShutdownGoogleLogging</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>下面简单介绍这段代码。</p>
-<br/>
-<br/>
-<h5 id="自定义Calculator：MyStringProcessCalculator">自定义Calculator：MyStringProcessCalculator</h5>
-<p>   这里自定义了一个Calculator，主要作用就是传入snprintf的fmt字符串和fmt字符串所需要的数据。所以可以看到有两个输入，一个是string，一个是我自定义的data-type。输出是一个格式化之后的字符串，所以输出是string。</p>
-<p>   自定义Calculator主要还是实现4个接口，分别是GetContract，Open，Process，Close。其中GetContract是Graph初始化的时候，检查Calculator用的。Open接口是在Graph开始后，对Calculator做一些初始化工作，例如设定一些Calculator初始状态等。Process是实际的Calculator功能。</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">namespace</span> mediapipe <span class="token punctuation">&#123;</span>
-
-  <span class="token keyword">class</span> <span class="token class-name">MyStringProcessCalculator</span> <span class="token operator">:</span> <span class="token base-clause"><span class="token keyword">public</span> <span class="token class-name">CalculatorBase</span></span> <span class="token punctuation">&#123;</span>
-  <span class="token keyword">public</span><span class="token operator">:</span>
-    <span class="token comment">/*
-    Calculator authors can specify the expected types of inputs and outputs of a calculator in GetContract(). 
-    When a graph is initialized, the framework calls a static method to verify if the packet types of the connected inputs and outputs match the information in this specification.
-    */</span>
-    <span class="token keyword">static</span> absl<span class="token double-colon punctuation">::</span>Status <span class="token function">GetContract</span><span class="token punctuation">(</span>CalculatorContract<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-      
-      <span class="token comment">/*
-      class InputStreamShard;
-      typedef internal::Collection&lt;InputStreamShard> InputStreamShardSet;
-      class OutputStreamShard;
-      typedef internal::Collection&lt;OutputStreamShard> OutputStreamShardSet;
-      */</span>
-      <span class="token comment">//cc->Inputs().NumEntries() returns the number of input streams</span>
-      <span class="token comment">// if (!cc->Inputs().TagMap()->SameAs(*cc->Outputs().TagMap())) &#123;</span>
-
-      <span class="token comment">//   return absl::InvalidArgumentError("Input and output streams's TagMap can't be same.");</span>
-      <span class="token comment">// &#125;</span>
-
-      <span class="token comment">//set stream</span>
-      <span class="token comment">// for (CollectionItemId id = cc->Inputs().BeginId(); id &lt; cc->Inputs().EndId(); ++id) &#123;</span>
-
-      <span class="token comment">//   cc->Inputs().Get(id).SetAny();</span>
-      <span class="token comment">//   cc->Outputs().Get(id).SetSameAs(&amp;cc->Inputs().Get(id));</span>
-      <span class="token comment">// &#125;</span>
-      cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetAny</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-      cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Set</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetSameAs</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-
-      <span class="token comment">//set stream package</span>
-      <span class="token comment">// for (CollectionItemId id = cc->InputSidePackets().BeginId(); id &lt; cc->InputSidePackets().EndId(); ++id) &#123;</span>
-        
-      <span class="token comment">//   cc->InputSidePackets().Get(id).SetAny();</span>
-      <span class="token comment">// &#125;</span>
-      <span class="token comment">// cc->InputSidePackets().Index(0).SetAny();</span>
-      <span class="token comment">// cc->InputSidePackets().Index(1).Set&lt;CustomerDataType>();//set customer data-type</span>
-
-
-      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-        <span class="token comment">// if (!cc->InputSidePackets().TagMap()->SameAs(*cc->OutputSidePackets().TagMap())) &#123;</span>
-
-        <span class="token comment">//   return absl::InvalidArgumentError("Input and output side packets's TagMap can't be same.");</span>
-        <span class="token comment">// &#125;</span>
-        
-        <span class="token comment">// for (CollectionItemId id = cc->InputSidePackets().BeginId(); id &lt; cc->InputSidePackets().EndId(); ++id) &#123;</span>
-
-        <span class="token comment">//   cc->OutputSidePackets().Get(id).SetSameAs(&amp;cc->InputSidePackets().Get(id));</span>
-        <span class="token comment">// &#125;</span>
-
-        cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetSameAs</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-      <span class="token punctuation">&#125;</span>      
-
-      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-
-    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Open</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span>
-
-      <span class="token keyword">for</span> <span class="token punctuation">(</span>CollectionItemId id <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">BeginId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>id <span class="token operator">&lt;</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">EndId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>id<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Header</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">IsEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-          cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">SetHeader</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Header</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
-      <span class="token punctuation">&#125;</span>
-
-      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-        <span class="token keyword">for</span> <span class="token punctuation">(</span>CollectionItemId id <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">BeginId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> id <span class="token operator">&lt;</span> cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">EndId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>id<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-          
-          cc<span class="token operator">-></span><span class="token function">OutputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Set</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">InputSidePackets</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
-      <span class="token punctuation">&#125;</span>
-
-      <span class="token comment">// Sets this packet timestamp offset for Packets going to all outputs.</span>
-      <span class="token comment">// If you only want to set the offset for a single output stream then</span>
-      <span class="token comment">// use OutputStream::SetOffset() directly.</span>
-      cc<span class="token operator">-></span><span class="token function">SetOffset</span><span class="token punctuation">(</span><span class="token function">TimestampDiff</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-    <span class="token comment">//这里是整个Calculator的核心，就是调用snprintf</span>
-    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Process</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span>
-
-      <span class="token keyword">if</span> <span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">NumEntries</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token keyword">return</span> tool<span class="token double-colon punctuation">::</span><span class="token function">StatusStop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-      <span class="token punctuation">&#125;</span>
-
-      <span class="token comment">//get node input data</span>
-      mediapipe<span class="token double-colon punctuation">::</span>Packet  _data0 <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-      mediapipe<span class="token double-colon punctuation">::</span>Packet  _data1 <span class="token operator">=</span> cc<span class="token operator">-></span><span class="token function">Inputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      <span class="token comment">//not safety.</span>
-      <span class="token keyword">char</span> _tmp_buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
-      
-      <span class="token double-colon punctuation">::</span><span class="token function">memset</span><span class="token punctuation">(</span>_tmp_buf<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      <span class="token function">snprintf</span><span class="token punctuation">(</span>_tmp_buf<span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">,</span> _data0<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_i<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_f<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>val_b<span class="token punctuation">,</span> _data1<span class="token punctuation">.</span><span class="token generic-function"><span class="token function">Get</span><span class="token generic class-name"><span class="token operator">&lt;</span>CustomerDataType<span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>s_str<span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      std<span class="token double-colon punctuation">::</span>string _out_data <span class="token operator">=</span> _tmp_buf<span class="token punctuation">;</span>
-      cc<span class="token operator">-></span><span class="token function">Outputs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Index</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">AddPacket</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">MakePacket</span><span class="token generic class-name"><span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token operator">></span></span></span><span class="token punctuation">(</span>_out_data<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">At</span><span class="token punctuation">(</span>cc<span class="token operator">-></span><span class="token function">InputTimestamp</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-
-    absl<span class="token double-colon punctuation">::</span>Status <span class="token function">Close</span><span class="token punctuation">(</span>CalculatorContext<span class="token operator">*</span> cc<span class="token punctuation">)</span> <span class="token keyword">final</span> <span class="token punctuation">&#123;</span> 
-
-      <span class="token keyword">return</span> absl<span class="token double-colon punctuation">::</span><span class="token function">OkStatus</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
-    <span class="token punctuation">&#125;</span>
-  <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
-
-  <span class="token function">REGISTER_CALCULATOR</span><span class="token punctuation">(</span>MyStringProcessCalculator<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="然后开始编译运行得到结果">然后开始编译运行得到结果</h5>
-<p>   编译。</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">
-<span class="token comment"># 注意，这里的--check_visibility=false 为了关闭bazel关于target之间的可见性检查，因为我的Calculator自定义放在我自己的目录的，有一个target对这个目录不可见，编译会报错。</span>
-
-bazel build <span class="token parameter variable">-c</span> dbg <span class="token parameter variable">--define</span> <span class="token assign-left variable">MEDIAPIPE_DISABLE_GPU</span><span class="token operator">=</span><span class="token number">1</span> <span class="token parameter variable">--copt</span> <span class="token parameter variable">-DMESA_EGL_NO_X11_HEADERS</span> <span class="token parameter variable">--copt</span> <span class="token parameter variable">-DEGL_NO_X11</span> my_target <span class="token parameter variable">--check_visibility</span><span class="token operator">=</span>false <span class="token parameter variable">--verbose_failures</span>  <span class="token parameter variable">--local_cpu_resources</span><span class="token operator">=</span><span class="token number">1</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-<p>   然后运行。得到如下图的结果。</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_104/result.png" alt="result"/></center>
-    </div>
-</div>   
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  好了，一个超级简单的自定义calculator已经实现了，相信你已经明白了吧。本系列也就此终结吧，以后随缘更新。</p>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/5/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -4733,14 +4585,14 @@ bazel build <span class="token parameter variable">-c</span> dbg <span class="to
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">286k</span>
+    <span title="站点总字数">289k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:19</span>
+    <span title="站点阅读时长">17:30</span>
   </span>
 </div>
 <div class="busuanzi-count">

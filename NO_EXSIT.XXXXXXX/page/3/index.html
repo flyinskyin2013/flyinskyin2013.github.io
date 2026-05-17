@@ -206,13 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">139</span>
+          <span class="site-state-item-count">140</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-count">95</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -259,6 +259,350 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2024/03/16/blog_idx_127/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2024/03/16/blog_idx_127/" class="post-title-link" itemprop="url">常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-03-16 11:18:00" itemprop="dateCreated datePublished" datetime="2024-03-16T11:18:00+08:00">2024-03-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B8%B8%E8%AF%86/" itemprop="url" rel="index"><span itemprop="name">常识</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B8%B8%E8%AF%86/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>11 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=127） 
+&emsp;&emsp;本文发布于 2024-03-16 11:18:00             （BlogID=127） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  在之前，一直是通过生活、工作零零碎碎接触过加密及加密算法相关的信息，但是也只是听说过，并不知道这些算法用处和区别。</p>
+<p>  最近由于工作安排，需要将Fernet算法实现一版C++的加解密定制程序，由于Fernet组合了许多的基础加密算法，因此在这个地方，对一些常用的基础加密算法做一个总结。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="加密是什么？">加密是什么？</h3>
+<hr>
+<p>  介绍：把“原始数据”通过某种算法+秘钥变换后，得到了“加密数据”的这个过程叫做加密。从这里也可以看到，对于加密来说，其核心要素就是：加密算法+秘钥。</p>
+<p>  意义：对于“加密数据”来说，未授权的用户，不能够直接知道“原始数据”的内容。</p>
+<p>  下面介绍一些常见的加密类别和加密相关配套的其他内容。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="对称加密">对称加密</h3>
+<hr>
+<p>  对称加密是指使用 一个相同秘钥 就能对消息进行加密和解密的加密方法。</p>
+<p>  对称加密的特点就是使用 一个相同秘钥。</p>
+<p>  我们常见的对称加密有：XOR、AES等。下面我们来简单分析一下AES加密。</p>
+<br/>
+<br/>
+<h5 id="AES加密">AES加密</h5>
+<p>  高级加密标准（Advanced Encryption Standard，AES），是一种区块加密标准。从它的定义来看，其特点是区块加密，一般来说，我们常见的有AES128和AES256。</p>
+<p>  例如我们可以用如下的openssl提供的方法进行AES的加解密：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">AES_set_encrypt_key</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>userKey<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">int</span> bits<span class="token punctuation">,</span>
+                        AES_KEY <span class="token operator">*</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">AES_set_decrypt_key</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>userKey<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">int</span> bits<span class="token punctuation">,</span>
+                        AES_KEY <span class="token operator">*</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//注意这里只是一种cbc加密方法，aes还有很多其他加密方法</span>
+<span class="token keyword">void</span> <span class="token function">AES_cbc_encrypt</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>in<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>out<span class="token punctuation">,</span>
+                     <span class="token class-name">size_t</span> length<span class="token punctuation">,</span> <span class="token keyword">const</span> AES_KEY <span class="token operator">*</span>key<span class="token punctuation">,</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  其实我们从上面的描述来看，就知道AES一般以16字节或者32字节为一组（我们将其定义为区块大小），进行加密。这里就会引申出一个问题，如果我们的数据（最后一组消息）不够一个区块大小，我们应该怎么办？这里提供的常见方案就是做填充。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="非对称加密（公钥加密算法）">非对称加密（公钥加密算法）</h3>
+<hr>
+<p>  我们知道，加密一般是用于消息传递，那么如果是对称加密的情况下，要传递的两个事务：加密消息+秘钥。对于对称加密来说，如果我们的秘钥泄露了，就基本上等于明文传递了。因此，有了非对称加密。其实后面很多的加密方法就在平衡 加密消息+秘钥 两个事情。</p>
+<p>  非对称加密就是有两个秘钥（私钥，公钥），实现1对多的双向通信。其中我们常见的加密方式是：RSA，ECC等。下面，我们尝试简单介绍RSA。</p>
+<br/>
+<br/>
+<h5 id="RSA-加密算法">RSA 加密算法</h5>
+<p>  简介（来自于Wikipedia）：RSA加密算法是一种非对称加密算法。RSA是由罗纳德·李维斯特（Ron Rivest）、阿迪·萨莫尔（Adi Shamir）和伦纳德·阿德曼（Leonard Adleman）在1977年一起提出的。当时他们三人都在麻省理工学院工作。RSA 就是他们三人姓氏开头字母拼在一起组成的。</p>
+<p>  RSA只从使用的角度来说，只需要了解如下的大致的概念：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>模数N、公钥指数pubE、私钥指数priE</p>
+</li>
+<li class="lvl-2">
+<p>加密：秘文=明文^priE mod N，秘文=明文^pubE mod N</p>
+</li>
+<li class="lvl-2">
+<p>解密：明文=秘文^pubE mod N，明文=秘文^priE mod N</p>
+</li>
+</ul>
+<p>  从上面来看，私钥= 私钥指数priE + 模数N，公钥= 公钥指数pubE + 模数N。至于公钥，私钥，模数怎么来的，网上已有许多资料，有兴趣可以去看看。</p>
+<p>  基于openssl的RSA代码节选：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// 生成秘钥，秘钥里面包含了私钥+公钥</span>
+<span class="token keyword">int</span> <span class="token function">RSA_generate_key_ex</span><span class="token punctuation">(</span>RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> bits<span class="token punctuation">,</span> BIGNUM <span class="token operator">*</span>e<span class="token punctuation">,</span> BN_GENCB <span class="token operator">*</span>cb<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 基于公钥和私钥的加解密</span>
+<span class="token keyword">int</span> <span class="token function">RSA_public_encrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
+                       <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">RSA_private_encrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
+                        <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">RSA_public_decrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
+                       <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">RSA_private_decrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
+                        <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="散列函数（Hash-function）">散列函数（Hash function）</h3>
+<hr>
+<p>  介绍：使用 散列函数（md5, sha1, sha256） 对原始数据进行处理，生成散列值（数字摘要）。这些散列函数保证一个输入对应一个输出，并且通过散列值无法得到原始数据输入，因此不属于加密。</p>
+<p>  此外，如果散列函数不够健壮，可能会出现碰撞的可能性。</p>
+<p>  意义：由于其不同的数据输入会得到不同的散列值，因此主要用来校验数据的完整性。</p>
+<p>  基于openssl的常见散列函数代码节选：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span>
+<span class="token keyword">int</span> <span class="token function">SHA1_Init</span><span class="token punctuation">(</span>SHA_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">SHA1_Update</span><span class="token punctuation">(</span>SHA_CTX <span class="token operator">*</span>c<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>data<span class="token punctuation">,</span> <span class="token class-name">size_t</span> len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">SHA1_Final</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>md<span class="token punctuation">,</span> SHA_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span>
+<span class="token keyword">int</span> <span class="token function">SHA256_Init</span><span class="token punctuation">(</span>SHA256_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">SHA256_Update</span><span class="token punctuation">(</span>SHA256_CTX <span class="token operator">*</span>c<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>data<span class="token punctuation">,</span> <span class="token class-name">size_t</span> len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">SHA256_Final</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>md<span class="token punctuation">,</span> SHA256_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  其实做过编程的人，对hash这个概念并不陌生。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="消息认证码">消息认证码</h3>
+<hr>
+<p>  含义：使用 散列函数+秘钥来生成认证码（MAC）。相较于散列函数来说，对于同一个消息，需要指定的秘钥+散列函数才能够得到最终的认证码。</p>
+<p>  意义：在散列函数中，原始数据和散列值是绑定的。在一个消息传递系统中，散列函数只解决了数据完整性的问题，并没有解决数据来源是否可靠的问题（可以伪造原始数据+新散列值）。 通过消息验证码，由于有了秘钥的保护， 解决了 散列值+消息 来源不可靠的问题。</p>
+<p>  基于openssl的消息认证码代码节选：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//这里的evp_md用来描述不同的散列函数</span>
+<span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token function">HMAC</span><span class="token punctuation">(</span><span class="token keyword">const</span> EVP_MD <span class="token operator">*</span>evp_md<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>key<span class="token punctuation">,</span>
+                     <span class="token keyword">int</span> key_len<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>d<span class="token punctuation">,</span> <span class="token class-name">size_t</span> n<span class="token punctuation">,</span>
+                     <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>md<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> <span class="token operator">*</span>md_len<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="签名算法">签名算法</h3>
+<hr>
+<p>  下面是签名的一个简单流程：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>基于公钥加密系统，生成秘钥对（公钥、私钥）。</p>
+</li>
+<li class="lvl-2">
+<p>对消息进行数字摘要计算。</p>
+</li>
+<li class="lvl-2">
+<p>对数字摘要进行私钥加密，得到数字签名。</p>
+</li>
+<li class="lvl-2">
+<p>将信息、数字签名、公钥发给接收者，接收者可以验证：信息的完整性+发送者的身份。</p>
+</li>
+</ul>
+<p>  从这里来看，我们可以知道，签名其实和消息认证码具有相同的意义，都能够验证：完整性+发送者的身份。但是由于其原理，导致其应用场景不一致。例如：数字签名由于使用非对称加密，而消息认证码可以认为是使用了对称加密，导致他们的使用场景是不一样的。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="CA机构与数字证书">CA机构与数字证书</h3>
+<hr>
+<p>  其实从名字上来看，就知道CA机构与数字证书和签名算法相关，为了解决公钥加密系统中，公钥是否可信的问题。下面是它们的一些概念：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>CA（Certificate Authority）是“证书颁发机构”的简称，它是“受信任”的第三方组织，负责验证申请者身份并发放数字证书。</p>
+</li>
+<li class="lvl-2">
+<p>数字证书是：特定用户或系统身份信息（如域名、组织名等）+ 该用户公钥 + 由权威机构（CA）签署的数字签名（对用户的信息+公钥） 组成的数据结构。</p>
+</li>
+</ul>
+<p>  简单来说，由于我们信任了CA的证书（CA的公钥），我们可以用CA的公钥解密出 数字证书用户的公钥，然后我们用 数字证书用户的公钥 和 数字证书用户加密通信。总的来说，数字证书其实是一个信任链的问题。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Base64-编码">Base64 编码</h3>
+<hr>
+<p>  介绍：一种将 二进制数据 编码为 可见字符 的编码方法。简单来说就是用 4个字节的可见字符 代替是 3个字节数据 的编码过程。</p>
+<p>  意义：可以将二进制数据表达为文本信息，方便后续对二进制数据进行处理。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="数据区块填充，PKCS（Public-Key-Cryptography-Standards）">数据区块填充，PKCS（Public-Key Cryptography Standards）</h3>
+<hr>
+<p>  特别说明，PKCS是一系列公钥密码标准，里面具备很多的内容，其大概有15个标准，分别是pkcs1,pkcs2 … … pkcs14,pkcs15</p>
+<p>  从上面我们知道，现在常用的填充方法是：公钥加密标准（PKCS，Public-Key Cryptography Standards）里面的节选内容。其有很多填充类别，例如：PKCS1-padding节选, PKCS5-padding节选, PKCS7-padding节选，我们这里只讨论pkcs5和pkcs7。（注意，这些标准除了数据填充，还有其他定义内容。）</p>
+<p>  下面先介绍PKCS5-padding，先定义数据区块大小为SIZE，pkcs5和pkcs7的填充说明，下面以SIZE=8字节举例：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>要填充7个字节,那么填入的值就是0×07;</p>
+</li>
+<li class="lvl-2">
+<p>如果只填充１个字节，那么填入的值就是0×01;</p>
+</li>
+<li class="lvl-2">
+<p>数据恰好是8的倍数时还要补8个字节的0×08。</p>
+</li>
+</ul>
+<p>  从上面的PKCS5-padding，我们可以知道，这里需要数据区块固定为8字节。如果我们想给其他大小的数据区块做数据对齐，那么PKCS5-padding就不满足要求，因此就有PKCS7-padding的填充方法：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>PKCS7-padding的数据区块大小可以是：1-255字节。</p>
+</li>
+<li class="lvl-2">
+<p>其他的，PKCS7-padding填充原理和PKCS5一样。</p>
+</li>
+</ul>
+<p>  从上面可知，PKCS7-padding节选包含了PKCS5-padding节选，且适用性范围更加的广泛。</p>
+<p>  到了这里，我们就能够对AES128或者AES256做基于PKCS7-padding的16字节对齐或者32字节对齐的操作了。</p>
+<p>  这里的代码实现很简单，这里提供一种方法，大概就是：首先对消息进行强制扩大255字节，然后根据数据区块大小做填充即可，基本可以实现pkcs7填充的原理。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  其实，我们从上面的内容来看，能发现一些规律：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>由于信任链的存在，因此有了CA机构和数字证书，而数字证书与签名算法相关，而签名算法又与 非对称加密和散列函数强相关。</p>
+</li>
+<li class="lvl-2">
+<p>然后为了实现我们现在常见的加密系统，我们使用了：对称加密、非对称加密、散列函数、消息认证码和base64编码等手段。</p>
+</li>
+</ul>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -3330,465 +3674,6 @@ Point 	offset &#x3D; Point()
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/11/28/blog_idx_114/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/11/28/blog_idx_114/" class="post-title-link" itemprop="url">寒武纪加速平台(MLU200系列) 摸鱼指南（四）--- 边缘端实例程序分析</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2021-11-28 19:01:17" itemprop="dateCreated datePublished" datetime="2021-11-28T19:01:17+08:00">2021-11-28</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/" itemprop="url" rel="index"><span itemprop="name">DL</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/%E5%B8%B8%E8%AF%86/" itemprop="url" rel="index"><span itemprop="name">常识</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>3.6k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>13 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky sky@sky-home.com
- * @LastEditTime: 2023-04-08 11:14:43
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=114） 
-&emsp;&emsp;本文发布于 2021-11-28 19:01:17     （BlogID=114）
--->
-<h6 id="环境说明">环境说明</h6>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>MLU220 开发板</p>
-</li>
-<li class="lvl-2">
-<p>Ubuntu18.04 + MLU270开发主机一台</p>
-</li>
-<li class="lvl-2">
-<p>aarch64-linux-gnu-gcc 6.x 交叉编译环境</p>
-</li>
-</ul>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  阅读本文前，请务必须知以下前置文章概念：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</p>
-</li>
-<li class="lvl-2">
-<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</p>
-</li>
-<li class="lvl-2">
-<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121456789">https://blog.csdn.net/u011728480/article/details/121456789</a> ）</p>
-</li>
-</ul>
-<p>  这里再次回顾一下《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》的内容，寒武纪加速卡是一个硬件平台，是最底层的存在，在硬件平台之上，有驱动，在驱动之上，有运行时。本文的离线模型就是基于运行时的api进行调用和处理，得到模型结果。</p>
-<p>  本文作为本系列的终篇，将会从上文的离线模型开始，从头开始搭建我们的离线模型推理代码结构，经过合理的部署，能够在MLU220开发板正常的运行。</p>
-<p>  若文中引用部分存在侵权，请及时联系我删除。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="离线模型推理前置须知">离线模型推理前置须知</h3>
-<hr>
-<p>  经过前文相关的介绍，我们可以知道我们主要调用的是运行时相关的api。这里存在两套api可以使用，一个是cnrt，一个是easydk。easydk是基于cnrt封装的api，大大简化了离线模型推理的开发流程。但是我们的开发主线是一致的，就是初始化mlu设备，加载模型，预处理，模型推理，后处理，处理结果。</p>
-<p>  此外，寒武纪还提供了CNStream程序框架，基于EasyDk开发，以pipeline+observer的方式，提供了一个简单易用的框架，如果有兴趣，请查看其官网 <a target="_blank" rel="noopener" href="https://github.com/Cambricon/CNStream">https://github.com/Cambricon/CNStream</a> 。</p>
-<p>  我们其实要用的是EasyDK+CNRT的这种开发方式，构造一个类似CNStream这样的程序。</p>
-<br/>
-<br/>
-<h5 id="EasyDK简介与编译">EasyDK简介与编译</h5>
-<p>  首先其官网是：<a target="_blank" rel="noopener" href="https://github.com/Cambricon/easydk%E3%80%82">https://github.com/Cambricon/easydk。</a></p>
-<p>  其除了CNToolKit的依赖（neuware）之外，还依赖于glog,gflags,opencv，这些需要提前安装好。至于CNToolKit x86的版本的相关介绍已经在模型移植环境部分介绍过了。</p>
-<p>  由于我们要开发边缘端离线模型推理程序，一般来说，我们主要还是使用到EasyDK里面的EasyInfer部分的内容。其编译流程的话就如其官方介绍：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>cmake …</p>
-</li>
-<li class="lvl-2">
-<p>make</p>
-</li>
-</ul>
-<p>  如果熟悉cmake的编译流程的话，其实就知道上面的流程是非常普遍的。对于EasyDK的编译来说，在x86下面进行编译是很简单的，但是如果要进行交叉编译的话，最好只生成核心库，其他的sample和test都关闭。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="完成离线模型在MLU270上的运行">完成离线模型在MLU270上的运行</h3>
-<hr>
-<p>  还记得在《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》一文中，我们可以看到，通过torch_mlu.core.mlu_model.set_core_version(‘MLU220’)，我们可以调整生成的离线模型运行的平台，可以是边缘端MLU220，可以是服务器部署端的MLU270。对的，没有看错，MLU270既可以做模型移植，也可以做离线模型的部署，就如同本系列的开篇所讲，这几个平台仅仅是部署场景的差异。</p>
-<p>  为什么我们需要在MLU270上调试离线模型呢？因为方便。因为MLU220一般来说都需要交叉编译，特别是相关的依赖库的生成比较麻烦，如果MLU220的板卡也方便调试的话，那也可以直接基于MLU220进行开发和调试。</p>
-<p>  由于我这边是EasyDK+CNRT混合调用的形式，因此我主要根据其官方的CNRT推理代码进行注释和介绍，并在相关位置标注哪些内容是EasyDK可以一步到位的。这里简单的回答几个疑问。为什么需要EasyDK这个库呢？为什么不直接基于CNRT进行开发？我的回答是根据项目推进的需要做出的选择。关于这种程序的最终形态，其实我还是期待直接基于CNRT开发，因为其有效，但是代价是你必须很熟悉的了解相关的内容。</p>
-<p>  下面是官方推理代码介绍（可能会在顺序上做一些变更，其官方代码未处理一些返回值，自己编写的时候需要注意,此外,官方的代码有些遗漏的地方,我进行了修改）：</p>
- <pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">/* Copyright (C) [2019] by Cambricon, Inc. */</span>
- <span class="token comment">/* offline_test */</span>
- <span class="token comment">/*
-  * A test which shows how to load and run an offline model.
-  * This test consists of one operation --mlp.
-  *
-  * This example is used for MLU270 and MLU220.
-  *
-  */</span>
-
- <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"cnrt.h"</span></span>
- <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
- <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
- <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
-
- <span class="token keyword">int</span> <span class="token function">offline_test</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>name<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-   <span class="token comment">// This example is used for MLU270 and MLU220. You need to choose the corresponding offline model.</span>
-   <span class="token comment">// when generating an offline model, u need cnml and cnrt both</span>
-   <span class="token comment">// when running an offline model, u need cnrt only</span>
-   <span class="token comment">// 第一步，你必须调用cnrtInit()初始化运行时环境</span>
-   <span class="token function">cnrtInit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// 第二步， 就是检查MLU设备，并设定当前设备，这一步其实是为多设备推理准备的</span>
-   <span class="token class-name">cnrtDev_t</span> dev<span class="token punctuation">;</span>
-   <span class="token function">cnrtGetDeviceHandle</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>dev<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">cnrtSetCurrentDevice</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// 这里的第一二步其实可能创建一个EasyInfer对象就完成了，而且具备了完整的错误检查。</span>
-
-   <span class="token comment">// </span>
-   <span class="token comment">// prepare model name</span>
-   <span class="token comment">// load model</span>
-   <span class="token comment">// 第三步，就是加载模型</span>
-   <span class="token class-name">cnrtModel_t</span> model<span class="token punctuation">;</span>
-   <span class="token function">cnrtLoadModel</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>model<span class="token punctuation">,</span> <span class="token string">"test.cambricon"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// get model total memory</span>
-   <span class="token comment">// 第四步，就是获取模型的一些属性，比如内存占用，并行性这些，这一步是可选的。</span>
-   <span class="token class-name">int64_t</span> totalMem<span class="token punctuation">;</span>
-   <span class="token function">cnrtGetModelMemUsed</span><span class="token punctuation">(</span>model<span class="token punctuation">,</span> <span class="token operator">&amp;</span>totalMem<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"total memory used: %ld Bytes\n"</span><span class="token punctuation">,</span> totalMem<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token comment">// get model parallelism</span>
-   <span class="token keyword">int</span> model_parallelism<span class="token punctuation">;</span>
-   <span class="token function">cnrtQueryModelParallelism</span><span class="token punctuation">(</span>model<span class="token punctuation">,</span> <span class="token operator">&amp;</span>model_parallelism<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"model parallelism: %d.\n"</span><span class="token punctuation">,</span> model_parallelism<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// 第五步，是建立推理逻辑流，这一步就是根据离线模型，在内存中动态生成模型推理结构。这里的"subnet0"是一个 kernel-func 名字，非固定，但是常见的名字都是subnet0，</span>
-   <span class="token comment">// 在.cambricon_twins配套文件中有相关定义。</span>
-   <span class="token comment">// 他这个和cuda编程其实比较类似，我们刚刚生成的模型推理结构其实被当做一个内核函数，函数名就是这个。</span>
-   <span class="token comment">// load extract function</span>
-   <span class="token class-name">cnrtFunction_t</span> function<span class="token punctuation">;</span>
-   <span class="token function">cnrtCreateFunction</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>function<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">cnrtExtractFunction</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>function<span class="token punctuation">,</span> model<span class="token punctuation">,</span> <span class="token string">"subnet0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-
-
-   <span class="token comment">// 第六步，获取输入输出节点个数和输入输出数据size。注意许多网络中有多个输入，也可能有多个输出。在次注意这个概念，后续的操作都在多个输入和多个输出的基础上设计的。</span>
-   <span class="token keyword">int</span> inputNum<span class="token punctuation">,</span> outputNum<span class="token punctuation">;</span>
-   <span class="token class-name">int64_t</span> <span class="token operator">*</span>inputSizeS<span class="token punctuation">,</span> <span class="token operator">*</span>outputSizeS<span class="token punctuation">;</span>
-   <span class="token function">cnrtGetInputDataSize</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>inputSizeS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>inputNum<span class="token punctuation">,</span> function<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">cnrtGetOutputDataSize</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>outputSizeS<span class="token punctuation">,</span> <span class="token operator">&amp;</span>outputNum<span class="token punctuation">,</span> function<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// prepare data on cpu</span>
-   <span class="token comment">// 第7步，申请cpu上的输入输出内存，这里是二维指针哈，代表多个输入输出</span>
-   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>inputCpuPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>inputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>outputCpuPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>outputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// allocate I/O data memory on MLU</span>
-   <span class="token comment">// 第8步，申请mlu上的输入输出内存，这里是二维指针哈，代表多个输入输出。</span>
-   <span class="token comment">// 此时还未真正申请数据内存，只是申请了数据节点的句柄（指针）</span>
-   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>inputMluPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>inputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>outputMluPtrS <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>outputNum <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// prepare input buffer</span>
-   <span class="token comment">// 第9步，分别对第8步的数据节点句柄申请真正的内存空间。这里的inputCpuPtrS和inputMluPtrS是一一对应的，这是内存地址不一样，内存管理者不一样。对输出也是同理。</span>
-   <span class="token comment">// malloc是标准c申请堆内存接口</span>
-   <span class="token comment">// cnrtMalloc是申请mlu所管理的内存接口,类比cuda的话,可以直接理解为申请显存</span>
-   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-         <span class="token comment">// converts data format when using new interface model</span>
-         inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-         <span class="token comment">// malloc mlu memory</span>
-         <span class="token function">cnrtMalloc</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-         <span class="token function">cnrtMemcpy</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> CNRT_MEM_TRANS_DIR_HOST2DEV<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token punctuation">&#125;</span>
-   <span class="token comment">// prepare output buffer</span>
-   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-         outputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>outputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-         <span class="token comment">// malloc mlu memory</span>
-         <span class="token function">cnrtMalloc</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token punctuation">(</span>outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> outputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token punctuation">&#125;</span>
-
-   
-
-   <span class="token comment">// 第10步,首先将预处理好的图像数据填充inputCpuPtrS, 拷贝cpu输入数据内存到mlu输入数据内存</span>
-   cv<span class="token operator">::</span>Mat _in_img<span class="token punctuation">;</span>
-   _in_img <span class="token operator">=</span> cv<span class="token operator">::</span><span class="token function">imread</span><span class="token punctuation">(</span><span class="token string">"test.jpg"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   _in_img<span class="token punctuation">.</span><span class="token function">convertTo</span><span class="token punctuation">(</span>_in_img<span class="token punctuation">,</span> CV_32FC3<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   
-   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-       <span class="token comment">// 注意这里的memcpy是我添加的，一般来说，模型的数据输入都是fp16或者fp32，但是一般我们的opencv生成的uint8。需要转换成fp32，或者fp16。</span>
-       <span class="token comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span>
-       <span class="token comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span>
-       <span class="token comment">// 重要是事情发3次，注意图片的预处理后的数据格式以及模型输入的数据格式，不同的话，需要经过转换，官方提供了cnrtCastDataType来辅助转换过程。</span>
-       <span class="token operator">::</span><span class="token function">memcpy</span><span class="token punctuation">(</span> inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> _in_img<span class="token punctuation">.</span>data<span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-       <span class="token function">cnrtMemcpy</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> inputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> CNRT_MEM_TRANS_DIR_HOST2DEV<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token punctuation">&#125;</span>
-
-   <span class="token comment">// 第10步，主要就是图像预处理，将图像数据传输到mlu上面去。</span>
-
-   <span class="token comment">// 第11步，主要是开始设置推理参数</span>
-   <span class="token comment">// prepare parameters for cnrtInvokeRuntimeContext</span>
-   <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span>param <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token punctuation">(</span>inputNum <span class="token operator">+</span> outputNum<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-         param<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
-   <span class="token punctuation">&#125;</span>
-   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-         param<span class="token punctuation">[</span>inputNum <span class="token operator">+</span> i<span class="token punctuation">]</span> <span class="token operator">=</span> outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
-   <span class="token punctuation">&#125;</span>
-
-   <span class="token comment">// 第12步，绑定设备和设置推理context</span>
-   <span class="token comment">// setup runtime ctx</span>
-   <span class="token class-name">cnrtRuntimeContext_t</span> ctx<span class="token punctuation">;</span>
-   <span class="token function">cnrtCreateRuntimeContext</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ctx<span class="token punctuation">,</span> function<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// compute offline</span>
-   <span class="token class-name">cnrtQueue_t</span> queue<span class="token punctuation">;</span>
-   <span class="token function">cnrtRuntimeContextCreateQueue</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> <span class="token operator">&amp;</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// bind device</span>
-   <span class="token function">cnrtSetRuntimeContextDeviceId</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">cnrtInitRuntimeContext</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-
-   <span class="token comment">// 第13步，推理并等待推理结束。</span>
-   <span class="token comment">// invoke</span>
-   <span class="token function">cnrtInvokeRuntimeContext</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span> param<span class="token punctuation">,</span> queue<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// sync</span>
-   <span class="token function">cnrtSyncQueue</span><span class="token punctuation">(</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token comment">// 第14步，将数据从mlu拷贝回cpu，然后进行后续的后处理</span>
-   <span class="token comment">// copy mlu result to cpu</span>
-   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-         <span class="token function">cnrtMemcpy</span><span class="token punctuation">(</span>outputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> outputSizeS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> CNRT_MEM_TRANS_DIR_DEV2HOST<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token punctuation">&#125;</span>
-
-   <span class="token comment">// 第15步，清理环境。</span>
-   <span class="token comment">// free memory space</span>
-   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-         <span class="token function">free</span><span class="token punctuation">(</span>inputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-         <span class="token function">cnrtFree</span><span class="token punctuation">(</span>inputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token punctuation">&#125;</span>
-   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> outputNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-         <span class="token function">free</span><span class="token punctuation">(</span>outputCpuPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-         <span class="token function">cnrtFree</span><span class="token punctuation">(</span>outputMluPtrS<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token punctuation">&#125;</span>
-   <span class="token function">free</span><span class="token punctuation">(</span>inputCpuPtrS<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">free</span><span class="token punctuation">(</span>outputCpuPtrS<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">free</span><span class="token punctuation">(</span>param<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token function">cnrtDestroyQueue</span><span class="token punctuation">(</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">cnrtDestroyRuntimeContext</span><span class="token punctuation">(</span>ctx<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">cnrtDestroyFunction</span><span class="token punctuation">(</span>function<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">cnrtUnloadModel</span><span class="token punctuation">(</span>model<span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">cnrtDestroy</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-   <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
- <span class="token punctuation">&#125;</span>
-
- <span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-   <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"mlp offline test\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token function">offline_test</span><span class="token punctuation">(</span><span class="token string">"mlp"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-   <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
- <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>   下面我简单列出一些EasyDK的操作顺序：</p>
-<ul class="lvl-0">
-<li class="lvl-3">
-<p>上文的第三四五步其实对应的是EasyInfer下面的ModelLoader模块，当初始化ModelLoader模块，并传参给EasyInfer实例，就完成了三四五步的内容。其实前面这些内容都是固定形式的，并不是重点。重点是后面的数据输入、推理、数据输出部分。</p>
-</li>
-<li class="lvl-3">
-<p>上文的第6,7,8,9步其实都是在为模型在cpu和mlu上申请相关的内存空间。在EasyDk中有对应的接口直接完成内存申请。</p>
-</li>
-<li class="lvl-3">
-<p>注意上文的第10步，是比较重要的一步，包含了图像数据预处理，到图像数据类型转换，再到图像数据输入到mlu内存。</p>
-</li>
-<li class="lvl-3">
-<p>上文的第11,12步是为推理准备参数</p>
-</li>
-<li class="lvl-3">
-<p>上文的第13步开始推理</p>
-</li>
-<li class="lvl-3">
-<p>上文的第14步从mlu内存中拷贝出推理结果到cpu内存，然后进行后处理。</p>
-</li>
-<li class="lvl-3">
-<p>上文的第15步，清理环境。</p>
-</li>
-</ul>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="离线模型在MLU220上的部署">离线模型在MLU220上的部署</h3>
-<hr>
-<p>  前一小节，主要还是完成离线模型推理的程序开发，并在MLU270上运行测试。本小节的主要内容是怎么将我们调好的程序部署到MLU220。</p>
-<p>  部署到MLU220，我们面临的第一个问题就是交叉编译生成AARCH64的程序。这里包含3个部分依赖，CNToolkit-aarch64，easydk-aarch64，其他第三方库如opencv-aarch64等。这时，我们得到了aarch64的离线推理程序，并配合之前我们转换得到的mlu220版本的离线模型。</p>
-<p>  当我们把生成好的程序放到mlu220板卡，这个时候，可能程序还是无法跑起来，因为可能驱动未加载，这个时候，建议找到驱动和固件，让mlu220运行起来。然后运行程序即可。</p>
-<p>  下面是无mlu设备的报错示例：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/no_dev.png" alt="rep_img"/></center>
-    </div>
-</div> 
-<p>  下面是加载驱动的最后日志：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/insmod_drv.png" alt="rep_img"/></center>
-    </div>
-</div> 
-<p>  下面是运行程序的输出：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_114/test_seg.png" alt="rep_img"/></center>
-    </div>
-</div> 
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  对于RK3399pro和寒武纪MLU220平台来说，一些出来时间较为长久的模型，由于优化的比较到位，速度相较于RK3399pro可能有个300%+的性能提升。但是对于一些新的模型和一些非经典（非大众）的模型，由于自带的优化或者网络结构的原因，可能只有30%+的性能提升，但是这也是令人高兴的事情，毕竟硬件升级之后，好多事情可以达到准实时。</p>
-<p>  本系列的基本介绍就这些了，完结撒花~~~ ~~~。</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（一）— 基本概念及相关介绍》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121194076">https://blog.csdn.net/u011728480/article/details/121194076</a> )</p>
-</li>
-<li class="lvl-2">
-<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（二）— 模型移植-环境搭建》 ( <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121320982">https://blog.csdn.net/u011728480/article/details/121320982</a> )</p>
-</li>
-<li class="lvl-2">
-<p>《寒武纪加速平台(MLU200系列) 摸鱼指南（三）— 模型移植-分割网络实例》 （ <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/121456789">https://blog.csdn.net/u011728480/article/details/121456789</a> ）</p>
-</li>
-<li class="lvl-2">
-<p><a target="_blank" rel="noopener" href="https://www.cambricon.com/">https://www.cambricon.com/</a></p>
-</li>
-<li class="lvl-2">
-<p><a target="_blank" rel="noopener" href="https://www.cambricon.com/docs/cnrt/user_guide_html/example/offline_mode.html">https://www.cambricon.com/docs/cnrt/user_guide_html/example/offline_mode.html</a></p>
-</li>
-<li class="lvl-2">
-<p>其他相关保密资料。</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -3813,14 +3698,14 @@ Point 	offset &#x3D; Point()
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">286k</span>
+    <span title="站点总字数">289k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:19</span>
+    <span title="站点阅读时长">17:30</span>
   </span>
 </div>
 <div class="busuanzi-count">

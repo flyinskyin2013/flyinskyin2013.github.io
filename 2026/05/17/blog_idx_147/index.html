@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"e-x.top","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":false,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解，如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在我们想把底层C++&#x2F;C的接口暴露给python的时候，我们一般采用的是pybind11框架，可以很方便的让我们暴露接口。对于普通的接口参数类型来说，pybind11也提供了适合的转换类型（例如：std::vector&#x2F;uint64_t 等等">
+<meta property="og:type" content="article">
+<meta property="og:title" content="pybind11函数指针入门到放弃">
+<meta property="og:url" content="https://e-x.top/2026/05/17/blog_idx_147/index.html">
+<meta property="og:site_name" content="Sky&#39;s Blogs">
+<meta property="og:description" content="PS：要转载请注明出处，本人版权所有。 PS: 这个只是基于《我自己》的理解，如果和你的原则及想法相冲突，请谅解，勿喷。  环境说明   无 前言    在我们想把底层C++&#x2F;C的接口暴露给python的时候，我们一般采用的是pybind11框架，可以很方便的让我们暴露接口。对于普通的接口参数类型来说，pybind11也提供了适合的转换类型（例如：std::vector&#x2F;uint64_t 等等">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+<meta property="article:published_time" content="2026-05-17T09:07:00.000Z">
+<meta property="article:modified_time" content="2026-05-17T09:10:09.731Z">
+<meta property="article:author" content="Sky">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="pybind11">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg">
+
+
+<link rel="canonical" href="https://e-x.top/2026/05/17/blog_idx_147/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://e-x.top/2026/05/17/blog_idx_147/","path":"2026/05/17/blog_idx_147/","title":"pybind11函数指针入门到放弃"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>pybind11函数指针入门到放弃 | Sky's Blogs</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8677552300382028"
+     crossorigin="anonymous"></script>
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Sky's Blogs</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">A normal star</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+<div class="custom-middle-nav animated fadeInDown">
+  <div class="custom-nav-item">
+    <a href="/archives/"><i class="fa fa-archive"></i> 日志历程</a>
+  </div>
+  <div class="custom-nav-item">
+    <a href="/categories/"><i class="fa fa-th"></i> 全部分类</a>
+  </div>
+  <div class="custom-nav-item">
+    <a href="/tags/"><i class="fa fa-tags"></i> 热门标签</a>
+  </div>
+  <div class="custom-nav-item">
+    <a href="javascript:;" class="my-search-btn"><i class="fa fa-search"></i> 本站搜索</a>
+  </div>
+</div>
+
+
+<script>
+// 使用脚本手动触发 NexT 的搜索弹窗
+document.addEventListener('DOMContentLoaded', () => {
+  const customBtn = document.querySelector('.my-search-btn');
+  customBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // 找到 NexT 原生的那个搜索触发按钮并模拟点击
+    const originalBtn = document.querySelector('.site-nav-right .popup-trigger');
+    if (originalBtn) {
+      originalBtn.click();
+    } else {
+      // 如果原生的没找到，尝试直接调用 NexT 的 Search 内部变量（针对某些版本）
+      if (typeof CONFIG.local_search !== 'undefined') {
+        // 尝试手动激活弹窗
+        document.querySelector('.search-pop-overlay').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        document.querySelector('.search-input').focus();
+      }
+    }
+  });
+});
+</script>
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Sky"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Sky</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">140</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">95</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">222</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/flyinskyin2013" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;flyinskyin2013" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+<div id="days" style="margin-top: 10px; font-size: 13px; color: #555;"></div>
+<script>
+  function show_date_time(){
+    window.setTimeout("show_date_time()", 1000);
+    BirthDay=new Date("01/07/2014 00:00:00"); // 这里改成你建站的时间
+    today=new Date();
+    timeold=(today.getTime()-BirthDay.getTime());
+    sectimeold=timeold/1000
+    secondsold=Math.floor(sectimeold);
+    msPerDay=24*60*60*1000
+    e_daysold=timeold/msPerDay
+    daysold=Math.floor(e_daysold);
+    document.getElementById("days").innerHTML="本站已运行 "+daysold+" 天";
+  }
+  show_date_time();
+</script>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2026/05/17/blog_idx_147/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="pybind11函数指针入门到放弃 | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          pybind11函数指针入门到放弃
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-05-17 17:07:00 / 修改时间：17:10:09" itemprop="dateCreated datePublished" datetime="2026-05-17T17:07:00+08:00">2026-05-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C++</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C/python/pybind11/" itemprop="url" rel="index"><span itemprop="name">pybind11</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>10 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=147） 
+&emsp;&emsp;本文发布于 2026-05-17 17:07:00             （BlogID=147） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  在我们想把底层C++/C的接口暴露给python的时候，我们一般采用的是pybind11框架，可以很方便的让我们暴露接口。对于普通的接口参数类型来说，pybind11也提供了适合的转换类型（例如：std::vector/uint64_t 等等）。但是年前的一个项目中，遇到了一类特别的参数，函数指针，让我一度很头疼，导致我遇到了如下几个问题：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>问题1：python的函数怎么转换为pybind11中的std::function（底层原理）</p>
+</li>
+<li class="lvl-2">
+<p>问题2：pybind11中的std::function 怎么转换为c++层的裸函数</p>
+</li>
+<li class="lvl-2">
+<p>问题3：pybind11中的std::function对象复制的注意事项 (问题3出现的原因和我解决问题2有关系，如果不注意，会导致出现python解释器报错)</p>
+</li>
+</ul>
+<p>  下面来看看我遇到上面的几个问题的实际例子。</p>
+<p>  事情是这样的，我有一个c++接口，接收一个类似void(*CB)(Data&amp;)的函数指针，当我尝试将此接口暴露给python的时候，AI一步到位给我写好了转换代码如下：</p>
+<pre class="line-numbers language-c++" data-language="c++"><code class="language-c++">#include &lt;cstdio&gt;
+#include &lt;pybind11&#x2F;pybind11.h&gt;
+#include &lt;pybind11&#x2F;stl.h&gt;
+#include &lt;pybind11&#x2F;functional.h&gt;
+namespace py &#x3D; pybind11;
+
+typedef void(*CB)(int&amp;);
+
+class Test&#123;
+    public:
+    void test(CB cb)
+    &#123;
+        printf(&quot;printf&quot;);
+    &#125;
+&#125;;
+
+PYBIND11_MODULE(testpy, m) &#123;
+    m.doc() &#x3D; &quot;pybind11 wrapper for testpy class&quot;;
+    py::class_&lt;Test&gt;(m, &quot;Test&quot;)
+    .def(py::init&lt;&gt;(), &quot;Constructor for the Test class&quot;)
+    .def(&quot;test&quot;, [](Test&amp; self, std::function&lt;void(int&amp;)&gt; callback) &#123;
+        &#x2F;&#x2F;... ...
+        auto cb &#x3D; [callback](int&amp;d)&#123;
+            callback(d);
+        &#125;;
+        &#x2F;&#x2F; 下面这行报错，错误信息类似： error: cannot convert ‘pybind11_init_testpy(pybind11::module_&amp;)::&lt;lambda(Test&amp;, std::function&lt;void(int&amp;)&gt;)&gt;::&lt;lambda(int&amp;)&gt;’ to ‘CB’ &#123;aka ‘void (*)(int&amp;)’&#125;
+        return self.test(cb);
+    &#125;
+
+&#125;            <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> testpy
+<span class="token keyword">def</span> <span class="token function">test_cb</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'test_cb i = </span><span class="token interpolation"><span class="token punctuation">&#123;</span>i<span class="token punctuation">&#125;</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+t <span class="token operator">=</span> testpy<span class="token punctuation">.</span>Test<span class="token punctuation">(</span><span class="token punctuation">)</span>
+t<span class="token punctuation">.</span>test<span class="token punctuation">(</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  首先，这里有个结论，AI给出的代码是错误的(带捕获参数的lambda不能直接转换为裸指针，可看注释部分)，但是形式上面给出了转换代码的大致框架，这里精简后，整个问题的核心就是：pybind11的std::function怎么转换为函数指针。</p>
+<p>  下面我们看看怎么解决上面3个问题，并解决最终问题。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="问题1：python的函数怎么转换为pybind11中的std-function（底层原理）">问题1：python的函数怎么转换为pybind11中的std::function（底层原理）</h3>
+<hr>
+<p>  要解决这个问题，我们得了解python的函数传递过来，这里的callback到底是什么东西？由于pybind11是大量的宏来生成代码，为了快速得到我们要的内容，我们使用gdb来对堆栈进行分析。</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment">#0  test_cb (i=@0x7fffffffd714: 9999) at testpy.cpp:19</span>
+<span class="token comment">#1  0x00007ffff73bfded in Test::test (this=0xc49820, cb=0x7ffff73ab120 &lt;test_cb(int&amp;)>) at testpy.cpp:13</span>
+<span class="token comment">#2  0x00007ffff73ab3f7 in operator()(Test &amp;, std::function&lt;void(int&amp;)>) const (__closure=0xc49678, self=..., callback=...) at testpy.cpp:33</span>
+<span class="token comment">#3  0x00007ffff73ac08c in pybind11::detail::argument_loader&lt;Test&amp;, std::function&lt;void(int&amp;)> >::call_impl&lt;void, pybind11_init_testpy(pybind11::module_&amp;)::&lt;lambda(Test&amp;, std::function&lt;void(int&amp;)>)>&amp;, 0, 1, pybind11::detail::void_type>(struct &#123;...&#125; &amp;, std::index_sequence, pybind11::detail::void_type &amp;&amp;) (this=0x7fffffffd8a0, f=...) at /usr/include/pybind11/cast.h:1480</span>
+<span class="token comment">#4  0x00007ffff73abd00 in pybind11::detail::argument_loader&lt;Test&amp;, std::function&lt;void(int&amp;)> >::call&lt;void, pybind11::detail::void_type, pybind11_init_testpy(pybind11::module_&amp;)::&lt;lambda(Test&amp;, std::function&lt;void(int&amp;)>)>&amp;>(struct &#123;...&#125; &amp;) (this=0x7fffffffd8a0, f=...) at /usr/include/pybind11/cast.h:1454</span>
+<span class="token comment">#5  0x00007ffff73ab9b7 in operator() (__closure=0x0, call=...) at /usr/include/pybind11/pybind11.h:254</span>
+<span class="token comment">#6  0x00007ffff73aba6c in _FUN () at /usr/include/pybind11/pybind11.h:224</span>
+<span class="token comment">#7  0x00007ffff73bd52c in pybind11::cpp_function::dispatcher (self=0x7ffff75fedc0, args_in=0x7ffff7421f80, kwargs_in=0x0) at /usr/include/pybind11/pybind11.h:946</span>
+<span class="token comment">#8  0x0000000000581ecf in cfunction_call (func=0x7ffff740ba10, args=&lt;optimized out>, kwargs=&lt;optimized out>) at ../Objects/methodobject.c:537</span>
+<span class="token comment">#9  0x0000000000549205 in _PyObject_MakeTpCall (tstate=0xba5748 &lt;_PyRuntime+459656>, callable=0x7ffff740ba10, args=&lt;optimized out>, nargs=2, keywords=0x0) at ../Objects/call.c:240</span>
+<span class="token comment">#10 0x0000000000549c3d in _PyObject_VectorcallTstate (kwnames=&lt;optimized out>, nargsf=&lt;optimized out>, args=&lt;optimized out>, callable=&lt;optimized out>, tstate=&lt;optimized out>) at ../Include/internal/pycore_call.h:90</span>
+<span class="token comment">#11 0x00000000005d7109 in _PyEval_EvalFrameDefault (tstate=tstate@entry=0xba5748 &lt;_PyRuntime+459656>, frame=&lt;optimized out>, frame@entry=0x7ffff7fb2020, throwflag=throwflag@entry=0) at Python/bytecodes.c:2706</span>
+<span class="token comment">#12 0x00000000005d564b in _PyEval_EvalFrame (throwflag=0, frame=0x7ffff7fb2020, tstate=0xba5748 &lt;_PyRuntime+459656>) at ../Include/internal/pycore_ceval.h:89</span>
+<span class="token comment">#13 _PyEval_Vector (kwnames=0x0, argcount=0, args=0x0, locals=0x7ffff75f9a80, func=0x7ffff75da160, tstate=0xba5748 &lt;_PyRuntime+459656>) at ../Python/ceval.c:1683</span>
+<span class="token comment">#14 PyEval_EvalCode (co=co@entry=0x7ffff75604b0, globals=globals@entry=0x7ffff75f9a80, locals=locals@entry=0x7ffff75f9a80) at ../Python/ceval.c:578</span>
+<span class="token comment">#15 0x00000000006087b2 in run_eval_code_obj (locals=0x7ffff75f9a80, globals=0x7ffff75f9a80, co=0x7ffff75604b0, tstate=0xba5748 &lt;_PyRuntime+459656>) at ../Python/pythonrun.c:1722</span>
+<span class="token comment">#16 run_mod (mod=&lt;optimized out>, filename=&lt;optimized out>, globals=0x7ffff75f9a80, locals=0x7ffff75f9a80, flags=&lt;optimized out>, arena=&lt;optimized out>) at ../Python/pythonrun.c:1743</span>
+<span class="token comment">#17 0x00000000006b4853 in pyrun_file (fp=fp@entry=0xbf6480, filename=filename@entry=0x7ffff7409ca0, start=start@entry=257, globals=globals@entry=0x7ffff75f9a80, locals=locals@entry=0x7ffff75f9a80, closeit=closeit@entry=1, flags=0x7fffffffe0a8) at ../Python/pythonrun.c:1643</span>
+<span class="token comment">#18 0x00000000006b45ba in _PyRun_SimpleFileObject (fp=fp@entry=0xbf6480, filename=filename@entry=0x7ffff7409ca0, closeit=closeit@entry=1, flags=flags@entry=0x7fffffffe0a8) at ../Python/pythonrun.c:433</span>
+<span class="token comment">#19 0x00000000006b43ef in _PyRun_AnyFileObject (fp=0xbf6480, filename=filename@entry=0x7ffff7409ca0, closeit=closeit@entry=1, flags=flags@entry=0x7fffffffe0a8) at ../Python/pythonrun.c:78</span>
+<span class="token comment">#20 0x00000000006bc455 in pymain_run_file_obj (skip_source_first_line=0, filename=0x7ffff7409ca0, program_name=0x7ffff75f9bf0) at ../Modules/main.c:360</span>
+<span class="token comment">#21 pymain_run_file (config=0xb48328 &lt;_PyRuntime+77672>) at ../Modules/main.c:379</span>
+<span class="token comment">#22 pymain_run_python (exitcode=0x7fffffffe09c) at ../Modules/main.c:629</span>
+<span class="token comment">#23 Py_RunMain () at ../Modules/main.c:709</span>
+<span class="token comment">#24 0x00000000006bbf3d in Py_BytesMain (argc=&lt;optimized out>, argv=&lt;optimized out>) at ../Modules/main.c:763</span>
+<span class="token comment">#25 0x00007ffff7c2a1ca in __libc_start_call_main (main=main@entry=0x518ac0 &lt;main>, argc=argc@entry=2, argv=argv@entry=0x7fffffffe2e8) at ../sysdeps/nptl/libc_start_call_main.h:58</span>
+<span class="token comment">#26 0x00007ffff7c2a28b in __libc_start_main_impl (main=0x518ac0 &lt;main>, argc=2, argv=0x7fffffffe2e8, init=&lt;optimized out>, fini=&lt;optimized out>, rtld_fini=&lt;optimized out>, stack_end=0x7fffffffe2d8) at ../csu/libc-start.c:360</span>
+<span class="token comment">#27 0x00000000006574f5 in _start ()</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  从上面看，核心就是从python解释器，到了pybind11::cpp_function::dispatcher，然后到了我们的test函数。如果我们对pybind11不熟悉的话，我们还是需要深入去看pybind11才能回答我们上面的问题，但是我这里想到了另外一个办法。</p>
+<p>  我们都知道，pybind11底层是由cpython实现的，因此我们通过cpython来实现上面的同样的功能是什么样子的呢？直接让AI生成示例如下：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">
+ <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">PY_SSIZE_T_CLEAN</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;Python.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cstdio></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;functional></span></span>
+
+<span class="token comment">// --- C++ 逻辑模拟部分 ---</span>
+<span class="token keyword">typedef</span> <span class="token keyword">void</span><span class="token punctuation">(</span><span class="token operator">*</span>CB<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">&amp;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Test</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token keyword">void</span> <span class="token function">test</span><span class="token punctuation">(</span>CB cb<span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">9999</span><span class="token punctuation">;</span>
+        <span class="token function">cb</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">void</span> <span class="token function">test_cb</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">&amp;</span> i<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"test_cb from cxx i = %d\n"</span><span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// --- CPython 包装部分 ---</span>
+
+<span class="token comment">// 定义 Python 中的 Test 对象结构</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+    PyObject_HEAD
+    Test<span class="token operator">*</span> cpp_obj<span class="token punctuation">;</span> <span class="token comment">// 指向实际的 C++ 对象</span>
+<span class="token punctuation">&#125;</span> PyTestObject<span class="token punctuation">;</span>
+
+<span class="token keyword">void</span> <span class="token function">pybind11_like_func</span><span class="token punctuation">(</span>Test<span class="token operator">&amp;</span> self<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>function<span class="token operator">&lt;</span><span class="token keyword">void</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">&amp;</span><span class="token punctuation">)</span><span class="token operator">></span> callback<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token comment">//... ...</span>
+    <span class="token keyword">auto</span> cb <span class="token operator">=</span> <span class="token punctuation">[</span>callback<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">&amp;</span>d<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token function">callback</span><span class="token punctuation">(</span>d<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">8888</span><span class="token punctuation">;</span>
+    <span class="token function">cb</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// return self.test(cb);</span>
+    <span class="token keyword">return</span> self<span class="token punctuation">.</span><span class="token function">test</span><span class="token punctuation">(</span>test_cb<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// Test.test(callback) 的实现</span>
+<span class="token keyword">static</span> PyObject<span class="token operator">*</span> <span class="token function">PyTest_test</span><span class="token punctuation">(</span>PyTestObject<span class="token operator">*</span> self<span class="token punctuation">,</span> PyObject<span class="token operator">*</span> args<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    PyObject<span class="token operator">*</span> pycallback <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 1. 解析参数，期望得到一个可调用对象</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">PyArg_ParseTuple</span><span class="token punctuation">(</span>args<span class="token punctuation">,</span> <span class="token string">"O"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>pycallback<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">PyCallable_Check</span><span class="token punctuation">(</span>pycallback<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">PyErr_SetString</span><span class="token punctuation">(</span>PyExc_TypeError<span class="token punctuation">,</span> <span class="token string">"Parameter must be callable"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token comment">// 2. 核心：模拟 std::function&lt;void(int&amp;)> 的构造</span>
+    <span class="token comment">// 我们在这里捕获 py_callback 指针。注意：实际生产中需要处理引用计数</span>
+    std<span class="token double-colon punctuation">::</span>function<span class="token operator">&lt;</span><span class="token keyword">void</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">&amp;</span><span class="token punctuation">)</span><span class="token operator">></span> cpp_callback <span class="token operator">=</span> <span class="token punctuation">[</span>pycallback<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">&amp;</span> d<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// A. 必须获取 GIL，因为回调可能由 C++ 触发</span>
+        PyGILState_STATE gstate <span class="token operator">=</span> <span class="token function">PyGILState_Ensure</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// B. 参数转换：C++ int&amp; -> Python Long</span>
+        PyObject<span class="token operator">*</span> arg <span class="token operator">=</span> <span class="token function">PyLong_FromLong</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>d<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        PyObject<span class="token operator">*</span> arg_tuple <span class="token operator">=</span> <span class="token function">PyTuple_Pack</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> arg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// C. 调用 Python 函数</span>
+        PyObject<span class="token operator">*</span> result <span class="token operator">=</span> <span class="token function">PyObject_CallObject</span><span class="token punctuation">(</span>pycallback<span class="token punctuation">,</span> arg_tuple<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// D. 错误处理与清理</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>result<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token function">PyErr_Print</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token function">Py_XDECREF</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">Py_DECREF</span><span class="token punctuation">(</span>arg_tuple<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">Py_DECREF</span><span class="token punctuation">(</span>arg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// E. 释放 GIL</span>
+        <span class="token function">PyGILState_Release</span><span class="token punctuation">(</span>gstate<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+    <span class="token function">pybind11_like_func</span><span class="token punctuation">(</span><span class="token operator">*</span>self<span class="token operator">-></span>cpp_obj<span class="token punctuation">,</span> cpp_callback<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    Py_RETURN_NONE<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// --- 类型与模块定义 ---</span>
+
+<span class="token keyword">static</span> PyMethodDef PyTest_methods<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    <span class="token punctuation">&#123;</span><span class="token string">"test"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>PyCFunction<span class="token punctuation">)</span>PyTest_test<span class="token punctuation">,</span> METH_VARARGS<span class="token punctuation">,</span> <span class="token string">"Execute test with callback"</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+    <span class="token punctuation">&#123;</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+
+<span class="token keyword">static</span> PyTypeObject PyTestType <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">PyVarObject_HEAD_INIT</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token punctuation">.</span>tp_name <span class="token operator">=</span> <span class="token string">"testcpy.Test"</span><span class="token punctuation">,</span>
+    <span class="token punctuation">.</span>tp_basicsize <span class="token operator">=</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>PyTestObject<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">.</span>tp_itemsize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span>
+    <span class="token punctuation">.</span>tp_flags <span class="token operator">=</span> Py_TPFLAGS_DEFAULT <span class="token operator">|</span> Py_TPFLAGS_BASETYPE<span class="token punctuation">,</span>
+    <span class="token punctuation">.</span>tp_methods <span class="token operator">=</span> PyTest_methods<span class="token punctuation">,</span>
+    <span class="token punctuation">.</span>tp_new <span class="token operator">=</span> PyType_GenericNew<span class="token punctuation">,</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+
+<span class="token keyword">static</span> <span class="token keyword">struct</span> <span class="token class-name">PyModuleDef</span> testcpymodule <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    PyModuleDef_HEAD_INIT<span class="token punctuation">,</span>
+    <span class="token string">"testcpy"</span><span class="token punctuation">,</span>
+    <span class="token string">"CPython version of testcpy"</span><span class="token punctuation">,</span>
+    <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span>
+    <span class="token constant">NULL</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+
+PyMODINIT_FUNC <span class="token function">PyInit_testcpy</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    PyObject<span class="token operator">*</span> m<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">PyType_Ready</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>PyTestType<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+    m <span class="token operator">=</span> <span class="token function">PyModule_Create</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>testcpymodule<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>m <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+
+    <span class="token function">Py_INCREF</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>PyTestType<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">PyModule_AddObject</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> <span class="token string">"Test"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>PyObject<span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>PyTestType<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> m<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  其实我们已经看到了，我们用cpython来实现的话，调用的std::function一定是一个带状态的callable obj。至此，我们已经解决了问题1。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="问题2：pybind11中的std-function-怎么转换为c-层的裸函数">问题2：pybind11中的std::function 怎么转换为c++层的裸函数</h3>
+<hr>
+<p>  实际的方法就是在pybind11代码层，添加一个全局静态变量进行转换，参考如下代码(重点查看PyCBWrapper相关的内容)：</p>
+<pre class="line-numbers language-c++" data-language="c++"><code class="language-c++">#include &lt;cstdio&gt;
+#include &lt;pybind11&#x2F;pybind11.h&gt;
+#include &lt;pybind11&#x2F;stl.h&gt;
+#include &lt;pybind11&#x2F;functional.h&gt;
+
+#include &lt;functional&gt;
+namespace py &#x3D; pybind11;
+typedef void(*CB)(int&amp;);
+
+class Test&#123;
+    public:
+    void test(CB cb)
+    &#123;
+        int i &#x3D; 9999;
+        cb(i);
+    &#125;
+&#125;;
+
+struct PyCBWrapper &#123;
+
+    static std::function&lt;void(int&amp;)&gt; py_cb;
+
+    static void trampoline(int&amp; i) &#123;
+        
+        if (nullptr !&#x3D; py_cb)
+            PyCBWrapper::py_cb(i);
+        
+    &#125;
+&#125;;
+
+
+std::function&lt;void(int&amp;)&gt; PyCBWrapper::py_cb &#x3D; nullptr;
+
+
+void test_cb(int&amp; i)
+&#123;
+    printf(&quot;test_cb from cxx i &#x3D; %d\n&quot;, i);
+&#125;
+
+PYBIND11_MODULE(testpy, m) &#123;
+    m.doc() &#x3D; &quot;pybind11 wrapper for testpy class&quot;;
+    py::class_&lt;Test&gt;(m, &quot;Test&quot;)
+    .def(py::init&lt;&gt;(), &quot;Constructor for the Test class&quot;)
+    .def(&quot;test&quot;, [](Test&amp; self, std::function&lt;void(int&amp;)&gt; callback) &#123;
+        &#x2F;&#x2F;... ...
+        auto cb &#x3D; [callback](int&amp;d)&#123;
+            callback(d);
+        &#125;;
+        int i &#x3D; 8888;
+        cb(i);
+        PyCBWrapper::py_cb &#x3D; callback;
+        &#x2F;&#x2F; return self.test(cb);
+        return self.test(PyCBWrapper::trampoline);
+    &#125;);
+
+&#125;    <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="问题3：pybind11中的std-function对象复制的注意事项">问题3：pybind11中的std::function对象复制的注意事项</h3>
+<hr>
+<p>  问题2的这段代码会直接运行报错，堆栈如下</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment">#0  __pthread_kill_implementation (no_tid=0, signo=6, threadid=&lt;optimized out>) at ./nptl/pthread_kill.c:44</span>
+<span class="token comment">#1  __pthread_kill_internal (signo=6, threadid=&lt;optimized out>) at ./nptl/pthread_kill.c:78</span>
+<span class="token comment">#2  __GI___pthread_kill (threadid=&lt;optimized out>, signo=signo@entry=6) at ./nptl/pthread_kill.c:89</span>
+<span class="token comment">#3  0x00007ffff7c4527e in __GI_raise (sig=sig@entry=6) at ../sysdeps/posix/raise.c:26</span>
+<span class="token comment">#4  0x00007ffff7c288ff in __GI_abort () at ./stdlib/abort.c:79</span>
+<span class="token comment">#5  0x00000000004b1252 in ?? ()</span>
+<span class="token comment">#6  0x00000000004b2908 in _Py_FatalErrorFunc ()</span>
+<span class="token comment">#7  0x00000000004b2cd2 in ?? ()</span>
+<span class="token comment">#8  0x000000000060861e in ?? ()</span>
+<span class="token comment">#9  0x00000000006a6e93 in PyEval_AcquireThread ()</span>
+<span class="token comment">#10 0x00007ffff73b9d20 in pybind11::gil_scoped_acquire::gil_scoped_acquire (this=0x7fffffffd760) at /usr/include/pybind11/gil.h:82</span>
+<span class="token comment">#11 0x00007ffff73dd1b1 in pybind11::detail::type_caster&lt;std::function&lt;void (int&amp;)>, void>::load(pybind11::handle, bool)::func_handle::~func_handle() (this=0xc49870, __in_chrg=&lt;optimized out>)</span>
+    at <span class="token operator">/</span>usr<span class="token operator">/</span>include<span class="token operator">/</span>pybind11<span class="token operator">/</span>functional<span class="token punctuation">.</span>h<span class="token punctuation">:</span><span class="token number">97</span>
+<span class="token comment">#12 0x00007ffff73dd324 in pybind11::detail::type_caster&lt;std::function&lt;void (int&amp;)>, void>::load(pybind11::handle, bool)::func_wrapper::~func_wrapper() (this=0xc49870, __in_chrg=&lt;optimized out>)</span>
+    at <span class="token operator">/</span>usr<span class="token operator">/</span>include<span class="token operator">/</span>pybind11<span class="token operator">/</span>functional<span class="token punctuation">.</span>h<span class="token punctuation">:</span><span class="token number">103</span>
+<span class="token comment">#13 0x00007ffff73e0ff2 in std::_Function_base::_Base_manager&lt;pybind11::detail::type_caster&lt;std::function&lt;void(int&amp;)>, void>::load(pybind11::handle, bool)::func_wrapper>::_M_destroy (__victim=...)</span>
+    at <span class="token operator">/</span>usr<span class="token operator">/</span>include<span class="token operator">/</span>c<span class="token operator">+</span><span class="token operator">+</span><span class="token operator">/</span><span class="token number">13</span><span class="token operator">/</span>bits<span class="token operator">/</span>std_function<span class="token punctuation">.</span>h<span class="token punctuation">:</span><span class="token number">175</span>
+<span class="token operator">-</span><span class="token operator">-</span>Type <span class="token operator">&lt;</span>RET<span class="token operator">></span> <span class="token keyword">for</span> more<span class="token punctuation">,</span> q to quit<span class="token punctuation">,</span> c to <span class="token keyword">continue</span> without paging<span class="token operator">-</span><span class="token operator">-</span>
+<span class="token comment">#14 0x00007ffff73e0ce4 in std::_Function_base::_Base_manager&lt;pybind11::detail::type_caster&lt;std::function&lt;void(int&amp;)>, void>::load(pybind11::handle, bool)::func_wrapper>::_M_manager (__dest=..., __source=..., </span>
+    __op<span class="token operator">=</span>std<span class="token punctuation">:</span><span class="token punctuation">:</span>__destroy_functor<span class="token punctuation">)</span> at <span class="token operator">/</span>usr<span class="token operator">/</span>include<span class="token operator">/</span>c<span class="token operator">+</span><span class="token operator">+</span><span class="token operator">/</span><span class="token number">13</span><span class="token operator">/</span>bits<span class="token operator">/</span>std_function<span class="token punctuation">.</span>h<span class="token punctuation">:</span><span class="token number">203</span>
+<span class="token comment">#15 0x00007ffff73e02aa in std::_Function_handler&lt;void(int&amp;), pybind11::detail::type_caster&lt;std::function&lt;void(int&amp;)>, void>::load(pybind11::handle, bool)::func_wrapper>::_M_manager (__dest=..., __source=..., </span>
+    __op<span class="token operator">=</span>std<span class="token punctuation">:</span><span class="token punctuation">:</span>__destroy_functor<span class="token punctuation">)</span> at <span class="token operator">/</span>usr<span class="token operator">/</span>include<span class="token operator">/</span>c<span class="token operator">+</span><span class="token operator">+</span><span class="token operator">/</span><span class="token number">13</span><span class="token operator">/</span>bits<span class="token operator">/</span>std_function<span class="token punctuation">.</span>h<span class="token punctuation">:</span><span class="token number">282</span>
+<span class="token comment">#16 0x00007ffff73b62c1 in std::_Function_base::~_Function_base (this=0x7ffff73ff440 &lt;PyCBWrapper::py_cb>, __in_chrg=&lt;optimized out>) at /usr/include/c++/13/bits/std_function.h:244</span>
+<span class="token comment">#17 0x00007ffff73bff78 in std::function&lt;void(int&amp;)>::~function (this=0x7ffff73ff440 &lt;PyCBWrapper::py_cb>, __in_chrg=&lt;optimized out>) at /usr/include/c++/13/bits/std_function.h:334</span>
+<span class="token comment">#18 0x00007ffff7c47a76 in __run_exit_handlers (status=0, listp=&lt;optimized out>, run_list_atexit=run_list_atexit@entry=true, run_dtors=run_dtors@entry=true) at ./stdlib/exit.c:108</span>
+<span class="token comment">#19 0x00007ffff7c47bbe in __GI_exit (status=&lt;optimized out>) at ./stdlib/exit.c:138</span>
+<span class="token comment">#20 0x00007ffff7c2a1d1 in __libc_start_call_main (main=main@entry=0x518c60, argc=argc@entry=2, argv=argv@entry=0x7fffffffda28) at ../sysdeps/nptl/libc_start_call_main.h:74</span>
+<span class="token comment">#21 0x00007ffff7c2a28b in __libc_start_main_impl (main=0x518c60, argc=2, argv=0x7fffffffda28, init=&lt;optimized out>, fini=&lt;optimized out>, rtld_fini=&lt;optimized out>, stack_end=0x7fffffffda18)</span>
+    at <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token operator">/</span>csu<span class="token operator">/</span>libc<span class="token operator">-</span>start<span class="token punctuation">.</span>c<span class="token punctuation">:</span><span class="token number">360</span>
+<span class="token comment">#22 0x0000000000657b05 in _start ()</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  从堆栈分析可知，问题出在程序退出的时候，PyCBWrapper::py_cb（全局静态变量）析构的时候，这个时候其实python解释器已经退出了，再使用python解释器相关的资源，就会报错。这个其实就是问题3。由于从上面的例子可以知道，这个时候的PyCBWrapper::py_cb是一个捕获了python函数的PyObject的std::function，那么解决方案也很简单，那就是在上面的pybind11代码层中添加如下核心代码：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token function">PYBIND11_MODULE</span><span class="token punctuation">(</span>testpy<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    m<span class="token punctuation">.</span><span class="token function">doc</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token string">"pybind11 wrapper for testpy class"</span><span class="token punctuation">;</span>
+    py<span class="token double-colon punctuation">::</span><span class="token generic-function"><span class="token function">class_</span><span class="token generic class-name"><span class="token operator">&lt;</span>Test<span class="token operator">></span></span></span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> <span class="token string">"Test"</span><span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token function">def</span><span class="token punctuation">(</span>py<span class="token double-colon punctuation">::</span><span class="token generic-function"><span class="token function">init</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"Constructor for the Test class"</span><span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token function">def</span><span class="token punctuation">(</span><span class="token string">"test"</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span>Test<span class="token operator">&amp;</span> self<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>function<span class="token operator">&lt;</span><span class="token keyword">void</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">&amp;</span><span class="token punctuation">)</span><span class="token operator">></span> callback<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">//... ...</span>
+        <span class="token keyword">auto</span> cb <span class="token operator">=</span> <span class="token punctuation">[</span>callback<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">&amp;</span>d<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">callback</span><span class="token punctuation">(</span>d<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">8888</span><span class="token punctuation">;</span>
+        <span class="token function">cb</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        PyCBWrapper<span class="token double-colon punctuation">::</span>py_cb <span class="token operator">=</span> callback<span class="token punctuation">;</span>
+        <span class="token comment">// return self.test(cb);</span>
+        self<span class="token punctuation">.</span><span class="token function">test</span><span class="token punctuation">(</span>PyCBWrapper<span class="token double-colon punctuation">::</span>trampoline<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 核心代码</span>
+        PyCBWrapper<span class="token double-colon punctuation">::</span>py_cb <span class="token operator">=</span> <span class="token keyword">nullptr</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">&#125;</span>    <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  这里的核心就是将PyCBWrapper::py_cb = nullptr;置为空，保证pyobject变量在python解释器还正常的工作时候进行析构。问题3解决，完结散花。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  其实在了解了cpython转换python函数为std::function的细节，解决这些奇怪的问题还是很简单的。</p>
+<p>  在AI的帮助下，解决这些问题只需要有方向即可，验证时间及方法已经非常的快了。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="https://pybind11.readthedocs.io/en/stable/advanced/cast/index.html">https://pybind11.readthedocs.io/en/stable/advanced/cast/index.html</a></p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"># C++</a>
+              <a href="/tags/python/" rel="tag"># python</a>
+              <a href="/tags/pybind11/" rel="tag"># pybind11</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/12/28/blog_idx_146/" rel="prev" title="一次酣畅淋漓的问题排查（c++标准库异常实现原理）">
+                  <i class="fa fa-angle-left"></i> 一次酣畅淋漓的问题排查（c++标准库异常实现原理）
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Sky</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">289k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">17:30</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":250,"hOffset":50,"vOffset":5},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.8},"log":false});</script></body>
+</html>

@@ -206,13 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">139</span>
+          <span class="site-state-item-count">140</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-count">95</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -259,6 +259,296 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2019/02/14/blog_idx_079/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/02/14/blog_idx_079/" class="post-title-link" itemprop="url">java 手动生成jni头文件(JNI静态注册)</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-02-14 13:29:50" itemprop="dateCreated datePublished" datetime="2019-02-14T13:29:50+08:00">2019-02-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/JAVA/" itemprop="url" rel="index"><span itemprop="name">JAVA</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>867</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-30 21:26:57
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=079） 
+&emsp;&emsp;本文发布于 2019-02-14 13:29:50，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=079） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="原因">原因</h3>
+<hr>
+<ol>
+<li class="lvl-3">
+<p>我之前写过一篇jni的文章，在那篇文中，我要为java jni静态注册补充一下，生成jni头文件相关的知识。</p>
+</li>
+<li class="lvl-3">
+<p>在我们使用as开发带jni的app的时候，我们自己写的java native 方法，可以通过一定方式方便的生成jni的头文件，但是我们没有关注他是怎么生成的？</p>
+</li>
+<li class="lvl-3">
+<p>在实际使用过程中，特别是测试过程中，或者为一个第三方c和c++库写jni接口时，手动生成jni头文件也是必须要掌握的。</p>
+</li>
+</ol>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="方法">方法</h3>
+<hr>
+<ol>
+<li class="lvl-3">
+<p>首先在java层写你的native方法，注意包名等等。我这里的例子如下：</p>
+</li>
+</ol>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">package</span> <span class="token namespace">com</span><span class="token punctuation">;</span>
+
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> shmem<span class="token punctuation">&#123;</span>
+	
+	<span class="token keyword">static</span> <span class="token punctuation">&#123;</span>
+		
+		<span class="token class-name">System</span><span class="token punctuation">.</span><span class="token function">loadLibrary</span><span class="token punctuation">(</span><span class="token string">"libandroid-shmem.so"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	
+	<span class="token keyword">public</span> <span class="token keyword">native</span> <span class="token keyword">int</span> <span class="token class-name">CreateSHMEM</span><span class="token punctuation">(</span><span class="token keyword">int</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token keyword">public</span> <span class="token keyword">native</span> <span class="token keyword">int</span> <span class="token class-name">AttachSHMEM</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token keyword">public</span> <span class="token keyword">native</span> <span class="token keyword">int</span> <span class="token class-name">SetDataToSHMEM</span><span class="token punctuation">(</span><span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> data_buf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token keyword">public</span> <span class="token keyword">native</span> <span class="token keyword">int</span> <span class="token class-name">GetDataFromSHMEM</span><span class="token punctuation">(</span><span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> data_buf<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token keyword">public</span> <span class="token keyword">native</span> <span class="token keyword">int</span> <span class="token class-name">DetachSHMEM</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token keyword">public</span> <span class="token keyword">native</span> <span class="token keyword">int</span> <span class="token class-name">MarkDeleteSHMEM</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<ol start="2">
+<li class="lvl-3">
+<p>使用java sdk带的javac命令编译这个java文件。（注意这里的包名为com。那么记得把shmem.java放到一个名为com的文件夹下面去。）</p>
+</li>
+</ol>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">javac shmem.java<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_079/javac.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<ol start="3">
+<li class="lvl-3">
+<p>通过javah命令生成jni头文件。（注意这里是完整的类名,shmem.class 必须在com文件夹下面）</p>
+</li>
+</ol>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">javah <span class="token parameter variable">-jni</span> com.shmem<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_079/javah.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<ol start="4">
+<li class="lvl-3">
+<p>生成的jni头文件实例</p>
+</li>
+</ol>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">/* DO NOT EDIT THIS FILE - it is machine generated */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;jni.h></span></span>
+<span class="token comment">/* Header for class com_shmem */</span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifndef</span> <span class="token expression">_Included_com_shmem</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_Included_com_shmem</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">__cplusplus</span></span>
+<span class="token keyword">extern</span> <span class="token string">"C"</span> <span class="token punctuation">&#123;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+<span class="token comment">/*
+ * Class:     com_shmem
+ * Method:    CreateSHMEM
+ * Signature: (I)I
+ */</span>
+JNIEXPORT jint JNICALL <span class="token function">Java_com_shmem_CreateSHMEM</span>
+  <span class="token punctuation">(</span>JNIEnv <span class="token operator">*</span><span class="token punctuation">,</span> jobject<span class="token punctuation">,</span> jint<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">/*
+ * Class:     com_shmem
+ * Method:    AttachSHMEM
+ * Signature: ()I
+ */</span>
+JNIEXPORT jint JNICALL <span class="token function">Java_com_shmem_AttachSHMEM</span>
+  <span class="token punctuation">(</span>JNIEnv <span class="token operator">*</span><span class="token punctuation">,</span> jobject<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">/*
+ * Class:     com_shmem
+ * Method:    SetDataToSHMEM
+ * Signature: ([B)I
+ */</span>
+JNIEXPORT jint JNICALL <span class="token function">Java_com_shmem_SetDataToSHMEM</span>
+  <span class="token punctuation">(</span>JNIEnv <span class="token operator">*</span><span class="token punctuation">,</span> jobject<span class="token punctuation">,</span> jbyteArray<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">/*
+ * Class:     com_shmem
+ * Method:    GetDataFromSHMEM
+ * Signature: ([BI)I
+ */</span>
+JNIEXPORT jint JNICALL <span class="token function">Java_com_shmem_GetDataFromSHMEM</span>
+  <span class="token punctuation">(</span>JNIEnv <span class="token operator">*</span><span class="token punctuation">,</span> jobject<span class="token punctuation">,</span> jbyteArray<span class="token punctuation">,</span> jint<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">/*
+ * Class:     com_shmem
+ * Method:    DetachSHMEM
+ * Signature: ()I
+ */</span>
+JNIEXPORT jint JNICALL <span class="token function">Java_com_shmem_DetachSHMEM</span>
+  <span class="token punctuation">(</span>JNIEnv <span class="token operator">*</span><span class="token punctuation">,</span> jobject<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">/*
+ * Class:     com_shmem
+ * Method:    MarkDeleteSHMEM
+ * Signature: ()I
+ */</span>
+JNIEXPORT jint JNICALL <span class="token function">Java_com_shmem_MarkDeleteSHMEM</span>
+  <span class="token punctuation">(</span>JNIEnv <span class="token operator">*</span><span class="token punctuation">,</span> jobject<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">__cplusplus</span></span>
+<span class="token punctuation">&#125;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  这样我们就可以在生成的内容上修改修改就可以实际使用了。</p>
+<ol start="5">
+<li class="lvl-3">
+<p>题外话：其实我们使用as等ide自动生成jni头文件，其底层的原理就是这几句简单的shell命令。</p>
+</li>
+</ol>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -2936,337 +3226,6 @@ deb-src http://ports.ubuntu.com/ubuntu-ports/ xenial-security main restricted
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/08/07/blog_idx_069/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/08/07/blog_idx_069/" class="post-title-link" itemprop="url">CMakeLists.txt 编写要点 && 一个关于install（）的深坑</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-08-07 17:10:19" itemprop="dateCreated datePublished" datetime="2018-08-07T17:10:19+08:00">2018-08-07</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/linux%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">linux开发</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>2.3k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>8 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky sky@sky-home.com
- * @LastEditTime: 2022-10-23 17:40:19
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=069） 
-&emsp;&emsp;本文发布于 2018-08-07 17:10:19，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=069） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  Linux  4.15.0-29-generic #31-Ubuntu SMP Tue Jul 17 15:39:52 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux</p>
-<h3 id="前言">前言</h3>
-<hr>
-<ol>
-<li class="lvl-3">
-<p>我在2016-05-08的时候，写了一篇关于Makefile的文章，在我来此公司实习的时候（2016.11左右），为一个稍微大一点的项目完全手动的构建了一个基于Makefile的编译环境。现在已经过去了一年半多左右，根据此项目组的成员给我的反馈是：依然可用。但是如果要添加一些新内容到项目中，如果不了解这个Makefile的话，很有可能就是新内容没有生效。我想了想，也确实是这样的，如果不对Makefile进行一部分了解的话，想添加新的内容是很麻烦的一件事情。但是这个问题其实是Makefile只是在shell command上的一层封装，抽象的层级不是太高，也就导致了本身其构建起来很繁琐，不太适合大型工程管理和构建。</p>
-</li>
-<li class="lvl-3">
-<p>根据这两年来的接触，我经常了解到封装层级在Makefile上的框架有两个，一个是Autoconfig，一个就是CMake。其中我Autoconfig我完全停留在用的层面，完全没有去了解相关的内容，但是对于CMake，近一年多来，多次接触，苦于没有一个合适的机会进行总结。最近，由于需要为一个项目构建一套合适的编译环境，我选择了CMake，也许，这是一个合适的机会进行总结。</p>
-</li>
-</ol>
-<p><font color = red ><em>注意：也许我这里介绍的CMake用起来比Make或者更低一级的gcc简单了许多倍，但是，我希望各位学习此文的同时，一定要去了解了解Make和GCC相关的内容，别的不说，自己写个小工程，分别用gcc原始命令生成目标，同时用Make来生成目标。这样或许你会对此篇文章更加深刻。</em></font></p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="CMake-简要内容">CMake 简要内容</h3>
-<hr>
-<p>  CMake 是cross platform make的简写，从这里你完全可以看出，CMake是基于Make来实现相关的内容的，换句话说，CMake就是在Make的基础上抽象出来的更高级的框架。</p>
-<p>  CMakeLists.txt的编译test.cpp生成test可执行文件的基本例子：</p>
-<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">cmake_minimum_required</span><span class="token punctuation">(</span><span class="token property">VERSION</span> <span class="token number">2.8.10</span><span class="token punctuation">)</span>
-<span class="token function">SET</span><span class="token punctuation">(</span><span class="token variable">PROJECT_NAME</span> test<span class="token punctuation">)</span>
-<span class="token keyword">project</span><span class="token punctuation">(</span><span class="token punctuation">$&#123;</span><span class="token variable">PROJECT_NAME</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
-<span class="token keyword">add_executable</span><span class="token punctuation">(</span>test test.cpp<span class="token punctuation">)</span>  <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  通过以下Shell Command:</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">mkdir</span> <span class="token parameter variable">-p</span> build <span class="token operator">&amp;&amp;</span> <span class="token builtin class-name">cd</span> build <span class="token operator">&amp;&amp;</span> cmake <span class="token punctuation">..</span> <span class="token operator">&amp;&amp;</span> <span class="token function">make</span> <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>  通过上文的shell命令，其实你也已经发现了，cmake会生成Makefile，然后我们需要调用make来生成可执行文件。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="CMakeLists-txt-编写要点">CMakeLists.txt 编写要点</h3>
-<hr>
-<br/>
-<br/>
-<h5 id="常用的cmake指令解释">常用的cmake指令解释</h5>
-<pre class="line-numbers language-CMake" data-language="CMake"><code class="language-CMake">cmake_minimum_required(VERSION xxx) #cmake最小版本需求，新版本的cmake改了很多东西，提升了便利性，也可能让你自己挖坑了
-project(xxx) #设置此项目的名称
-add_executable(target target_source_codes) #生成可执行文件target ，后面填写的是生成此可执行文件所依赖的源文件列表。
-SET(var_name var_value)# 设置一个名字var_name 的变量，同时给此变量赋值为var_value
-MESSAGE(&quot;MSG&quot;) #类比echo 打印消息
-option(var_name &quot;comment&quot; var_value) #给变量var_name赋值为var_value，comment是此变量的注释，和SET 有类似的功效，用于给某变量设置默认值
-include_directories(xxx) #添加include路径，也就是 gcc -I xxx 的意思，或者vs ide中添加头文件包含目录
-add_subdirectory(xxx) #调用xxx子目录的CMakeLists.txt执行
-add_compile_options(xxx) #给编译器添加xxx参数，但是貌似没有什么用，我一般不这样添加参数，不直接
-link_directories(xxx) #给编译器添加库目录，也就是 gcc -L xxx 的意思，或者vs ide中添加库的包含目录
-add_library(lib_name SHARED or STATIC lib_source_code) #和add_executable类似，生成库文件，SHARED代表动态库，STATIC代表静态库， 最后一个参数代表此库的源文件列表，此指令只有三个参数
-target_link_libraries(target_name lib_name ...) #给目标添加依赖库，类似与gcc -l lib_name，此指令有两个用处，一个是给可执行target_name 添加库依赖，二是给库target_name 添加库依赖。
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  我常见的cmake指令也就是上述的这些，还有部分比较常见的指令这里没有列出，我放到了下面单独讲解如：install()</p>
-<br/>
-<br/>
-<h5 id="cmake-流控制指令相关">cmake 流控制指令相关</h5>
-<p>  条件语句</p>
-<pre class="line-numbers language-CMake" data-language="CMake"><code class="language-CMake">if(xxx)
-...
-elseif(xx)
-...
-else()
-...
-endif()
-
-#常见条件语句用法为:
-# if (va)  va为bool型
-# if （va MATCHES xxx） va 是string类型，如果va包含了xxx，则此句为真<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  循环语句</p>
-<pre class="line-numbers language-CMake" data-language="CMake"><code class="language-CMake">foreach(va va_lists)
-...
-endforeach()<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-<p>  在foreach中，va的值会依次被va_lists的值替换</p>
-<br/>
-<br/>
-<h5 id="macro-和-function">macro 和 function</h5>
-<pre class="line-numbers language-CMake" data-language="CMake"><code class="language-CMake">macro(name arg ...)
-...
-endmacro()
-function(name arg ...)
-...
-endfunction()<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  宏和函数效果都类似，唯一区别为function中的变量为局部的。</p>
-<br/>
-<br/>
-<h5 id="install-指令（主要是生成Makefile中的install-target）">install 指令（主要是生成Makefile中的install target）</h5>
-<pre class="line-numbers language-CMake" data-language="CMake"><code class="language-CMake">install(FILES flie DESTINATION dir_path) #执行make install时，把file拷贝到dir_path
-install(PROGRAMS file DESTINATION dir_path) #执行make install时，把file拷贝到dir_path,并给予file可执行权限
-INSTALL(TARGETS  ylib ylib_s
-    #RUNTIME DESTINATION xxx
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-)# 安装libylib.so到lib目录，安装libylib_s.a到lib目录，RUNTIME 是安装可执行文件到xxx目录，注意这个指令有个坑，我后面会说明这个问题。<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="configure-file指令">configure_file指令</h5>
-<pre class="line-numbers language-CMake" data-language="CMake"><code class="language-CMake">configure_file(fileA fileB @ONLY)
-#把fileA 复制并重命名为fileB,此时，fileA中的@var@的值会被替换为cmakelists.txt 中var的值。@ONLY是只转换@va@这种变量<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="CMakeLists-txt常用的内置变量">CMakeLists.txt常用的内置变量</h5>
-<pre class="line-numbers language-CMake" data-language="CMake"><code class="language-CMake">CMAKE_INSTALL_PREFIX  #make install 的安装路径
-CMAKE_BUILD_TYPE #生成的目标为debug或者release
-CMAKE_C_FLAGS #gcc 的编译参数指定，这个非常好用，一般通过set 修改其值
-CMAKE_CXX_FLAGS #g++ 和上面CMAKE_C_FLAGS 类似
-CMAKE_CURRENT_SOURCE_DIR # 当前CMakeLists.txt所在的目录，主要用来定位某文件
-CMAKE_CURRENT_BINARY_DIR # 当前CMakeLists.txt对应的编译时的目录
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="cross-compile">cross compile</h5>
-<p>  2019/5/17更新</p>
-<pre class="line-numbers language-cmake" data-language="cmake"><code class="language-cmake"><span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_SYSTEM_NAME</span> Linux<span class="token punctuation">)</span>
-<span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_SYSTEM_PROCESSOR</span> arm<span class="token punctuation">)</span>
-
-<span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_SYSROOT</span> /home/X/hisi3531d/v600_toolchains/arm-hisiv600-linux/target<span class="token punctuation">)</span>
-<span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_STAGING_PREFIX</span> /home/X/libwebsockets/_install<span class="token punctuation">)</span>
-
-<span class="token keyword">set</span><span class="token punctuation">(</span>tools /home/X/hisi3531d/v600_toolchains/arm-hisiv600-linux/target<span class="token punctuation">)</span>
-<span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_C_COMPILER</span> <span class="token punctuation">$&#123;</span>tools<span class="token punctuation">&#125;</span>/bin/arm-hisiv600-linux-gcc<span class="token punctuation">)</span>
-<span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_CXX_COMPILER</span> <span class="token punctuation">$&#123;</span>tools<span class="token punctuation">&#125;</span>/bin/arm-hisiv600-linux-g++<span class="token punctuation">)</span>
-
-<span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_FIND_ROOT_PATH_MODE_PROGRAM</span> NEVER<span class="token punctuation">)</span>
-<span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_FIND_ROOT_PATH_MODE_LIBRARY</span> ONLY<span class="token punctuation">)</span>
-<span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_FIND_ROOT_PATH_MODE_INCLUDE</span> ONLY<span class="token punctuation">)</span>
-<span class="token keyword">set</span><span class="token punctuation">(</span><span class="token variable">CMAKE_FIND_ROOT_PATH_MODE_PACKAGE</span> ONLY<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="XXXConfig-cmake文件（cmake模块文件）编写以及引用">XXXConfig.cmake文件（cmake模块文件）编写以及引用</h5>
-<p>  yLibConfig.cmake</p>
-<pre class="line-numbers language-CMake" data-language="CMake"><code class="language-CMake">
-find_path(yLib_INCLUDE_DIR NAMES ylib.h PATHS @CMAKE_INSTALL_PREFIX@&#x2F;include) 
-
-find_library(yLib_LIBRARY NAMES ylib PATHS @CMAKE_INSTALL_PREFIX@&#x2F;lib) 
-#find_library 会到@CMAKE_INSTALL_PREFIX@&#x2F;lib目录查询libylib.so
-
-
-set(yLib_FOUND TRUE) 
-set(yLib_INCLUDE_DIRS $&#123;yLib_INCLUDE_DIR&#125;) 
-set(yLib_LIBS $&#123;yLib_LIBRARY&#125;) 
-
-
-mark_as_advanced(yLib_INCLUDE_DIRS yLib_LIBS )<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>XXX_INCLUDE_DIR</p>
-</li>
-<li class="lvl-2">
-<p>XXX_LIBRARY</p>
-</li>
-<li class="lvl-2">
-<p>XXX_FOUND</p>
-</li>
-<li class="lvl-2">
-<p>XXX_INCLUDE_DIRS</p>
-</li>
-<li class="lvl-2">
-<p>XXX_LIBS</p>
-</li>
-</ul>
-<p>  以上变量最好都定义了，不然find_package可能会报错</p>
-<p>  .cmake 文件就是定义了相关include变量和lib变量，没有什么其他的东西</p>
-<p>  调用：</p>
-<pre class="line-numbers language-Cmake" data-language="Cmake"><code class="language-Cmake">set(yLib_DIR &quot;@CMAKE_INSTALL_PREFIX@&#x2F;cmake&quot;)
-#设置.cmake 的目录所在
-find_package(yLib REQUIRED)
-#find_package会导入.cmake 中的相关变量，完成相关模块的导入<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="一个关于install（）指令的深坑">一个关于install（）指令的深坑</h5>
-<pre class="line-numbers language-CMake" data-language="CMake"><code class="language-CMake">INSTALL(TARGETS  ylib ylib_s
-    #RUNTIME DESTINATION xxx
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-)
-#对于RUNTIME  和 LIBRARY 两种目标，在安装时候，cmake会默认给你移除掉目标文件中的gcc的Wl,rpath的值，导致某些库找不到的错误。
-以下变量会影响此坑，更详细的信息去查查别的资料，我这里就不详细说明了。
-#set(CMAKE_SKIP_BUILD_RPATH FALSE)                
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)        
-#set(CMAKE_INSTALL_RPATH &quot;&quot;)                      
-#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)    
-#set(CMAKE_SKIP_INSTALL_RPATH TRUE)
-#set(CMAKE_INSTALL_RPATH &quot;$&#123;CMAKE_INSTALL_PREFIX&#125;&#x2F;lib&quot;)
-
-#set(CMAKE_SKIP_RPATH TRUE)
-#set(CMAKE_SKIP_INSTALL_RPATH TRUE)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p><font color = red >注意：cmake会直接修改你的二进制文件替换掉rpath的相关信息。默认替换的值是一个空值，也就是说移除掉了你设置的rpath的值</font></p>
-<p><font color = red >以上只是介绍了cmake中常见的内容，而且很多内容只涉及到一般的使用方法，某些指令还有很多其他的操作，我这里没有介绍。如果需要了解更加详细的信息，我推荐各位去看cmake 的doc。</font></p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/6/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/8/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -3291,14 +3250,14 @@ find_package(yLib REQUIRED)
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">286k</span>
+    <span title="站点总字数">289k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:19</span>
+    <span title="站点阅读时长">17:30</span>
   </span>
 </div>
 <div class="busuanzi-count">

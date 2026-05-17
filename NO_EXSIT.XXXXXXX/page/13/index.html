@@ -206,13 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">139</span>
+          <span class="site-state-item-count">140</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-count">95</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -259,6 +259,236 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2016/06/02/blog_idx_019/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/06/02/blog_idx_019/" class="post-title-link" itemprop="url">C程序问题归纳(static,auto,register,extern,程序内存分布图，linux下程序的执行过程......)(二)</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-06-02 14:35:06" itemprop="dateCreated datePublished" datetime="2016-06-02T14:35:06+08:00">2016-06-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C-CPP/linux%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">linux开发</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C-CPP/linux%E5%BC%80%E5%8F%91/%E5%B8%B8%E8%AF%86/" itemprop="url" rel="index"><span itemprop="name">常识</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-04-17 19:03:51
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=019） 
+&emsp;&emsp;本文发布于 2016-06-02 14:35:06，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=019） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  近段时间看一些代码，自己也写了一些。但是写着写着感觉自己迷茫了，自己对程序的结构越来越模糊，甚至都不相信自己的写的部分，或者相信自己的知识。那么现在就来终结这些想法，让自己提升一下。本系列文章主要分为两部分，（一）是分析程序在内存中的分布（二）是linux下程序的执行流程</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="linux下程序的执行流程">linux下程序的执行流程</h3>
+<hr>
+<p>  对Linux有了解的人都应该知道，在系统中只有一个pid为１的父进程(init)，其他的进程都是这个进程衍生出来的子进程(fork)，从而形成了以init为树根的一颗树。如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_019/init.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  如果你有图形桌面，则会在初始化好了开机启动服务后，会调用图形桌面启动器lightdm,然后图形界面初始化，然后你双击鼠标运行的程序就会是图形桌面的子进程。而我们在shell下运行的程序就会是在lightdm-&gt;/usr/bin/x-term(以上图为例)下形成子进程。</p>
+<p>  当你在shell中输入</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">./XXXXX<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>这个时候，一个程序就开始执行了。现在就进入我们这篇文章要讲的重点。（一个程序要可以执行的前戏就是之前的分析）</p>
+<br/>
+<br/>
+<h5 id="现在我要开始执行XXXXX程序">现在我要开始执行ＸＸＸＸＸ程序</h5>
+<p>  在shell中输入上图命令，并回车后。</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>第一步：shell 会fork 出一个子进程。同时wait()子进程结束。如果在shell命令后加入&amp;等符号，表示后台执行时，shell　fork后，不会wait()子进程，而直接返回。新fork（）出的子进程，将会调用一个用户态函数execve()　加载ｘｘｘｘｘ程序的文件。（放在磁盘上的静态数据）</p>
+</li>
+<li class="lvl-2">
+<p>第二步：下面来分析execve()函数的执行过程。查看man手册：</p>
+</li>
+</ul>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_019/exec.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>execve源码:</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_019/exec_src.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>在调用INLINE_SYSCALL宏后，</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_019/syscall.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>调用INTERNAL_SYSCALL()</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_019/syscall1.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>(提示：其实以上部分就是熟知的ＧＬＩＢＣ怎么实现用户ＡＰＩ与系统调用结合的过程)</p>
+<p>保存系统调用号，然后保存到寄存器，然后切换到内核态，根据调用号查询到sys_execve()，执行sys_execve()</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c">asmlinkage <span class="token keyword">int</span> <span class="token function">sys_execve</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">pt_regs</span> regs<span class="token punctuation">)</span>  
+<span class="token punctuation">&#123;</span>  
+    <span class="token keyword">int</span> error<span class="token punctuation">;</span>  
+    <span class="token keyword">char</span> <span class="token operator">*</span> filename<span class="token punctuation">;</span>  
+  
+    filename <span class="token operator">=</span> <span class="token function">getname</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span> regs<span class="token punctuation">.</span>ebx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    error <span class="token operator">=</span> <span class="token function">PTR_ERR</span><span class="token punctuation">(</span>filename<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">IS_ERR</span><span class="token punctuation">(</span>filename<span class="token punctuation">)</span><span class="token punctuation">)</span>  
+        <span class="token keyword">goto</span> out<span class="token punctuation">;</span>  
+    error <span class="token operator">=</span> <span class="token function">do_execve</span><span class="token punctuation">(</span>filename<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span> regs<span class="token punctuation">.</span>ecx<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span> regs<span class="token punctuation">.</span>edx<span class="token punctuation">,</span> <span class="token operator">&amp;</span>regs<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>error <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>  
+        current<span class="token operator">-></span>ptrace <span class="token operator">&amp;=</span> <span class="token operator">~</span>PT_DTRACE<span class="token punctuation">;</span>  
+    <span class="token function">putname</span><span class="token punctuation">(</span>filename<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+out<span class="token operator">:</span>  
+    <span class="token keyword">return</span> error<span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span>  <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>调用do_execve()，先收集信息，调用search_binary_handler()函数，根据可执行文件类型，调用不同的的处理函数去执行。（后面详细的信息可以去阅读源码，这里就不一一说明）</p>
+<p>（由于本人水平有限，后面部分只知道个大概，就不献丑了）</p>
+<p>这样一个程序就执行起来了。是不是非常的简单。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -2211,193 +2441,6 @@ iptables <span class="token parameter variable">-t</span> nat <span class="token
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2014/12/22/blog_idx_009/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2014/12/22/blog_idx_009/" class="post-title-link" itemprop="url">修复华硕笔记本fn+f2在ubuntu下wifi不能够正常使用和WiFi Disabled (Hard-blocked) (译文)</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2014-12-22 11:49:16" itemprop="dateCreated datePublished" datetime="2014-12-22T11:49:16+08:00">2014-12-22</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/Ubuntu%E4%BD%BF%E7%94%A8/" itemprop="url" rel="index"><span itemprop="name">Ubuntu使用</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>765</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky
- * @LastEditTime: 2021-12-17 17:01:08
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=009） 
-&emsp;&emsp;本文发布于  2014-12-22 11:49:16，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=009） 
--->
-<h6 id="前置说明">前置说明</h6>
-<p>  本文发布于  2014-12-22 11:49:16，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=009）</p>
-<p>  文章日期:2014.12.19</p>
-<p>  注意，本文是一篇译文</p>
-<h6 id="环境说明">环境说明</h6>
-<p>  系统:ubuntu14.04 x64</p>
-<p>  笔记本:华硕x550vc</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  问题状况:每次打开ubuntu时,wifi不能够使用,提示wifi通过硬件模块关闭.</p>
-<p>  以前的方案:可以通过休眠系统,然后启动,就可以使用wifi,但是重启,或者关机之后打开,wifi又会出现刚才的状况</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="国外大神解决方案">国外大神解决方案</h3>
-<hr>
-<p>  国外大神提供的解决方案:</p>
-<p>  原文地址:<a target="_blank" rel="noopener" href="http://ubuntuforums.org/showthread.php?t=2181558">http://ubuntuforums.org/showthread.php?t=2181558</a></p>
-<p>  原文作者如果认为侵权:请联系我,我马上删除,谢谢</p>
-<p>  第一步:检查驱动是可用的</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">lspci <span class="token parameter variable">-nnk</span> <span class="token operator">|</span> <span class="token function">grep</span> <span class="token parameter variable">-A2</span> 0280<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_009/wifi_driver_show.jpg" alt="rep_img"/></center>
-    </div>
-</div>    
-<p>  检查你的最后一行,&quot;Kernel driver in use:xxx&quot;例如:(e.g. “Kernel driver in use: ath9k”)</p>
-<p>  第二步:检查是否有asus_nb_wmi 这个驱动</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">lsmod <span class="token operator">|</span> <span class="token function">grep</span> <span class="token parameter variable">-e</span> ath9k <span class="token parameter variable">-e</span> asus<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>  注意:如果没有asus_nb_wmi 这个驱动,我不保证下面方法有效性</p>
-<p>  第三步:替换wifi模块的驱动</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">echo</span> <span class="token string">"options asus_nb_wmi wapf=4"</span> <span class="token operator">|</span> <span class="token function">sudo</span> <span class="token function">tee</span> /etc/modprobe.d/asus_nb_wmi.conf<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>  解释:这个命令是在/ect/modprobe.d/目录下创建asus_nb_wmi.conf文件,使其在下一次启动系统时用wapf= 4参数加载asus_nb_wmi驱动</p>
-<p>  第四步:重启系统</p>
-<p>  这是你就可以使用你的networkmanager使用你的wifi</p>
-<p>  可以正常打开了:</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_009/wifi.jpg" alt="rep_img"/></center>
-    </div>
-</div>    
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p><a target="_blank" rel="noopener" href="http://ubuntuforums.org/showthread.php?t=2181558">http://ubuntuforums.org/showthread.php?t=2181558</a></p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/12/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/14/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -2422,14 +2465,14 @@ iptables <span class="token parameter variable">-t</span> nat <span class="token
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">286k</span>
+    <span title="站点总字数">289k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:19</span>
+    <span title="站点阅读时长">17:30</span>
   </span>
 </div>
 <div class="busuanzi-count">

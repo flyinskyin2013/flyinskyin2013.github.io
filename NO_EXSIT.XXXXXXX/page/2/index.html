@@ -206,13 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">139</span>
+          <span class="site-state-item-count">140</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-count">95</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -259,6 +259,318 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2025/02/15/blog_idx_137/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/02/15/blog_idx_137/" class="post-title-link" itemprop="url">大模型基础补全计划(一)---重温一些深度学习相关的数学知识</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-02-15 19:50:00 / 修改时间：19:54:55" itemprop="dateCreated datePublished" datetime="2025-02-15T19:50:00+08:00">2025-02-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/NLP/" itemprop="url" rel="index"><span itemprop="name">NLP</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/NLP/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/NLP/LLM/LM/" itemprop="url" rel="index"><span itemprop="name">LM</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>13 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=137） 
+&emsp;&emsp;本文发布于 2025-02-15 19:50:00             （BlogID=137） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  遥记在2021年左右，我写了一系列关于深度学习视觉方向基础学习的文章，它们如下：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>DL基础补全计划(一)—线性回归及示例（Pytorch，平方损失） <a target="_blank" rel="noopener" href="https://githubio.e-x.top/2021/07/04/blog_idx_105/">https://githubio.e-x.top/2021/07/04/blog_idx_105/</a></p>
+</li>
+<li class="lvl-2">
+<p>DL基础补全计划(二)—Softmax回归及示例（Pytorch，交叉熵损失） <a target="_blank" rel="noopener" href="https://githubio.e-x.top/2021/07/11/blog_idx_106/">https://githubio.e-x.top/2021/07/11/blog_idx_106/</a></p>
+</li>
+<li class="lvl-2">
+<p>DL基础补全计划(三)—模型选择、欠拟合、过拟合 <a target="_blank" rel="noopener" href="https://githubio.e-x.top/2021/07/18/blog_idx_107/">https://githubio.e-x.top/2021/07/18/blog_idx_107/</a></p>
+</li>
+<li class="lvl-2">
+<p>DL基础补全计划(四)—对抗过拟合：权重衰减、Dropout <a target="_blank" rel="noopener" href="https://githubio.e-x.top/2021/08/01/blog_idx_108/">https://githubio.e-x.top/2021/08/01/blog_idx_108/</a></p>
+</li>
+<li class="lvl-2">
+<p>DL基础补全计划(五)—数值稳定性及参数初始化（梯度消失、梯度爆炸） <a target="_blank" rel="noopener" href="https://githubio.e-x.top/2021/08/08/blog_idx_109/">https://githubio.e-x.top/2021/08/08/blog_idx_109/</a></p>
+</li>
+<li class="lvl-2">
+<p>DL基础补全计划(六)—卷积和池化 <a target="_blank" rel="noopener" href="https://githubio.e-x.top/2021/08/15/blog_idx_110/">https://githubio.e-x.top/2021/08/15/blog_idx_110/</a></p>
+</li>
+</ul>
+<p>  那时候的我，还一心沉醉在视觉算法模型落地到侧端的各个场景，虽然对NLP有所了解，但是当时还未料想到，在后面的几年，由大语言模型引爆的大模型领域是如此的火爆。到了2023左右，开始逐渐的接触大模型，逐渐的将其应用到自己的工作中，逐渐在工作中将大模型迁移到侧端。从2024年开始，意识到如果要在以后将大模型应用的更好，急需要补充一些大模型及NLP相关的知识才能更好的理解它。因此有了从本文开始的一系列文章。</p>
+<p>  从本文开始，预计从数学知识开始，到transformer及LLM结束（挖坑），挑选一些内容来学习记录。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="概率论、数理统计">概率论、数理统计</h3>
+<hr>
+<p>  </p>
+<br/>
+<br/>
+<h5 id="基本概念">基本概念</h5>
+<p>  在统计学中，把需要调查或者研究的某一现象或者事物的全部数据称为统计总体（简称 总体population)，其所属的数据分布称为 总体分布 (population distribution)， 单个数据称为个体(individual)。我们从统计总体中抽取样本的过程称为抽样（sampling），一次抽样的结果称为一份样本(sample)，一份样本中包含的个体数据的数量称为本容量(sample size)。</p>
+<p>  可以把分布（distribution）看作对事件的概率分配，P(X)表示为随机变量X上的分布（distribution）, 分布告诉我们X获得某一值的概率</p>
+<p>  概率（probability）在给定的样本空间中，A事件的发生的可信度， 表示为P(A)</p>
+<p>  推断统计学（或称统计推断，英语：statistical inference）， 指统计学中，研究如何根据样本(sample)数据去推断总体(population)特征（或者参数）的方法， 比如根据样本的平均值去估计总体的均值参数。 它是在对样本数据进行描述的基础上，对统计总体的未知数量特征做出以概率形式表述的推断。</p>
+<p>  通常我们会假设总体分布服从某种已知的概率分布，但是分布的某些参数是不确定的， 比如全国身高数据服从正态分布，但是期望和方差不知道， 这时我们期望能通过样本推断（估计）出总体正态分布的期望和方差参数。</p>
+<p>  概率（probability）和统计（statistics）看似两个相近的概念，其实研究的问题刚好相反。</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>概率研究的是，已经知道了模型和参数后，给出一个事件发生的概率。θ是已知确定的，x是变量，这个函数叫做概率函数(probability function)，它描述对于不同的样本点x，其出现概率是多少（表示不同x出现的概率）。概率函数记作$P(X=x_i|\theta)$。</p>
+</li>
+<li class="lvl-2">
+<p>统计是根据给出的观测数据，利用这些数据进行建模和参数的预测。x是已知确定的，θ是变量，这个函数叫做似然函数(likelihood function),  它描述对于不同的模型参数θ，出现x这个样本点的概率是多少(表示不同θ下，x出现的概率）。此时的函数也记作$L(\theta|X=x_i)$。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<h5 id="联合概率">联合概率</h5>
+<p>  给定任意值a和b，联合概率可以回答：A=a和B=b同时满足的概率是多少，其表示为 $P(A=a,B=b)=P(A=a)*P(B=b)$</p>
+<br/>
+<br/>
+<h5 id="条件概率">条件概率</h5>
+<p>  联合概率的不等式带给我们一个有趣的比率：$0&lt;= \frac{P(A=a,B=b)}{P(A=a)} &lt;=1$，表示为$P(B=b|A=a)$, 代表在A=a已发生的情况下，B=b的概率。也就是 $P(B=b|A=a) = \frac{P(A=a,B=b)}{P(A=a)} $。</p>
+<br/>
+<br/>
+<h5 id="贝叶斯定理">贝叶斯定理</h5>
+<p>  因为条件概率公式：$P(B=b|A=a) = \frac{P(A=a,B=b)}{P(A=a)} ，P(A=a|B=b) = \frac{P(A=a,B=b)}{P(B=b)} $。然后我们观察两个条件概率表达式,可看到有公有的联合概率部分，改变方程即可得到：$P(A,B) = P(A|B) * P(B) = P(B|A) * P(A)$ ，这个就是贝叶斯公式。</p>
+<p>此外此定理在深度学习中有一些特殊的解释：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>P(A|B)：在事件 B 已经发生的情况下，事件 A 发生的后验概率 。</p>
+</li>
+<li class="lvl-2">
+<p>P(B|A)：在事件 A 已经发生的情况下，事件 B 发生的似然 。</p>
+</li>
+<li class="lvl-2">
+<p>P(A)：事件 A 的先验概率（在没有额外信息时对 A 的概率估计）。</p>
+</li>
+<li class="lvl-2">
+<p>P(B)：事件 B 的边缘概率（即 B 发生的总概率）。</p>
+</li>
+</ul>
+<p>首先我们定义一个深度学习的模型为：$P(\theta,D) = \frac{P(D|\theta) * P(\theta)}{P(D)}$, 其参数为 θ，训练数据为 D。我们的目标是根据数据 D 来更新对参数 θ 的估计,这里我们来看一个例子：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>$P(\theta | D) $：在观察到数据 D 后，参数 $\theta $ 的后验分布 。</p>
+</li>
+<li class="lvl-2">
+<p>$P(\theta) $：参数 $\theta $ 的先验分布 （在没有看到数据之前对参数的假设）。</p>
+</li>
+<li class="lvl-2">
+<p>$P(D | \theta) $：在给定参数 $\theta$ 的情况下，生成数据 D  的似然函数 。</p>
+</li>
+<li class="lvl-2">
+<p>$P(D) $：数据 D 的边缘概率 （归一化常数）</p>
+</li>
+</ul>
+<br/>
+<br/>
+<h5 id="边际化">边际化</h5>
+<p>  B的概率相当于计算A的所有可能选择，并将所有选择的联合概率聚合在一起：$P(B) = \sum\limits_{i=1}^{n} P(A_i,B) , P(A) = \sum\limits_{i=1}^{n} P(B_i,A)$</p>
+<br/>
+<br/>
+<h5 id="期望、均值、方差、概率">期望、均值、方差、概率</h5>
+<p>  一个随机变量X的期望（expectation，或平均值（average））表示为: $E(X) = \sum\limits_{x=1}^{n} x_i * P(X=x_i)$</p>
+<p>  均值是一个统计量(基于样本构造的函数)，更偏统计学的概念；而期望完全由随机变量的概率分布所确定（更偏概率学的概念），类似于在“上帝视角”下去计算均值，所谓上帝视角是指你拥有的是总体并且知道总体所有取值出现的概率</p>
+<p>  希望衡量随机变量X与其期望值的偏置。这可以通过方差来量化：$V(X) = \frac{\sum\limits_{i=1}<sup>{n}(x_i-E(X_i))</sup>2}{n}$</p>
+<br/>
+<br/>
+<h5 id="似然函数及最大似然估计">似然函数及最大似然估计</h5>
+<p>  似然估计函数,其可以解释为：假设我们有一个关于X的概率分布是$P(X=x|\theta)$，$\theta$是关于X的概率分布的参数。假如我们从关于X的概率分布是$P(X=x|\theta)$中抽取n个样本（这个时候往往我们是不知道其参数$\theta$的），这个时候我们想去估计$\theta$，因此我们可以定义似然函数为： $L(\theta|x_i,i\in{n}) = \prod\limits_{i=1}^{n} P(x_i|\theta)$。</p>
+<p>  注意，我们可以知道由于有n个样本，每个样本都有一个$P(x_i|\theta)$，因此n个样本的联合概率就是似然函数，根据联合概率的定义，似然函数就是描述在$x_i$出现概率已知的情况下，出现$\theta$的概率。</p>
+<p>  最大似然估计（Maximum Likelihood Estimation，MLE），又叫极大似然估计，是统计学中应用最广泛的一种未知参数估计方法。 它可以在已知随机变量属于哪种概率分布的前提下， 利用随机变量的一些观测值估计出分布的一些参数值。</p>
+<p>  最大似然估计函数 就是 对似然估计函数 取对数，以简化乘积的计算。那么其定义是：$L(\theta|x_i,i\in{n}) = \sum\limits_{i=1}^{n} \ln{P(x_i|\theta)}$，对其求最大值就等于对其求 负最小值，其定义为：$-\ln_{}{L(\theta|x_i,i\in{n})} = -\sum\limits_{i=1}^{n} \ln(P(x_i|\theta))$</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="信息论">信息论</h3>
+<hr>
+<p>  </p>
+<br/>
+<br/>
+<h5 id="基本概念-2">基本概念</h5>
+<p>  根据信息论中的定义：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>信息量，事件发生概率越大，所携带的信息量越小。定义为：$I(x)=\log_{2}(\frac{1}{P(x)})=-\log_{2}(P(x))=表示此事件的最少比特位数$ ,其也蕴含了我们需要使用多个比特才能表示信息量。</p>
+</li>
+<li class="lvl-2">
+<p>信息熵，一个随机变量的熵是指该变量可能的结果所蕴含的不确定性的平均水平。可以类别期望的定义，这里得到信息量的均值：$H(X)=-\sum\limits_{i=0}^{n-1}P(Xi)\log_{2}(P(Xi))$</p>
+</li>
+<li class="lvl-2">
+<p>KL差异：定义原概率分布为P(X),近似概率分布为Q(X)，假如X是离散随机变量，KL差异定义为：$D_{KL}(P(X)||Q(X))=\sum\limits_{i=0}<sup>{n-1}P(Xi)\log_{2}(P(Xi)/Q(Xi))=\sum\limits_{i=0}</sup>{n-1}P(Xi)[\log_{2}(P(Xi)) - \log_{2}(Q(Xi))]$</p>
+</li>
+<li class="lvl-2">
+<p>交叉熵（cross-entropy），交叉熵定义为：$H(P,Q)=-\sum\limits_{i=0}^{n-1}P(Xi)\log_{2}(Q(Xi))$，我们可以看到$H(P,Q)=H(P)+D_{KL}(P||Q)$</p>
+</li>
+</ul>
+<br/>
+<br/>
+<h5 id="深度学习中的交叉熵">深度学习中的交叉熵</h5>
+<p>  假如: 数据集{X, Y}有n个样本，有特征向量$x_i \in X$，独热标签向量$y_i \in Y$，当前模型最终softmax输出的向量$\hat{y}_i$。首先，我们将$\hat{y}_i$当做给定特征向量$x_i$的每个类别的条件概率。因此我们可以得到：$\hat{y}_i=P(y_i|x_i)$</p>
+<p>  根据似然函数定义：$L(\theta) = \prod_{i=1}^{n} P(y_i|x_i,\theta)$，其代表给定$x_i, \theta$情况下，观察到$y_i$的概率。</p>
+<p>  根据似然函数，要使得其值为最大值，及 对其取负对数，此外根据我们之前的定义：我们将$\hat{y}<em>i$当做给定特征向量$x_i$的每个类别的条件概率。因此我们得到 $-log{L(\theta)} = -log{\prod\limits</em>{i=1}^{n} P(y_i|x_i,\theta)} = -\sum\limits_{i=1}^{n} log{P(y_i|x_i,\theta)}= -\sum\limits_{i=1}^{n} log{\hat{y_i}}$</p>
+<p>  我们通过信息论中的定义得到交叉熵损失函数定义：$l(y,\hat{y}) = - \sum\limits_{j=1}^{q} y_j * log{\hat{y}_j}$ ，其描述的是标签$y_j$和预测值$\hat{y_j}$两个分布之间的差异值。</p>
+<p>  我们对其交叉损失函数进行多个样本的求和可以得到：$\sum\limits_{i=1}^{n}{l(y,\hat{y})} = - \sum\limits_{i=1}<sup>{n}{\sum\limits_{j=1}</sup>{q} y_j * log{\hat{y}_j}}$</p>
+<p>  由于$y_j$是标签的热独向量，只有对应类别概率为1，其他类别为0，因此$\sum\limits_{j=1}^{q} y_j * log{\hat{y}<em>j} = log{\hat{y}<em>j}$，因此可以得到交叉熵损失和似然函数之间的关系：$\sum\limits</em>{i=1}^{n}{l(y,\hat{y})} = - \sum\limits</em>{i=1}<sup>{n}{\sum\limits_{j=1}</sup>{q} y_j * log{\hat{y}<em>j}} = - \sum\limits</em>{i=1}^{n}{log{\hat{y}_j}} $</p>
+<p>  从这里可以知道交叉熵损失函数与负对数似然函数的关系。</p>
+<br/>
+<br/>
+<h5 id="困惑度（Perplexity）">困惑度（Perplexity）</h5>
+<p>  这里我们讨论如何度量语言模型的质量。这里根据参考文件中的建议，不要直接使用交叉熵来理解，要从另外一个角度来理解。</p>
+<p>  如果想要压缩文本，我们可以根据当前词元集预测的下一个词元。 一个更好的语言模型应该能让我们更准确地预测下一个词元。 因此，它应该允许我们在压缩序列时花费更少的比特。 所以我们可以通过一个序列中所有的个词元的交叉熵损失的平均值来衡量：<br>
+$\frac{1}{n}\sum\limits_{t=1}^{n} -\log P(x_t|x_{t-1}, …, x_1)$，我们看这个公式的含义就是每个预测的词元信息量求和，然后再求平均值，最后平均值越小，意味着我们整个模型蕴含的信息量越小，我们要压缩这个文本需要的比特最少。</p>
+<p>  由于历史原因，自然语言处理的科学家更喜欢使用一个叫做困惑度（perplexity）的量。 简而言之，它是上面提到的信息量均值的指数：$\exp(\frac{1}{n}\sum\limits_{t=1}^{n} -\log P(x_t|x_{t-1}, …, x_1))$</p>
+<p>  我们来看一下困惑度的特性（信息量取值是[0,1]）：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>当最好情况下，因此当每个变量预测概率都是1，信息量为0，困惑度是$\exp^0 = 1$</p>
+</li>
+<li class="lvl-2">
+<p>当最坏情况下，因此当每个变量预测概率都是0，信息量为无穷大，困惑度是$\exp^{\infty} = \infty$</p>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  看了上面这些内容，有些是以前接触过的，有些是新的体验 总的来说，脑袋大了。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="http://zh.gluon.ai/">http://zh.gluon.ai/</a></p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -4277,350 +4589,6 @@ out<span class="token operator">:</span>
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2024/03/16/blog_idx_127/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/03/16/blog_idx_127/" class="post-title-link" itemprop="url">常用加密及其相关的概念、简介（对称、AES、非对称、RSA、散列、HASH、消息认证码、HMAC、签名、CA、数字证书、base64、填充）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2024-03-16 11:18:00" itemprop="dateCreated datePublished" datetime="2024-03-16T11:18:00+08:00">2024-03-16</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B8%B8%E8%AF%86/" itemprop="url" rel="index"><span itemprop="name">常识</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B8%B8%E8%AF%86/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>3k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>11 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky
- * @LastEditTime: 2021-06-29 15:04:48
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=127） 
-&emsp;&emsp;本文发布于 2024-03-16 11:18:00             （BlogID=127） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  无</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  在之前，一直是通过生活、工作零零碎碎接触过加密及加密算法相关的信息，但是也只是听说过，并不知道这些算法用处和区别。</p>
-<p>  最近由于工作安排，需要将Fernet算法实现一版C++的加解密定制程序，由于Fernet组合了许多的基础加密算法，因此在这个地方，对一些常用的基础加密算法做一个总结。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="加密是什么？">加密是什么？</h3>
-<hr>
-<p>  介绍：把“原始数据”通过某种算法+秘钥变换后，得到了“加密数据”的这个过程叫做加密。从这里也可以看到，对于加密来说，其核心要素就是：加密算法+秘钥。</p>
-<p>  意义：对于“加密数据”来说，未授权的用户，不能够直接知道“原始数据”的内容。</p>
-<p>  下面介绍一些常见的加密类别和加密相关配套的其他内容。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="对称加密">对称加密</h3>
-<hr>
-<p>  对称加密是指使用 一个相同秘钥 就能对消息进行加密和解密的加密方法。</p>
-<p>  对称加密的特点就是使用 一个相同秘钥。</p>
-<p>  我们常见的对称加密有：XOR、AES等。下面我们来简单分析一下AES加密。</p>
-<br/>
-<br/>
-<h5 id="AES加密">AES加密</h5>
-<p>  高级加密标准（Advanced Encryption Standard，AES），是一种区块加密标准。从它的定义来看，其特点是区块加密，一般来说，我们常见的有AES128和AES256。</p>
-<p>  例如我们可以用如下的openssl提供的方法进行AES的加解密：</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">AES_set_encrypt_key</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>userKey<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">int</span> bits<span class="token punctuation">,</span>
-                        AES_KEY <span class="token operator">*</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">int</span> <span class="token function">AES_set_decrypt_key</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>userKey<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">int</span> bits<span class="token punctuation">,</span>
-                        AES_KEY <span class="token operator">*</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token comment">//注意这里只是一种cbc加密方法，aes还有很多其他加密方法</span>
-<span class="token keyword">void</span> <span class="token function">AES_cbc_encrypt</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>in<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>out<span class="token punctuation">,</span>
-                     <span class="token class-name">size_t</span> length<span class="token punctuation">,</span> <span class="token keyword">const</span> AES_KEY <span class="token operator">*</span>key<span class="token punctuation">,</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  其实我们从上面的描述来看，就知道AES一般以16字节或者32字节为一组（我们将其定义为区块大小），进行加密。这里就会引申出一个问题，如果我们的数据（最后一组消息）不够一个区块大小，我们应该怎么办？这里提供的常见方案就是做填充。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="非对称加密（公钥加密算法）">非对称加密（公钥加密算法）</h3>
-<hr>
-<p>  我们知道，加密一般是用于消息传递，那么如果是对称加密的情况下，要传递的两个事务：加密消息+秘钥。对于对称加密来说，如果我们的秘钥泄露了，就基本上等于明文传递了。因此，有了非对称加密。其实后面很多的加密方法就在平衡 加密消息+秘钥 两个事情。</p>
-<p>  非对称加密就是有两个秘钥（私钥，公钥），实现1对多的双向通信。其中我们常见的加密方式是：RSA，ECC等。下面，我们尝试简单介绍RSA。</p>
-<br/>
-<br/>
-<h5 id="RSA-加密算法">RSA 加密算法</h5>
-<p>  简介（来自于Wikipedia）：RSA加密算法是一种非对称加密算法。RSA是由罗纳德·李维斯特（Ron Rivest）、阿迪·萨莫尔（Adi Shamir）和伦纳德·阿德曼（Leonard Adleman）在1977年一起提出的。当时他们三人都在麻省理工学院工作。RSA 就是他们三人姓氏开头字母拼在一起组成的。</p>
-<p>  RSA只从使用的角度来说，只需要了解如下的大致的概念：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>模数N、公钥指数pubE、私钥指数priE</p>
-</li>
-<li class="lvl-2">
-<p>加密：秘文=明文^priE mod N，秘文=明文^pubE mod N</p>
-</li>
-<li class="lvl-2">
-<p>解密：明文=秘文^pubE mod N，明文=秘文^priE mod N</p>
-</li>
-</ul>
-<p>  从上面来看，私钥= 私钥指数priE + 模数N，公钥= 公钥指数pubE + 模数N。至于公钥，私钥，模数怎么来的，网上已有许多资料，有兴趣可以去看看。</p>
-<p>  基于openssl的RSA代码节选：</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// 生成秘钥，秘钥里面包含了私钥+公钥</span>
-<span class="token keyword">int</span> <span class="token function">RSA_generate_key_ex</span><span class="token punctuation">(</span>RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> bits<span class="token punctuation">,</span> BIGNUM <span class="token operator">*</span>e<span class="token punctuation">,</span> BN_GENCB <span class="token operator">*</span>cb<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token comment">// 基于公钥和私钥的加解密</span>
-<span class="token keyword">int</span> <span class="token function">RSA_public_encrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
-                       <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">int</span> <span class="token function">RSA_private_encrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
-                        <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">int</span> <span class="token function">RSA_public_decrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
-                       <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">int</span> <span class="token function">RSA_private_decrypt</span><span class="token punctuation">(</span><span class="token keyword">int</span> flen<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>from<span class="token punctuation">,</span>
-                        <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>to<span class="token punctuation">,</span> RSA <span class="token operator">*</span>rsa<span class="token punctuation">,</span> <span class="token keyword">int</span> padding<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="散列函数（Hash-function）">散列函数（Hash function）</h3>
-<hr>
-<p>  介绍：使用 散列函数（md5, sha1, sha256） 对原始数据进行处理，生成散列值（数字摘要）。这些散列函数保证一个输入对应一个输出，并且通过散列值无法得到原始数据输入，因此不属于加密。</p>
-<p>  此外，如果散列函数不够健壮，可能会出现碰撞的可能性。</p>
-<p>  意义：由于其不同的数据输入会得到不同的散列值，因此主要用来校验数据的完整性。</p>
-<p>  基于openssl的常见散列函数代码节选：</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span>
-<span class="token keyword">int</span> <span class="token function">SHA1_Init</span><span class="token punctuation">(</span>SHA_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">int</span> <span class="token function">SHA1_Update</span><span class="token punctuation">(</span>SHA_CTX <span class="token operator">*</span>c<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>data<span class="token punctuation">,</span> <span class="token class-name">size_t</span> len<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">int</span> <span class="token function">SHA1_Final</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>md<span class="token punctuation">,</span> SHA_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-<span class="token comment">//注意，根据官网的描述，如下这些接口已经逐步被弃用，这里只是起示例作用。</span>
-<span class="token keyword">int</span> <span class="token function">SHA256_Init</span><span class="token punctuation">(</span>SHA256_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">int</span> <span class="token function">SHA256_Update</span><span class="token punctuation">(</span>SHA256_CTX <span class="token operator">*</span>c<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>data<span class="token punctuation">,</span> <span class="token class-name">size_t</span> len<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token keyword">int</span> <span class="token function">SHA256_Final</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>md<span class="token punctuation">,</span> SHA256_CTX <span class="token operator">*</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  其实做过编程的人，对hash这个概念并不陌生。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="消息认证码">消息认证码</h3>
-<hr>
-<p>  含义：使用 散列函数+秘钥来生成认证码（MAC）。相较于散列函数来说，对于同一个消息，需要指定的秘钥+散列函数才能够得到最终的认证码。</p>
-<p>  意义：在散列函数中，原始数据和散列值是绑定的。在一个消息传递系统中，散列函数只解决了数据完整性的问题，并没有解决数据来源是否可靠的问题（可以伪造原始数据+新散列值）。 通过消息验证码，由于有了秘钥的保护， 解决了 散列值+消息 来源不可靠的问题。</p>
-<p>  基于openssl的消息认证码代码节选：</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//这里的evp_md用来描述不同的散列函数</span>
-<span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token function">HMAC</span><span class="token punctuation">(</span><span class="token keyword">const</span> EVP_MD <span class="token operator">*</span>evp_md<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>key<span class="token punctuation">,</span>
-                     <span class="token keyword">int</span> key_len<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>d<span class="token punctuation">,</span> <span class="token class-name">size_t</span> n<span class="token punctuation">,</span>
-                     <span class="token keyword">unsigned</span> <span class="token keyword">char</span> <span class="token operator">*</span>md<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> <span class="token operator">*</span>md_len<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="签名算法">签名算法</h3>
-<hr>
-<p>  下面是签名的一个简单流程：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>基于公钥加密系统，生成秘钥对（公钥、私钥）。</p>
-</li>
-<li class="lvl-2">
-<p>对消息进行数字摘要计算。</p>
-</li>
-<li class="lvl-2">
-<p>对数字摘要进行私钥加密，得到数字签名。</p>
-</li>
-<li class="lvl-2">
-<p>将信息、数字签名、公钥发给接收者，接收者可以验证：信息的完整性+发送者的身份。</p>
-</li>
-</ul>
-<p>  从这里来看，我们可以知道，签名其实和消息认证码具有相同的意义，都能够验证：完整性+发送者的身份。但是由于其原理，导致其应用场景不一致。例如：数字签名由于使用非对称加密，而消息认证码可以认为是使用了对称加密，导致他们的使用场景是不一样的。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="CA机构与数字证书">CA机构与数字证书</h3>
-<hr>
-<p>  其实从名字上来看，就知道CA机构与数字证书和签名算法相关，为了解决公钥加密系统中，公钥是否可信的问题。下面是它们的一些概念：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>CA（Certificate Authority）是“证书颁发机构”的简称，它是“受信任”的第三方组织，负责验证申请者身份并发放数字证书。</p>
-</li>
-<li class="lvl-2">
-<p>数字证书是：特定用户或系统身份信息（如域名、组织名等）+ 该用户公钥 + 由权威机构（CA）签署的数字签名（对用户的信息+公钥） 组成的数据结构。</p>
-</li>
-</ul>
-<p>  简单来说，由于我们信任了CA的证书（CA的公钥），我们可以用CA的公钥解密出 数字证书用户的公钥，然后我们用 数字证书用户的公钥 和 数字证书用户加密通信。总的来说，数字证书其实是一个信任链的问题。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="Base64-编码">Base64 编码</h3>
-<hr>
-<p>  介绍：一种将 二进制数据 编码为 可见字符 的编码方法。简单来说就是用 4个字节的可见字符 代替是 3个字节数据 的编码过程。</p>
-<p>  意义：可以将二进制数据表达为文本信息，方便后续对二进制数据进行处理。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="数据区块填充，PKCS（Public-Key-Cryptography-Standards）">数据区块填充，PKCS（Public-Key Cryptography Standards）</h3>
-<hr>
-<p>  特别说明，PKCS是一系列公钥密码标准，里面具备很多的内容，其大概有15个标准，分别是pkcs1,pkcs2 … … pkcs14,pkcs15</p>
-<p>  从上面我们知道，现在常用的填充方法是：公钥加密标准（PKCS，Public-Key Cryptography Standards）里面的节选内容。其有很多填充类别，例如：PKCS1-padding节选, PKCS5-padding节选, PKCS7-padding节选，我们这里只讨论pkcs5和pkcs7。（注意，这些标准除了数据填充，还有其他定义内容。）</p>
-<p>  下面先介绍PKCS5-padding，先定义数据区块大小为SIZE，pkcs5和pkcs7的填充说明，下面以SIZE=8字节举例：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>要填充7个字节,那么填入的值就是0×07;</p>
-</li>
-<li class="lvl-2">
-<p>如果只填充１个字节，那么填入的值就是0×01;</p>
-</li>
-<li class="lvl-2">
-<p>数据恰好是8的倍数时还要补8个字节的0×08。</p>
-</li>
-</ul>
-<p>  从上面的PKCS5-padding，我们可以知道，这里需要数据区块固定为8字节。如果我们想给其他大小的数据区块做数据对齐，那么PKCS5-padding就不满足要求，因此就有PKCS7-padding的填充方法：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>PKCS7-padding的数据区块大小可以是：1-255字节。</p>
-</li>
-<li class="lvl-2">
-<p>其他的，PKCS7-padding填充原理和PKCS5一样。</p>
-</li>
-</ul>
-<p>  从上面可知，PKCS7-padding节选包含了PKCS5-padding节选，且适用性范围更加的广泛。</p>
-<p>  到了这里，我们就能够对AES128或者AES256做基于PKCS7-padding的16字节对齐或者32字节对齐的操作了。</p>
-<p>  这里的代码实现很简单，这里提供一种方法，大概就是：首先对消息进行强制扩大255字节，然后根据数据区块大小做填充即可，基本可以实现pkcs7填充的原理。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  其实，我们从上面的内容来看，能发现一些规律：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>由于信任链的存在，因此有了CA机构和数字证书，而数字证书与签名算法相关，而签名算法又与 非对称加密和散列函数强相关。</p>
-</li>
-<li class="lvl-2">
-<p>然后为了实现我们现在常见的加密系统，我们使用了：对称加密、非对称加密、散列函数、消息认证码和base64编码等手段。</p>
-</li>
-</ul>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="page-number current">2</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -4645,14 +4613,14 @@ out<span class="token operator">:</span>
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">286k</span>
+    <span title="站点总字数">289k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:19</span>
+    <span title="站点阅读时长">17:30</span>
   </span>
 </div>
 <div class="busuanzi-count">

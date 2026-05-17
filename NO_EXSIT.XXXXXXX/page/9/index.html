@@ -206,13 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">139</span>
+          <span class="site-state-item-count">140</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">92</span>
+        <span class="site-state-item-count">95</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -259,6 +259,336 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/04/04/blog_idx_059/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/04/04/blog_idx_059/" class="post-title-link" itemprop="url">关于C++ 多态实现技术的深度解析（vfptr,vftable）</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-04-04 17:05:21" itemprop="dateCreated datePublished" datetime="2018-04-04T17:05:21+08:00">2018-04-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.9k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-23 18:56:52
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=059） 
+&emsp;&emsp;本文发布于 2018-04-04 17:05:21，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=059） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  关于C<ins>的多态，我就不多说了，我理解的一句话就是：一个接口，多种实现（简称：一对多）。在C</ins>里面，多态的最重要的实现方法为继承，简单来说：就是基类提供接口，子类可以实现基类的接口，不同的子类就构成了基类接口的不同的实现。以上就是C<ins>课本上或者C</ins>原理上的常见的知识。</p>
+<p>  而今天这里所说明的是多态是怎么实现的，以及实现的详细方法。我个人认为：只有了解了这些东西后，我们才不会在多态中迷失自己的方向，导致代码稀烂。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="c-多态">c++ 多态</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="多态的实现">多态的实现</h5>
+<p>  多态的实现是通过一个指针数组实现的。此指针数组的一般声明如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//虚函数表</span>
+<span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span> vfptr<span class="token punctuation">;</span><span class="token comment">//此ptr指向一个void * 的数组</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>  说明: vfptr 变量的声明是C++编译器根据：当一个带有虚函数的类定义了一个实例时，编译器会自动在此类的前4bytes（32bit 系统）添加vfptr变量来实现多态。同时编译器会生成一个void *数组来存放实际接口方法地址（其实这里就已经实现了多态，也就是说：这里就已经定义好了这个实例可以调用哪些实际接口方法，例如是来至于基类还是子类等等），也就是虚函数表（vftable），此表是放在生成的可执行文件的数据段。</p>
+<p>  总结：这里有一些基本的习惯。</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>vfptr放在一个类的起始相关地址。</p>
+</li>
+<li class="lvl-2">
+<p>vftable中的方法按照继承顺序、接口声明顺序赋值。</p>
+</li>
+</ul>
+<p>  以上都是自己瞎扯的原理，看不懂也没有啥问题，毕竟我的语文水平不高，语言组织能力不行，直接跳过查看下面的实例分析。</p>
+<br/>
+<br/>
+<h5 id="多态的实现原理解析实例">多态的实现原理解析实例</h5>
+<pre class="line-numbers language-C++" data-language="C++"><code class="language-C++">class Base
+&#123;
+public:
+	Base() &#123;&#125;
+	~Base() &#123;&#125;
+	virtual void base1(void) &#x3D; 0;
+	virtual void base2(void) &#123;&#125;;
+	virtual void base3(void) &#123;&#125;;
+	int base_a &#x3D; 0;
+private:
+
+&#125;;
+class Base1
+&#123;
+public:
+	Base1() &#123;&#125;
+	~Base1() &#123;&#125;
+	virtual void base2(void) &#123;&#125;;
+	virtual void base3(void) &#123;&#125;;
+	int base_a &#x3D; 0;
+private:
+
+&#125;;
+
+class Derive:public Base
+&#123;
+public:
+	Derive() &#123;&#125;
+	~Derive() &#123;&#125;
+	virtual void base1(void) &#123;&#125;
+	virtual void base2(void) &#123;&#125;
+	int derive_a &#x3D; 1;
+private:
+
+&#125;;
+class Derive1 :public Base
+&#123;
+public:
+	Derive1() &#123;&#125;
+	~Derive1() &#123;&#125;
+	virtual void base1(void) &#123;&#125;
+	virtual void base2(void) &#123;&#125;
+	virtual void derive1(void) &#123;&#125;
+	virtual void derive2(void) &#123;&#125;
+	int derive_a &#x3D; 2;
+private:
+
+&#125;;
+
+class Derive2:public Derive1
+&#123;
+public:
+	Derive2() &#123;&#125;
+	~Derive2() &#123;&#125;
+	virtual void derive1(void) &#123;&#125;
+
+private:
+
+&#125;;
+
+int main()
+&#123;
+	Base1 b1;
+	Derive d1;
+	Derive1 dd1;
+	Derive2 ddd1;
+    return 0;
+&#125;
+
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="20200306-动态绑定的补充">20200306 动态绑定的补充</h5>
+<p><font color = red size = 4 > 关于派生对象地址赋值给基类指针 并使用基类指针调用派生类函数。源码如下：</font></p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/derive.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p><font color = red size = 4 >(20200326补充END)</font></p>
+<p>  以下是vs2015的调试分析截图：（若只想了解一下vfptr和vftable是个什么样子，只看此图并结合代码分析足以）</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/dbg.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p><font color = red  >友情提示：此图中关于ddd1的vfptr和我们想要的结果是不同的，原因和调试器相关，具体关于ddd1哪里有问题，若有需求，请看以下分析。</font></p>
+<br/>
+<br/>
+<h5 id="多态的实现原理解析实例（进阶版）">多态的实现原理解析实例（进阶版）</h5>
+<p>  同上一份代码，我们深入到汇编里面，就可以发现一些我们不知道的细节，关于这些汇编中的其他内容部分，若想了解，参考此文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011728480/article/details/79092194%E3%80%82">https://blog.csdn.net/u011728480/article/details/79092194。</a></p>
+<p>  这里我们只分析变量ddd1的生成过程。</p>
+<p>  用ida载入我们生成的exe文件。找到main函数中ddd1初始化入口如下：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/ida.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<br/>
+<br/>
+<h5 id="20200306-动态绑定的补充-2">20200306 动态绑定的补充</h5>
+<p><font color = red size = 4 >关于派生对象地址赋值给基类指针 并使用基类指针调用派生类函数。反汇编如下：</font></p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/ida1.png" alt="rep_img"/></center>
+    </div>
+</div>  
+<p><font color = red size = 4 >ddd1对象的vfptr如下：</font></p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/ida2.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p><font color = red size = 4 >可以发现动态绑定的时候，基类指针的vfptr已经指向了ddd1对象的vfptr。</font><br>
+<font color = red size = 4 >(20200326补充END)</font></p>
+<p>  这里我们跳转到call后面的地址查看Derive2的构造函数，先调用Derive1的构造函数，再给vfptr赋值。下图是构造函数汇编</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/ida3.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  下图是vfptr的赋值内容，也就是vftable是什么样子的</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/ida4.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  这里可以看到，其实此实例调用的是哪些方法（也就实现了多态），早已经在编译时就确定了，只是这里才赋值而已，所以可以说是动态绑定或者静态绑定。</p>
+<p>  下图为Derive1构造函数以及vftable值：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/ida5.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/ida6.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  下图为Base构造函数以及vftable的值：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/ida7.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_059/ida8.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  以上总结：我们可以发现vfptr经过了多次赋值的，不同的时间段，vfptr值不一样，所以在构造实例的时候，不同时段调用同一个接口，会有不同的方法。</p>
+<p><font color = red >同时也可以得出一个结论，每个接口的实现类都有一个虚函数表，包括接口类本身，这些虚函数表在编译时就确定了，只是vfptr赋值的时候，是在程序运行时确定的。</font></p>
+<p>  根据以上的分析，可以解决许多我们关于多态的疑问。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -3401,184 +3731,6 @@ file_path<span class="token punctuation">.</span><span class="token function">su
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2017/12/22/blog_idx_049/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/12/22/blog_idx_049/" class="post-title-link" itemprop="url">反编译和逆向出现:java.lang.VerifyError(新问题样本)</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-12-22 15:54:49" itemprop="dateCreated datePublished" datetime="2017-12-22T15:54:49+08:00">2017-12-22</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">安全</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>733</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky sky@sky-home.com
- * @LastEditTime: 2022-10-16 17:23:49
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=049） 
-&emsp;&emsp;本文发布于 2017-12-22 15:54:49，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=049） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  无</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  某日，遇到一个App，突然想来一发，于是，直接下到这个app的老一点的版本，用某自动脱壳机脱壳后，得到Dex文件。并通过工具（AndroidKiller）生成Smali文件（此文件不完整）</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="java-lang-VerifyError">java.lang.VerifyError</h3>
-<hr>
-<p>  首先，把Smali文件放回到我们反编译后的Apk文件目录去，修复相关的类目录。这时候，在通过工具，把整个工程重新编译生成Apk，是可以正常安装的，但是不能够正常打开，并且得到java.lang.VerifyError错误。</p>
-<p>  经过大量的搜索和整理，得到如下结论。</p>
-<p>    此错的原因为：由于smali指令序列不符合相关的规范（指令丢失，反编译失败了，或者指令反编译错误，得到了错误的smali指令。对于反编译失败，相关的反编译工具（AndroidKiller）可能会在当前字段出现标注，根据标注解决就好）。</p>
-<p>  网上现存的不规范的原因：</p>
-<ol>
-<li class="lvl-3">
-<p>寄存器使用数量和定义个数不一致（用脚本很容易出现此问题）</p>
-</li>
-<li class="lvl-3">
-<p>函数体不完整，丢失相关标识符.end method等</p>
-</li>
-</ol>
-<p><em><strong>java.lang.VerifyError 新问题样本</strong></em></p>
-<ol>
-<li class="lvl-3">
-<p>反编译出问题的东西大部分在构造函数，init()方法大部分都出现在缺少return-void</p>
-</li>
-<li class="lvl-3">
-<p>当前类继承的interface，父类为java object ，出现 没有调用java object - &gt; init()方法</p>
-</li>
-</ol>
-<p>  对于以上问题，其实相关工具会在smali文件里面存在 #disallowed odex opcode错误，直接搜索就可以解决。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/8/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/10/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -3603,14 +3755,14 @@ file_path<span class="token punctuation">.</span><span class="token function">su
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">286k</span>
+    <span title="站点总字数">289k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:19</span>
+    <span title="站点阅读时长">17:30</span>
   </span>
 </div>
 <div class="busuanzi-count">
