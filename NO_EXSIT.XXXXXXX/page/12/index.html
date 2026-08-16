@@ -206,18 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">140</span>
+          <span class="site-state-item-count">141</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">95</span>
+        <span class="site-state-item-count">97</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">222</span>
+        <span class="site-state-item-count">223</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -259,6 +259,209 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2016/12/01/blog_idx_030/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/12/01/blog_idx_030/" class="post-title-link" itemprop="url">Ubuntu(Linux) PyQt5 QtUIFile 转换为 PythonModule (pyuic.py/pyuic脚本)</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-12-01 17:16:41" itemprop="dateCreated datePublished" datetime="2016-12-01T17:16:41+08:00">2016-12-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GUI%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">GUI开发</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GUI%E5%BC%80%E5%8F%91/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/GUI%E5%BC%80%E5%8F%91/python/linux%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">linux开发</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>692</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-09-11 15:02:09
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=030） 
+&emsp;&emsp;本文发布于 2016-12-01 17:16:41，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=030） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="PyQt5">PyQt5</h3>
+<hr>
+<p>  在我的《PyQt5 Ubuntu 16.04/14.04 环境配置》（<a target="_blank" rel="noopener" href="https://sky-x.blog.csdn.net/article/details/53422190%EF%BC%89">https://sky-x.blog.csdn.net/article/details/53422190）</a> 中配置和测试了pyqt5，但是在我们实际开发GUI时，我们要借助QtCreator这个非常好的工具来画出我们UI的初始样子。</p>
+<p>  之后我们会得到一个UI文件，这时候我们需要借助PyQt5所带的一个工具Pyuic脚本将UI文件转换为PythonModule文件。</p>
+<p>  在我的教程安装之后，pyuic脚本位置在/usr/lib/python3/dist-packages/PyQt5/uic 目录。如图：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_030/pyuic.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">bash中执行：
+<span class="token builtin class-name">alias</span> <span class="token assign-left variable">pyuic5</span><span class="token operator">=</span><span class="token string">"python3 -m PyQt5.uic.pyuic"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>  这下，你就可以在bash中使用pyuic5 来转换ui文件为 pythonmodule</p>
+<p>  如图实例：<br>
+  QtCreator：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_030/qtcreator.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  pyuic转换:</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_030/pyuic_convert.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  form.py，module文件:</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_030/form_py.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  测试文件，<a target="_blank" rel="noopener" href="http://my.py">my.py</a>：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_030/my_py.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  最后效果：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_030/performance.png" alt="rep_img"/></center>
+    </div>
+</div> 
+<p>  所有文件打包下载：<a target="_blank" rel="noopener" href="http://download.csdn.net/detail/u011728480/9699105">http://download.csdn.net/detail/u011728480/9699105</a></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>无</p>
+<h3 id="参考文献">参考文献</h3>
+<p>无</p>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -2840,359 +3043,8 @@ socket()</p>
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2016/06/06/blog_idx_020/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2016/06/06/blog_idx_020/" class="post-title-link" itemprop="url">LinuxKernel 入侵式双向链表的设计，分析，使用</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2016-06-06 14:49:11" itemprop="dateCreated datePublished" datetime="2016-06-06T14:49:11+08:00">2016-06-06</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/linux%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">linux开发</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>1.2k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>5 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2022-04-17 19:20:55
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=020） 
-&emsp;&emsp;本文发布于 2016-06-06 14:49:11，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=020） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  无</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  无</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="入侵式链表">入侵式链表</h3>
-<hr>
-<p>  链表按照实现原理我分为两类，一是普通的链表，二是入侵式链表。（区别就是，链表结构体里面有没有数据）。由于我重写了Linux 链表的实现，部分东西被我更改，所以文中代码以我的实际代码为例。</p>
-<p>下面围绕几点来理解一下：</p>
-<p>  链表元素结构体声明：</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// </span>
-<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token class-name">y_list_head</span> <span class="token punctuation">&#123;</span>
-<span class="token keyword">struct</span> <span class="token class-name">y_list_head</span> <span class="token operator">*</span>next<span class="token punctuation">;</span>
-<span class="token keyword">struct</span> <span class="token class-name">y_list_head</span> <span class="token operator">*</span>prev<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span> Y_LISTHEAD<span class="token punctuation">;</span>
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  节点元素结构体声明：</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// </span>
-<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
-<span class="token keyword">int</span> a<span class="token punctuation">;</span>
-Y_LISTHEAD list<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span> test<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  链表的头节点（用于存放一个链表的逻辑头，由于链表是双向，每个节点都是头）：</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//declare a node for head of list .</span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">LIST_HEAD</span><span class="token expression"><span class="token punctuation">(</span>name<span class="token punctuation">)</span> </span><span class="token punctuation">\</span>
-	<span class="token expression">Y_LISTHEAD name <span class="token operator">=</span> <span class="token function">LIST_HEAD_INIT</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-<p>  这里为了展示例子，我申请了几个变量:</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c">test<span class="token operator">*</span> ptr_test<span class="token punctuation">;</span>
-Y_LISTHEAD <span class="token operator">*</span> pos<span class="token punctuation">;</span>
-test <span class="token operator">*</span> entry<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-<p>  为节点申请内存，并赋值</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c">ptr_test <span class="token operator">=</span> <span class="token punctuation">(</span>test <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>test<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-ptr_test<span class="token operator">-></span>a <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-<p>  现在节点创建完毕，开始加入到链表</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">/*
- * Insert a new entry between two known consecutive entries.
- *
- * This is only for internal list manipulation where we know
- * the prev/next entries already!
- */</span>
-<span class="token keyword">static</span> <span class="token keyword">inline</span> <span class="token keyword">void</span> <span class="token function">__list_add</span><span class="token punctuation">(</span>Y_LISTHEAD <span class="token operator">*</span>new<span class="token punctuation">,</span>
-                  Y_LISTHEAD <span class="token operator">*</span>prev<span class="token punctuation">,</span>
-                  Y_LISTHEAD <span class="token operator">*</span>next<span class="token punctuation">)</span>
-<span class="token punctuation">&#123;</span>
-    next<span class="token operator">-></span>prev <span class="token operator">=</span> new<span class="token punctuation">;</span>
-    new<span class="token operator">-></span>next <span class="token operator">=</span> next<span class="token punctuation">;</span>
-    new<span class="token operator">-></span>prev <span class="token operator">=</span> prev<span class="token punctuation">;</span>
-    prev<span class="token operator">-></span>next <span class="token operator">=</span> new<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
- 
-<span class="token comment">/**
- * list_add - add a new entry
- * @new: new entry to be added
- * @head: list head to add it after
- *
- * Insert a new entry after the specified head.
- * This is good for implementing stacks.
- */</span>
-<span class="token keyword">static</span> <span class="token keyword">inline</span> <span class="token keyword">void</span> <span class="token function">list_add</span><span class="token punctuation">(</span>Y_LISTHEAD <span class="token operator">*</span>new<span class="token punctuation">,</span> Y_LISTHEAD <span class="token operator">*</span>head<span class="token punctuation">)</span>
-<span class="token punctuation">&#123;</span>
-    <span class="token function">__list_add</span><span class="token punctuation">(</span>new<span class="token punctuation">,</span> head<span class="token punctuation">,</span> head<span class="token operator">-></span>next<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
-
-<span class="token function">LIST_ADD</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ptr_test<span class="token operator">-></span>list<span class="token punctuation">,</span><span class="token operator">&amp;</span>test_list<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  同理，在添加几个。（详情见末尾例子）,然后，遍历链表并输出：</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// 这里解释一下　GET_ENTRY（）宏函数</span>
-<span class="token comment">//caculate offset-value about member to start of the struct </span>
-<span class="token comment">//计算结构体地址和结构体某成员的地址差值，也就是偏移值</span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">OFFSET</span><span class="token expression"><span class="token punctuation">(</span>type<span class="token punctuation">,</span> member<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">int</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span><span class="token punctuation">(</span><span class="token punctuation">(</span>type <span class="token operator">*</span><span class="token punctuation">)</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token operator">-></span>member<span class="token punctuation">)</span></span></span>
-
-<span class="token comment">//第一行声明了一个结构体元素类型的指针</span>
-<span class="token comment">//第二行通过偏移值计算结构体地址，这样就可以得到结构体内所有元素的值</span>
-<span class="token comment">//第三个参数member 为节点元素中，链表变量名</span>
-<span class="token comment">//第二个参数为节点元素类型名</span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">GET_ENTRY</span><span class="token expression"><span class="token punctuation">(</span>ptr<span class="token punctuation">,</span> type<span class="token punctuation">,</span> member<span class="token punctuation">)</span> </span><span class="token punctuation">\</span>
-<span class="token expression"><span class="token punctuation">(</span><span class="token punctuation">&#123;</span>   				</span><span class="token punctuation">\</span>
-    <span class="token expression"><span class="token keyword">const</span> <span class="token keyword">typeof</span><span class="token punctuation">(</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>type <span class="token operator">*</span><span class="token punctuation">)</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token operator">-></span>member <span class="token punctuation">)</span> <span class="token operator">*</span>__mptr <span class="token operator">=</span> <span class="token punctuation">(</span>ptr<span class="token punctuation">)</span><span class="token punctuation">;</span>	</span><span class="token punctuation">\</span>
-    <span class="token expression"><span class="token punctuation">(</span>type <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>__mptr <span class="token operator">-</span> <span class="token function">OFFSET</span><span class="token punctuation">(</span>type<span class="token punctuation">,</span>member<span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">;</span>		</span><span class="token punctuation">\</span>
-<span class="token expression"><span class="token punctuation">&#125;</span><span class="token punctuation">)</span></span></span>
-<span class="token comment">/**
- * list_for_each iterate over a list
- * @pos:the &amp;struct list_head to use as a loop cursor.
- * @head:the head for your list.
- */</span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">LIST_FOR_EACH</span><span class="token expression"><span class="token punctuation">(</span>pos<span class="token punctuation">,</span> head<span class="token punctuation">)</span> </span><span class="token punctuation">\</span>
-    <span class="token expression"><span class="token keyword">for</span> <span class="token punctuation">(</span>pos <span class="token operator">=</span> <span class="token punctuation">(</span>head<span class="token punctuation">)</span><span class="token operator">-></span>next<span class="token punctuation">;</span> pos <span class="token operator">!=</span> <span class="token punctuation">(</span>head<span class="token punctuation">)</span><span class="token punctuation">;</span> pos <span class="token operator">=</span> pos<span class="token operator">-></span>next<span class="token punctuation">)</span></span></span>
-
-<span class="token function">LIST_FOR_EACH</span><span class="token punctuation">(</span>pos<span class="token punctuation">,</span><span class="token operator">&amp;</span>test_list<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-		
-	entry <span class="token operator">=</span> <span class="token function">GET_ENTRY</span><span class="token punctuation">(</span>pos<span class="token punctuation">,</span>test<span class="token punctuation">,</span>list<span class="token punctuation">)</span><span class="token punctuation">;</span>	
-	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span>entry<span class="token operator">-></span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
-<span class="token comment">// 同理,  LIST_DEL_ENTRY()之类的宏定义都是同样的实现。</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  实例:list_test.c</p>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">/*
-*	FileName:list_test.c
-*	Version: 1.0
-*	Description: The file test my list if it is right
-*	Created On:2016-5-15
-*	Modified date:
-*	Author:Sky
-*
-*/</span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"Y_List/Y_List.h"</span></span>
- 
-<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
-	<span class="token keyword">int</span> a<span class="token punctuation">;</span>
-	Y_LISTHEAD list<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span> test<span class="token punctuation">;</span>
- 
-test<span class="token operator">*</span> ptr_test<span class="token punctuation">;</span>
- 
-<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span> argv<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-	
-	<span class="token comment">//test head;</span>
- 
-	<span class="token function">LIST_HEAD</span><span class="token punctuation">(</span>test_list<span class="token punctuation">)</span><span class="token punctuation">;</span>
-	Y_LISTHEAD <span class="token operator">*</span> pos<span class="token punctuation">;</span>
-	test <span class="token operator">*</span> entry<span class="token punctuation">;</span>
-	
-	<span class="token comment">//INIT_LIST_HEAD(head->list);</span>
-	
-	
-	ptr_test <span class="token operator">=</span> <span class="token punctuation">(</span>test <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>test<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	ptr_test<span class="token operator">-></span>a <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
-	
-	<span class="token function">LIST_ADD</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ptr_test<span class="token operator">-></span>list<span class="token punctuation">,</span><span class="token operator">&amp;</span>test_list<span class="token punctuation">)</span><span class="token punctuation">;</span>
- 
-	ptr_test <span class="token operator">=</span> <span class="token punctuation">(</span>test <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>test<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	ptr_test<span class="token operator">-></span>a <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
-	
-	<span class="token function">LIST_ADD_TAIL</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ptr_test<span class="token operator">-></span>list<span class="token punctuation">,</span><span class="token operator">&amp;</span>test_list<span class="token punctuation">)</span><span class="token punctuation">;</span>
- 
-	ptr_test <span class="token operator">=</span> <span class="token punctuation">(</span>test <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>test<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	ptr_test<span class="token operator">-></span>a <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
-	
-	<span class="token function">LIST_ADD</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ptr_test<span class="token operator">-></span>list<span class="token punctuation">,</span><span class="token operator">&amp;</span>test_list<span class="token punctuation">)</span><span class="token punctuation">;</span>
- 
-	ptr_test <span class="token operator">=</span> <span class="token punctuation">(</span>test <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>test<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	ptr_test<span class="token operator">-></span>a <span class="token operator">=</span> <span class="token number">8</span><span class="token punctuation">;</span>
-	
-	<span class="token function">LIST_ADD_TAIL</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ptr_test<span class="token operator">-></span>list<span class="token punctuation">,</span><span class="token operator">&amp;</span>test_list<span class="token punctuation">)</span><span class="token punctuation">;</span>
- 
- 
-	<span class="token function">LIST_FOR_EACH</span><span class="token punctuation">(</span>pos<span class="token punctuation">,</span><span class="token operator">&amp;</span>test_list<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-		
-		entry <span class="token operator">=</span> <span class="token function">GET_ENTRY</span><span class="token punctuation">(</span>pos<span class="token punctuation">,</span>test<span class="token punctuation">,</span>list<span class="token punctuation">)</span><span class="token punctuation">;</span>	
-		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span>entry<span class="token operator">-></span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token punctuation">&#125;</span>
- 
- 
-	<span class="token function">LIST_DEL_ENTRY</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token punctuation">(</span>ptr_test<span class="token operator">-></span>list<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
- 
- 
-	<span class="token function">LIST_FOR_EACH</span><span class="token punctuation">(</span>pos<span class="token punctuation">,</span><span class="token operator">&amp;</span>test_list<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-		
-		entry <span class="token operator">=</span> <span class="token function">GET_ENTRY</span><span class="token punctuation">(</span>pos<span class="token punctuation">,</span>test<span class="token punctuation">,</span>list<span class="token punctuation">)</span><span class="token punctuation">;</span>	
-		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span>entry<span class="token operator">-></span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token punctuation">&#125;</span>
- 
-	
-	<span class="token function">LIST_FOR_EACH</span><span class="token punctuation">(</span>pos<span class="token punctuation">,</span><span class="token operator">&amp;</span>test_list<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-		
-		entry <span class="token operator">=</span> <span class="token function">GET_ENTRY</span><span class="token punctuation">(</span>pos<span class="token punctuation">,</span>test<span class="token punctuation">,</span>list<span class="token punctuation">)</span><span class="token punctuation">;</span>
-		<span class="token function">free</span><span class="token punctuation">(</span>entry<span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token punctuation">&#125;</span>
- 
- 
-	<span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
-
-<span class="token comment">// LIST_ADD在给出地址后添加一个元素</span>
-<span class="token comment">// LIST_ADD_TAIL在给出地址前添加一个元素</span>
-<span class="token comment">// LIST_DEL_ENTRY删除指定地址的节点</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  运行截图：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_020/ret.png" alt="rep_img"/></center>
-    </div>
-</div>   
-<p>  其实链表只有几个部分要主要：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>链表结构体</p>
-</li>
-<li class="lvl-2">
-<p>节点结构体</p>
-</li>
-<li class="lvl-2">
-<p>链表头</p>
-</li>
-<li class="lvl-2">
-<p>链表增删改查</p>
-</li>
-</ul>
-<p>  而在Linux的链表实现中，要注意下面这个东西，怎么确定的节点结构体地址，这是LInux链表实现的核心。搞清楚了这个，Ｌｉｎｕｘ链表你就会了GET_ENTRY（）</p>
-<p>  如果希望查看上面项目代码，移步:<a target="_blank" rel="noopener" href="https://github.com/flyinskyin2013/Y_LINUX_FRAME/tree/master/include/Y_List">https://github.com/flyinskyin2013/Y_LINUX_FRAME/tree/master/include/Y_List</a></p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/11/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/13/">13</a><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/13/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/11/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/13/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
@@ -3215,14 +3067,14 @@ test<span class="token operator">*</span> ptr_test<span class="token punctuation
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">289k</span>
+    <span title="站点总字数">296k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:30</span>
+    <span title="站点阅读时长">17:56</span>
   </span>
 </div>
 <div class="busuanzi-count">

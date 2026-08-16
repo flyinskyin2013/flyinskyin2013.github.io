@@ -206,18 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">140</span>
+          <span class="site-state-item-count">141</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">95</span>
+        <span class="site-state-item-count">97</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">222</span>
+        <span class="site-state-item-count">223</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -259,6 +259,226 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2017/12/29/blog_idx_050/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2017/12/29/blog_idx_050/" class="post-title-link" itemprop="url">terminate called after throwing an instance of 'std::regex_error'（C++11）</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-12-29 14:31:11" itemprop="dateCreated datePublished" datetime="2017-12-29T14:31:11+08:00">2017-12-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>883</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-16 17:29:00
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=050） 
+&emsp;&emsp;本文发布于 2017-12-29 14:31:11，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=050） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="std-regex-error">std::regex_error</h3>
+<hr>
+<p>  最近修改一个程序，增加了一些功能，为了方便移植，要用到C++11的正则表达式(正则用起来顺手)。这里我就想说明的是：TMD，GCC 语法实现了，库没有写完。。。QAQ，WC。什么不说了。</p>
+<p>  目标：得到url(类似<a target="_blank" rel="noopener" href="http://1.1.1.1:9001/group1/M00/00/37/wKgfdVoNSTKAKXAzAAD25Sg6ZTE5747.gz">http://1.1.1.1:9001/group1/M00/00/37/wKgfdVoNSTKAKXAzAAD25Sg6ZTE5747.gz</a>)中的文件名（wKgfdVoNSTKAKXAzAAD25Sg6ZTE5747.gz）。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">	<span class="token comment">/*file_path = 类似http://1.1.1.1:9001/group1/M00/00/37/wKgfdVoNSTKAKXAzAAD25Sg6ZTE5747.gz
+*/</span>
+    std<span class="token double-colon punctuation">::</span>string Target_FileName<span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>string <span class="token function">pattern</span><span class="token punctuation">(</span><span class="token string">".*/([^/]+\\.[a-zA-Z]+)"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>regex <span class="token function">re</span><span class="token punctuation">(</span>pattern<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>match_results<span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token double-colon punctuation">::</span>const_iterator<span class="token operator">></span> result<span class="token punctuation">;</span>
+    <span class="token comment">//std::smatch == std::match_results&lt;std::string::const_iterator></span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token operator">!</span>std<span class="token double-colon punctuation">::</span><span class="token function">regex_match</span><span class="token punctuation">(</span>file_path<span class="token punctuation">,</span>result<span class="token punctuation">,</span>re<span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+
+        <span class="token function">yUpgradeLog_Msg</span><span class="token punctuation">(</span><span class="token string">"std::regex_match false."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">yUpgradeLog_Msg</span><span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    Target_FileName <span class="token operator">=</span> result<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  得到了下面如图的问题：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_050/problem.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  于是我去网上找答案，问题出在我构造正则表达式的时候。也就是这句中，std::string pattern(“.*/([^/]+\.[a-zA-Z]+)”);于是我重新修改了表达式N次还是不行，没有办法了，只有去网络海洋去在瞧一瞧看一看。</p>
+<p>  最终，我看到了一个消息，给了我一点提示，文中说，可能和GCC版本有关，如果要正常使用C++11的正则表达式，需要注意GCC版本必须为4.9+，WC，TMD，赶紧去看看GCC版本。</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_050/gcc.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  然后赶紧使用5.4的gcc再试试如下的代码，过了。我真是无F*uck说。</p>
+<pre class="line-numbers language-C++" data-language="C++"><code class="language-C++">#include &lt;regex&gt;
+#include &lt;iostream&gt;
+int main()&#123;
+
+	
+    std::string pattern(&quot;.*&#x2F;([^&#x2F;]+\\.[a-zA-Z]+)&quot;);
+    std::regex re(pattern);
+    std::match_results&lt;std::string::const_iterator&gt; result;
+    &#x2F;&#x2F;std::smatch &#x3D;&#x3D; std::match_results&lt;std::string::const_iterator&gt;
+	std::string t &#x3D; &quot;http:&#x2F;&#x2F;1.1.1.1:9001&#x2F;group1&#x2F;M00&#x2F;00&#x2F;37&#x2F;wKgfdVoNSTKAKXAzAAD25Sg6ZTE5747.gz&quot;;
+    if ( !std::regex_match(t,result,re) )&#123;
+
+        std::cout&lt;&lt;&quot;std::regex_match false.&quot;;
+        return -1;
+    &#125;
+   
+ 	std::cout&lt;&lt;&quot;result is &quot;&lt;&lt;result[1];
+	return 0;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_050/gcc1.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_050/ret.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  最后在说一下不用正则怎么实现的吧！(其实，下面的还要简单点，感觉自己  大写的  ZZ  了，不过涨姿势了。)</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">file_path<span class="token operator">=</span><span class="token string">"http://1.1.1.1:9001/group1/M00/00/37/wKgfdVoNSTKAKXAzAAD25Sg6ZTE5747.gz"</span><span class="token punctuation">;</span>
+file_path<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>file_path<span class="token punctuation">.</span><span class="token function">rfind</span><span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">)</span><span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -2658,252 +2878,8 @@ example：
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2017/09/07/blog_idx_040/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2017/09/07/blog_idx_040/" class="post-title-link" itemprop="url">thttpd 2.27（最新）移植指南（官方安装脚本好多坑，我只想说）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2017-09-07 11:05:41" itemprop="dateCreated datePublished" datetime="2017-09-07T11:05:41+08:00">2017-09-07</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/linux%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">linux开发</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>821</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky sky@sky-home.com
- * @LastEditTime: 2022-10-16 18:18:10
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=040） 
-&emsp;&emsp;本文发布于 2017-09-07 11:05:41，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=040） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  Date:Thu Sep  7 10:38:53 CST 2017<br>
-  Version:Linux  3.10.40 #43 SMP PREEMPT Thu Aug 17 11:42:21 CST 2017 armv7l armv7l armv7l GNU/Linux</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  无</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="httpd">httpd</h3>
-<hr>
-<p>  最近需要在板子上移植一个小型的web服务器，所以选用了thttpd这个小玩意儿。(下文中出现的A代表目标路径)</p>
-<p>  这类带configure脚本的程序都是一个流程。直接:</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">./configure <span class="token parameter variable">--prefix</span><span class="token operator">=</span>A
-<span class="token function">make</span> <span class="token parameter variable">-j</span> <span class="token number">4</span>
-<span class="token function">make</span> <span class="token function">install</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-<p>  在最后一步，问题多的爆炸（不知道是不是我指定了特殊安装路径造成的）。</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无www用户组，直接sudo groupadd www添加</p>
-</li>
-</ul>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_040/www.png" alt="rep_img"/></center>
-    </div>
-</div>  
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>目标目录无man1目录，直接sudo mkdir -p A/man/man1</p>
-</li>
-</ul>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_040/man1.png" alt="rep_img"/></center>
-    </div>
-</div> 
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>目标目录无thttpd.conf文件，直接从源码中带的拷贝到当前目录</p>
-</li>
-</ul>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_040/httpd.png" alt="rep_img"/></center>
-    </div>
-</div>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>建立网页资源目录,并写入一个Index.html文件</p>
-</li>
-</ul>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">mkdir</span> A/html 
-<span class="token function">sudo</span> <span class="token function">chmod</span> +755 html
-<span class="token builtin class-name">echo</span> <span class="token string">"Hello Sky Hello World"</span> <span class="token operator">>></span> html/index.html
-<span class="token function">sudo</span> <span class="token function">chmod</span> +644 html/index.html<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无httpd用户，sudo useradd httpd</p>
-</li>
-<li class="lvl-2">
-<p>改一下端口，80口可能随时被占用了。（thttp.conf）</p>
-</li>
-</ul>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_040/port.png" alt="rep_img"/></center>
-    </div>
-</div>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>改目标资源网页目录（thttp.conf）</p>
-</li>
-</ul>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_040/dir.png" alt="rep_img"/></center>
-    </div>
-</div>
-<p>  到这里坑填的差不多了，直接root用户下,</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">./thttpd <span class="token parameter variable">-C</span> thttpd.conf
-<span class="token function">ps</span> <span class="token parameter variable">-aux</span> <span class="token operator">|</span> <span class="token function">grep</span> thttpd看一下是否正常启动<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_040/httpd1.png" alt="rep_img"/></center>
-    </div>
-</div>
-<p>  最后看效果：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_040/result.png" alt="rep_img"/></center>
-    </div>
-</div>
-<p>  题外话，CGI这类的配置网上主流的教程可以用</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/9/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/11/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/9/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/11/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
@@ -2926,14 +2902,14 @@ example：
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">289k</span>
+    <span title="站点总字数">296k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:30</span>
+    <span title="站点阅读时长">17:56</span>
   </span>
 </div>
 <div class="busuanzi-count">

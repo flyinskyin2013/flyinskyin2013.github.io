@@ -206,18 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">140</span>
+          <span class="site-state-item-count">141</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">95</span>
+        <span class="site-state-item-count">97</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">222</span>
+        <span class="site-state-item-count">223</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -259,6 +259,243 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2019/12/20/blog_idx_090/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2019/12/20/blog_idx_090/" class="post-title-link" itemprop="url">软件开发、持续集成（CI）、持续交付(CD)、持续部署（CD） 和 版本管理(Version Control) 的理解和思考</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-12-20 16:52:54" itemprop="dateCreated datePublished" datetime="2019-12-20T16:52:54+08:00">2019-12-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B8%B8%E8%AF%86/" itemprop="url" rel="index"><span itemprop="name">常识</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>8 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-12-31 10:39:57
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=090） 
+&emsp;&emsp;本文发布于 2019-12-20 16:52:54，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=090） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  软件开发，水很深。</p>
+<p>  做了两年有余的攻城狮，做了代码开发，技术框架搭建，环境搭建，项目管理，用户沟通等工作，我从代码开发者的角度来看，我们的写的内容到用户实际使用往往中间有许多的内容的，作为开发者，千万别人为自己写的代码就是整个项目周期的全部，其实code部分只占很少的时间，从code后到交付给用户使用的中间部分才是非常大的一个时间占比。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="软件开发思考">软件开发思考</h3>
+<hr>
+<p>  在学校里面，当我们学习软件工程这门课时，教授的内容是比较传统的软件开发流程，它们大概是如下的流程：</p>
+<ol>
+<li class="lvl-4">
+<p>获取到大致项目需求</p>
+</li>
+<li class="lvl-4">
+<p>需求评估</p>
+</li>
+<li class="lvl-4">
+<p>需求文档整理</p>
+</li>
+<li class="lvl-4">
+<p>概要设计（技术框架设计）</p>
+</li>
+<li class="lvl-4">
+<p>编码</p>
+</li>
+<li class="lvl-4">
+<p>测试</p>
+</li>
+<li class="lvl-4">
+<p>交付</p>
+</li>
+</ol>
+<p>  当交付给用户后，实际情况是不可能一次性交付成功的，都会涉及到相关的需求细化和变更，于是又要重复5-7的步骤。</p>
+<p>  到了实际工作中后，会出现一种现象，项目交付的时间尽可能短，项目需求变更和交付时间也需要尽可能的短，于是就出现了传统按部就班的开发模式不能够完成相关的项目，于是出现了一些快速开发的方法，如敏捷开发。</p>
+<p>  在实际过程中，敏捷开发只是加速开发迭代部分，如果没有控制好，就会出现开发速度加快了，但是测试，交付会出现问题，为啥会出现呢？其实很简单，就是都是独立串行的，这会导致从整体看，项目开发时间拖长。</p>
+<p>  为了解决类似的问题，又提出了类似Devops的说法，就是大家都坐一起，相互依赖的做事，因为都是站在整体考虑的，所以可以对整个流程（开发、测试、交付）的情况进行协调，效率会比较好。</p>
+<p>  为了把上述的问题处理好，我们必须要引入一些工具（VCS,CI,CD,CD）来帮助我们做事，否则是处理不好的这些事的，就会出现：要不效率低，能完成。要不效率高，就是容易出错。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="版本管理系统（Version-Control-System）">版本管理系统（Version Control System）</h3>
+<hr>
+<p>  版本管理系统，这个不用介绍了，大家平常工作中都会用，常用的有svn和git，如果没有接触过，有兴趣的可以多去网上找找资料学习学习，它们可以提供代码管理、溯源等功能。</p>
+<p>  版本管理系统除了本身的属性外，它自身带的一些特性可以用来做一些其他的事情，比如它的push事件可以用来触发一些其他的工作。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="持续集成（Continuous-Integration）">持续集成（Continuous Integration）</h3>
+<hr>
+<p>  持续集成其实对于开发者来说，是很简单的一件事情。就相当于你code完，然后手动编译，测试这样的一个流程。平常比如你用vs写了一个程序，然后你右键编译，然后f5运行测试，最后到相应的目录去打包发布程序。这种方式在软件规模比较小的时候，完全可以采用，流程可控的，当软件规模过大，而且需要持续维护修改时，这种方式会让人炸裂的。</p>
+<p>  所以持续集成简单的归纳为通过一些工具来自动化编译，单元测试，并生成相关的报告。至于什么时候自动开始编译，这里就是上文说的VCS的相关事件来触发就行。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="持续交付（Continuous-Delivery）">持续交付（Continuous Delivery）</h3>
+<hr>
+<p>  持续交付其实由相关QA质量保证团队来手动或者自动的方式，检测刚刚持续集成的程序版本，在模拟生产环境下，是否能够正常工作。</p>
+<p>  这里强调的还是内部测试，只是相关测试更贴近于实际生产环境。注意这里没有部署到生产环境。对于很多公司来说，其实QA软件部门是等于没有的。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="持续部署（Continuous-Deployment）">持续部署（Continuous Deployment）</h3>
+<hr>
+<p>  持续部署就是通过一些工具，自动化的把经过单元测试，QA测试后，打包，自动化部署到生产环境这么一个过程。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="关于ci，cd，cd，vcs的说明">关于ci，cd，cd，vcs的说明</h3>
+<hr>
+<p>  其实就以上而言，你可以直接认为就是，使用工具，自动化从vcs拉取代码，自动化编译测试程序，（半）自动化QA保证，自动化部署程序到生产环境这么一个过程。这里借助了很多自动化工具，大大节约了程序多次迭代的时间。所以对于软件开发来说，哪怕是敏捷开发，devops等模式都可以很好的建立起来。</p>
+<p>  但是不是说以上的就是最好的呢？因为在软件第一次发布的时候，如果借用以上的自动化流程，需要一个人或者团队来建立这个自动化逻辑，这是比较烦的一件事情，所以如果软件迭代次数少，规模不大，不要硬搬硬套上述整个流程，实在是不合适。但是里面的vcs，我还是希望每个项目都能够用起来，真的很不错。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Jenkins-，-Travis-，Github-Action-等ci，cd工具说明">Jenkins ， Travis  ，Github Action 等ci，cd工具说明</h3>
+<hr>
+<p>  这些工具是我用过的，世界上还有许多这样的工具，看个人喜好了。这里要对这些工具分一个类，按照他们的部署位置分一下，一种是需要自己搭建相关服务的，并完成cicd的事情，一种是自己提供相关配置文件（yml），由云端给你解析这个配置文件并完成相关功能。</p>
+<p>  这里Jenkins是属于需要自己搭建服务的，需要自己定义相关的流程并完成cicd的事情。</p>
+<p>  Travis，GitHub Action这种是输入云端的功能，基本上算是属于SaaS，你只需要提供遵循相关语法的配置文件，它们就会自动完成你定义的流程。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  总结</p>
+<p>  合适的事情，选择合适的工具。不是所有的情况都能够把上面的整套给怼到团队中去，但是整个软件开发的流程和内容还是值得我们大家思考和借鉴的。</p>
+<p>  比如我们的团队就引入了git和jenkins就够了，能够做简单的版本管理和基本的软件集成测试。其他的手动介入性价比比较好。</p>
+<p>  比如我自己封装的一些开源小功能，我引入git，travis， github action就已经足够了。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -3988,274 +4225,8 @@ error<span class="token operator">:</span>
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2019/02/14/blog_idx_080/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2019/02/14/blog_idx_080/" class="post-title-link" itemprop="url">android ndk生成第三方库的so方法(ndk-build，Application.mk，Android.mk)</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2019-02-14 15:40:13" itemprop="dateCreated datePublished" datetime="2019-02-14T15:40:13+08:00">2019-02-14</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>1.6k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>6 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky sky@sky-home.com
- * @LastEditTime: 2022-12-30 21:32:57
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=080） 
-&emsp;&emsp;本文发布于 2019-02-14 15:40:13，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=080） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  无</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  本文适合至少知道makefile，jni，ndk，gcc基本编译知识是什么鬼东西的人阅读。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="背景">背景</h3>
-<hr>
-<p>  以前，关于android中使用jni相关的东西的时候(jni头文件生成，jni的so文件的生成)，我太依赖与as工具了。导致了，什么都需要ide来完成，平常这么用的时候，其实是没有什么毛病的。但是比如说你要发布一个自己封装的库时候，自己在ide上配置然后编译其实是没有什么问题的，但是你把as工程发给别人的时候，总会遇到这样那样的问题，很烦。于是想着把生成android app使用的so独立出来，方便我们查找错误，同时也加深了自己对于android ndk的理解。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="NDK">NDK</h3>
-<hr>
-<p>  ndk 是android提供的原生开发包。它可以让android app可以利用c和c<ins>的库等等。在我们安装的android sdk中，其实是就包含了ndk的内容，可以说ndk 部分内容是android系统可以正常运行的基石,因为在android 系统中，很多内容不适合使用java来开发，所以只能通过java调用c和c</ins>的方式来实现相应的内容。</p>
-<p>  本文也是按照android开发者网站的ndk相关文档进行学习总结，同时也贴出一些基本错误方便排查。(<a target="_blank" rel="noopener" href="https://developer.android.google.cn/ndk/guides/">https://developer.android.google.cn/ndk/guides/</a>)</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="ndk-build-脚本">ndk-build 脚本</h3>
-<hr>
-<p>  按照官方文档的说法：ndk-build 这个脚本在ndk r4的时候就存在了。它的主要作用就是初始化很多内容，然后执行gnu-make 来编译ndk部分的源码。</p>
-<p>  其核心执行的命令官网也给出来了：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">GNUMAKE <span class="token parameter variable">-f</span> <span class="token operator">&lt;</span>ndk<span class="token operator">></span>/build/core/build-local.mk <span class="token operator">&lt;</span>parameters<span class="token operator">></span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p>  这里我们其实也知道了，要成功使用这个脚本必须安装gnu-make （还必须是3.81级以上的版本）</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="Android-mk文件">Android.mk文件</h3>
-<hr>
-<p>  首先我们要明白，Android.mk只是一个makefile片段，这个片段中定义相关变量，然后被make命令使用和解析，我们只需要按照别人规定好的方法填写相应变量的值即可。</p>
-<p>  这里我主要使用了最基本的一些变量,同时提供相应的注释解释，如果要查看完整说明，请参考<a target="_blank" rel="noopener" href="https://developer.android.google.cn/ndk/guides/%E4%B8%ADandroid.mk%E9%83%A8%E5%88%86%E5%86%85%E5%AE%B9%EF%BC%8C%E5%AE%9E%E4%BE%8B%E5%A6%82%E4%B8%8B%EF%BC%9A">https://developer.android.google.cn/ndk/guides/中android.mk部分内容，实例如下：</a></p>
-<pre class="line-numbers language-makefile" data-language="makefile"><code class="language-makefile">LOCAL_PATH <span class="token operator">:=</span> <span class="token variable">$</span><span class="token punctuation">(</span><span class="token function">call</span> my-dir<span class="token punctuation">)</span>
-<span class="token comment">#这个LOCAL_PATH变量存储的是当前文件所在目录，是通过调用my-dir这个函数实现的</span>
-
-<span class="token keyword">include</span> <span class="token variable">$</span><span class="token punctuation">(</span>CLEAR_VARS<span class="token punctuation">)</span>
-<span class="token comment">#CLEAR_VARS是一个特殊的makefile文件，其中清空了许多变量的值</span>
-
-LOCAL_MODULE <span class="token operator">:=</span> android-shmem
-<span class="token comment">#LOCAL_MODULE填写的是你要生成的so的库名字的核心部分，这里生成的库名字为：libandroid-shmem.so</span>
-
-LOCAL_SRC_FILES <span class="token operator">:=</span> shmem.c
-<span class="token comment">#LOCAL_SRC_FILES填写你要编译到so的源文件名字</span>
-
-<span class="token keyword">include</span> <span class="token variable">$</span><span class="token punctuation">(</span>BUILD_SHARED_LIBRARY<span class="token punctuation">)</span>
-<span class="token comment">#BUILD_SHARED_LIBRARY指向一个特殊的makefile文件，将会收集以上的变量信息，然后生成动态库。</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="Application-mk文件">Application.mk文件</h3>
-<hr>
-<p>  这个文件也是一个makefile文件，</p>
-<p>  我这里也列出一个实例来说明：</p>
-<pre class="line-numbers language-makefile" data-language="makefile"><code class="language-makefile">APP_CFLAGS <span class="token operator">+=</span> -std<span class="token operator">=</span>c99
-<span class="token comment">#做或者c++编程的都应该知道编译器编译参数设置</span>
-APP_CPPFLAGS <span class="token operator">+=</span>
-<span class="token comment">#做或者c++编程的都应该知道编译器编译参数设置</span>
-APP_LDFLAGS <span class="token operator">+=</span> -llog
-<span class="token comment">#做或者c++编程的都应该知道编译器链接参数设置，这里是填写依赖了哪些动态库</span>
-APP_STL <span class="token operator">+=</span>
-<span class="token comment">#生成 对应 某一运行时库的动态库文件</span>
-
-APP_PIE <span class="token operator">=</span> true
-<span class="token comment"># 生成位置独立的代码，</span>
-
-APP_ABI <span class="token operator">=</span> armeabi-v7a
-<span class="token comment">#这个变量我们会经常遇到，主要是指定app或者说so运行的cpu指令集。</span>
-
-APP_PLATFORM <span class="token operator">=</span> android-21
-<span class="token comment">#这个对应的android版本号</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  这里的APP_ABI的内容对于我们来说特别重要，我这里把官网的内容搬过来了：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">基于 ARMv5TE的设备硬件（采用软件浮点运算）：APP_ABI :<span class="token operator">=</span> armeabi（兼容性最好，浮点运算性能差劲）
-基于 ARMv7 的设备上的硬件 FPU 指令	APP_ABI :<span class="token operator">=</span> armeabi-v7a
-ARMv8 AArch64	APP_ABI :<span class="token operator">=</span> arm64-v8a
-IA-32	APP_ABI :<span class="token operator">=</span> x86
-Intel64	APP_ABI :<span class="token operator">=</span> x86_64
-MIPS32	APP_ABI :<span class="token operator">=</span> mips
-MIPS64 <span class="token punctuation">(</span>r6<span class="token punctuation">)</span>	APP_ABI :<span class="token operator">=</span> mips64
-所有支持的指令集	APP_ABI :<span class="token operator">=</span> all<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="使用实例">使用实例</h3>
-<hr>
-<p>  如果直接运行ndk-build会报如下错误：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>Android NDK: Could not find application project directory !</p>
-</li>
-<li class="lvl-2">
-<p>Android NDK: Please define the NDK_PROJECT_PATH variable to point to it.</p>
-</li>
-</ul>
-<p>  提示我们有个变量没有设置，我们设置上，后续还会提示其他的问题，我们一并设置，</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">ndk-build <span class="token assign-left variable">NDK_PROJECT_PATH</span><span class="token operator">=</span>. <span class="token assign-left variable">APP_BUILD_SCRIPT</span><span class="token operator">=</span>./Android.mk <span class="token assign-left variable">NDK_APPLICATION_MK</span><span class="token operator">=</span>./Application.mk<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>NDK_PROJECT_PATH 对应项目路径</p>
-</li>
-<li class="lvl-2">
-<p>APP_BUILD_SCRIPT 对应Android.mk路径，这个变量有默认值，具体参考官网。</p>
-</li>
-<li class="lvl-2">
-<p>NDK_APPLICATION_MK 对应Applicaiton.mk路径</p>
-</li>
-</ul>
-<p>  结果：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_080/result.png" alt="rep_img"/></center>
-    </div>
-</div>    
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  总结</p>
-<p>  文中只是介绍了非常基础的内容，如果需要一些骚操作，可能就会用到一些其他变量，对于这些内容，请参考文中提到的android开发者官网。</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/7/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/5/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/7/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
@@ -4278,14 +4249,14 @@ MIPS64 <span class="token punctuation">(</span>r6<span class="token punctuation"
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">289k</span>
+    <span title="站点总字数">296k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:30</span>
+    <span title="站点阅读时长">17:56</span>
   </span>
 </div>
 <div class="busuanzi-count">

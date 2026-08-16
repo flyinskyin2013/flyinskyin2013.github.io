@@ -206,18 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">140</span>
+          <span class="site-state-item-count">141</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">95</span>
+        <span class="site-state-item-count">97</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">222</span>
+        <span class="site-state-item-count">223</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -259,6 +259,492 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2024/03/17/blog_idx_128/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2024/03/17/blog_idx_128/" class="post-title-link" itemprop="url">关于进程同步与互斥的一些概念（锁、cas、futex）</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2024-03-17 19:43:00" itemprop="dateCreated datePublished" datetime="2024-03-17T19:43:00+08:00">2024-03-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B8%B8%E8%AF%86/" itemprop="url" rel="index"><span itemprop="name">常识</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B8%B8%E8%AF%86/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B8%B8%E8%AF%86/linux/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=128） 
+&emsp;&emsp;本文发布于 2024-03-17 19:43:00             （BlogID=128） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  最近为了实现在android linux kernel上，是的bionic c和glibc的sem_<em>相关的信号量接口能够相互调用的功能（例如：用bionic c wait，用glibc awake），需要去深度阅读相关c库关于sem_</em> posix api的实现。</p>
+<p>  最终的最终，发现主要要解决futex的问题就行。因此将其相关的概念进行了总结。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="进程同步与互斥的一些基本概念">进程同步与互斥的一些基本概念</h3>
+<hr>
+<p>  进程：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>是操作系统调度的基本单位。</p>
+</li>
+</ul>
+<p>  进程状态：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>三态模型：运行、就绪、等待（阻塞/睡眠）</p>
+</li>
+<li class="lvl-2">
+<p>五态模型：运行、就绪、等待（阻塞/睡眠） + 新建、终止</p>
+</li>
+</ul>
+<p>  进程调度：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>因某些原因（io等待，自己睡眠，调度公平等等），一个或者多个进程需要进行状态切换。</p>
+</li>
+</ul>
+<p>  进程工作特性分类：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>计算密集型：进程的主要工作是计算某些事情。</p>
+</li>
+<li class="lvl-2">
+<p>IO密集型：进程的主要工作是加载IO并进行处理。</p>
+</li>
+</ul>
+<p>  并发：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>是指多个进程同时运行，并完成一定任务。</p>
+</li>
+</ul>
+<p>  临界区：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>是指多个进程同时运行时，同一时刻访问相同的代码和数据。</p>
+</li>
+</ul>
+<p>  同步：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>强调的是进程间的执行需要按照某种先后顺序，即进程运行的时间是有序的。</p>
+</li>
+</ul>
+<p>  互斥：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>强调的是对于某些共享资源的访问不能同时进行，同一时间只能有一定数量的进程访问这些共享资源。</p>
+</li>
+</ul>
+<p>  进程常见的同步机制：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>信号量：解决了同步问题。</p>
+</li>
+<li class="lvl-2">
+<p>互斥量：解决了互斥问题。是信号量的一种特例，只具备0，1两种值。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="锁">锁</h3>
+<hr>
+<p>  锁：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>既可以解决同步问题，也可以解决互斥问题。</p>
+</li>
+</ul>
+<p>  死锁：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>指多个进程同时获取锁，且由于某些原因，此锁永远不会被空闲。</p>
+</li>
+</ul>
+<p>  两种基本锁：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>互斥锁：加锁失败后，线程会释放 CPU ，给其他线程；</p>
+</li>
+<li class="lvl-2">
+<p>自旋锁：加锁失败后，线程会忙等待，直到它拿到锁；</p>
+</li>
+</ul>
+<p>  读写锁：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>读锁：当「写锁」没有被线程持有时，多个线程能够并发地持有读锁，这大大提高了共享资源的访问效率，因为「读锁」是用于读取共享资源的场景，所以多个线程同时持有读锁也不会破坏共享资源的数据。</p>
+</li>
+<li class="lvl-2">
+<p>写锁：一旦「写锁」被线程持有后，读线程的获取读锁的操作会被阻塞，而且其他写线程的获取写锁的操作也会被阻塞</p>
+</li>
+<li class="lvl-2">
+<p>特征：读写锁在读多写少的场景，能发挥出优势。读写锁可以分为「读优先锁」和「写优先锁」</p>
+</li>
+</ul>
+<p>  乐观锁：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>如果多线程同时修改共享资源的概率比较低</p>
+</li>
+</ul>
+<p>  悲观锁：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>认为多线程同时修改共享资源的概率比较高，于是很容易出现冲突，所以访问共享资源前，先要上锁。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="CAS-Compare-And-Swap">CAS(Compare And Swap)</h3>
+<hr>
+<p>  CAS是一种无锁同步算法，主要用于多线程环境下面，高效的对多个线程进行同步。</p>
+<p>  首先CAS有3个重要的参数：目标地址(P)、期望值(E)、新值(N)，然后其工作原理是：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>读取目标地址（P）的值</p>
+</li>
+<li class="lvl-2">
+<p>对比目标地址（P）的值与期望值（E）</p>
+</li>
+<li class="lvl-2">
+<p>如果P==E，则写入新值（N），如果P!=E，则不做任何操作并返回。</p>
+</li>
+</ul>
+<p>  可以乍一看，这里有3步操作，会让我们对这个算法难以理解，所以这里还有一个重要的概念：CAS的这几步操作是原子的，一次性完成的，此外，这些特性是硬件提供的。因此，在实际使用上面，这些原子操作被编译器封装成相关的接口来使用这些硬件特性。例如gcc里面：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html</span>
+<span class="token comment">// 注意，原来的__sync_*系列函数的__atomic系列替代了</span>
+bool <span class="token function">__atomic_compare_exchange</span> <span class="token punctuation">(</span>type <span class="token operator">*</span>ptr<span class="token punctuation">,</span> type <span class="token operator">*</span>expected<span class="token punctuation">,</span> type <span class="token operator">*</span>desired<span class="token punctuation">,</span> bool weak<span class="token punctuation">,</span> <span class="token keyword">int</span> success_memorder<span class="token punctuation">,</span> <span class="token keyword">int</span> failure_memorder<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="futex-系统调用">futex 系统调用</h3>
+<hr>
+<p>  futex是linux下用来实现各种同步机制的一个系统调用，我们先来学习看看其api：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;linux/futex.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/time.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">futex</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>uaddr<span class="token punctuation">,</span> <span class="token keyword">int</span> futex_op<span class="token punctuation">,</span> <span class="token keyword">int</span> val<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">timespec</span> <span class="token operator">*</span>timeout<span class="token punctuation">,</span>   <span class="token comment">/* or: uint32_t val2 */</span>
+            <span class="token keyword">int</span> <span class="token operator">*</span>uaddr2<span class="token punctuation">,</span> <span class="token keyword">int</span> val3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  注意这里的看到这个api有许多的参数，但是我们常用的也是前面4个，一般来说，我们会将futex分为常用的两类，是futex_op参数指定的，分别是：FUTEX_WAIT、FUTEX_WAKE（注意，还有其他很多op类型），其他的参数根据不同的类型，有不同的一些含义：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>对于FUTEX_WAIT来说：如果uaddr的值等于期待值（val），则将线程挂起。timeout如果是NULL，则无限等待，或者等待timeout时间。</p>
+</li>
+<li class="lvl-2">
+<p>对于FUTEX_WAKE来说：指定唤醒uaddr关联的并被挂起的val个线程。timeout参数忽略。</p>
+</li>
+</ul>
+<p>  上面我们简单说明了这个系统调用的一些用法，现在我们来看看这个系统调用的内核简单实现，然后我们就基本理解了这个系统调用的工作原理：</p>
+<p>首先来看看FUTEX_WAIT的内核部分源码，如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//linux kernel v4.6 kernel/futex.c</span>
+
+<span class="token keyword">static</span> <span class="token keyword">inline</span> <span class="token keyword">void</span> <span class="token function">queue_me</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">futex_q</span> <span class="token operator">*</span>q<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">futex_hash_bucket</span> <span class="token operator">*</span>hb<span class="token punctuation">)</span>
+	<span class="token function">__releases</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>hb<span class="token operator">-></span>lock<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">int</span> prio<span class="token punctuation">;</span>
+
+    <span class="token comment">// ... ... 省略</span>
+
+	<span class="token function">plist_node_init</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>q<span class="token operator">-></span>list<span class="token punctuation">,</span> prio<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">plist_add</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>q<span class="token operator">-></span>list<span class="token punctuation">,</span> <span class="token operator">&amp;</span>hb<span class="token operator">-></span>chain<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	q<span class="token operator">-></span>task <span class="token operator">=</span> current<span class="token punctuation">;</span>
+	<span class="token function">spin_unlock</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>hb<span class="token operator">-></span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+
+<span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">futex_wait_queue_me</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">futex_hash_bucket</span> <span class="token operator">*</span>hb<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">futex_q</span> <span class="token operator">*</span>q<span class="token punctuation">,</span>
+				<span class="token keyword">struct</span> <span class="token class-name">hrtimer_sleeper</span> <span class="token operator">*</span>timeout<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token comment">// ... ... 省略</span>
+	<span class="token function">set_current_state</span><span class="token punctuation">(</span>TASK_INTERRUPTIBLE<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//挂起</span>
+	<span class="token function">queue_me</span><span class="token punctuation">(</span>q<span class="token punctuation">,</span> hb<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// ... ... 省略</span>
+<span class="token punctuation">&#125;</span>
+<span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">futex_wait_setup</span><span class="token punctuation">(</span>u32 __user <span class="token operator">*</span>uaddr<span class="token punctuation">,</span> u32 val<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span>
+			   <span class="token keyword">struct</span> <span class="token class-name">futex_q</span> <span class="token operator">*</span>q<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">futex_hash_bucket</span> <span class="token operator">*</span><span class="token operator">*</span>hb<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	u32 uval<span class="token punctuation">;</span>
+	<span class="token keyword">int</span> ret<span class="token punctuation">;</span>
+
+    <span class="token comment">// ... ... 省略</span>
+    
+retry<span class="token operator">:</span>
+    <span class="token comment">// ... ... 省略</span>
+    ret <span class="token operator">=</span> <span class="token function">get_futex_value_locked</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>uval<span class="token punctuation">,</span> uaddr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// ... ... 省略</span>
+
+	ret <span class="token operator">=</span> <span class="token function">get_futex_key</span><span class="token punctuation">(</span>uaddr<span class="token punctuation">,</span> flags <span class="token operator">&amp;</span> FLAGS_SHARED<span class="token punctuation">,</span> <span class="token operator">&amp;</span>q<span class="token operator">-></span>key<span class="token punctuation">,</span> VERIFY_READ<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">unlikely</span><span class="token punctuation">(</span>ret <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> ret<span class="token punctuation">;</span>
+
+    <span class="token comment">// ... ... 省略</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>uval <span class="token operator">!=</span> val<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token comment">//判断值是否是期望值，并做后续操作</span>
+		<span class="token function">queue_unlock</span><span class="token punctuation">(</span><span class="token operator">*</span>hb<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		ret <span class="token operator">=</span> <span class="token operator">-</span>EWOULDBLOCK<span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+    <span class="token comment">// ... ... 省略</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">futex_wait</span><span class="token punctuation">(</span>u32 __user <span class="token operator">*</span>uaddr<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> u32 val<span class="token punctuation">,</span>
+		      <span class="token class-name">ktime_t</span> <span class="token operator">*</span>abs_time<span class="token punctuation">,</span> u32 bitset<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">hrtimer_sleeper</span> timeout<span class="token punctuation">,</span> <span class="token operator">*</span>to <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">restart_block</span> <span class="token operator">*</span>restart<span class="token punctuation">;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">futex_hash_bucket</span> <span class="token operator">*</span>hb<span class="token punctuation">;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">futex_q</span> q <span class="token operator">=</span> futex_q_init<span class="token punctuation">;</span>
+	<span class="token keyword">int</span> ret<span class="token punctuation">;</span>
+
+    <span class="token comment">// ... ... 省略</span>
+
+retry<span class="token operator">:</span>
+	<span class="token comment">/*
+	 * Prepare to wait on uaddr. On success, holds hb lock and increments
+	 * q.key refs.
+	 */</span>
+	ret <span class="token operator">=</span> <span class="token function">futex_wait_setup</span><span class="token punctuation">(</span>uaddr<span class="token punctuation">,</span> val<span class="token punctuation">,</span> flags<span class="token punctuation">,</span> <span class="token operator">&amp;</span>q<span class="token punctuation">,</span> <span class="token operator">&amp;</span>hb<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>ret<span class="token punctuation">)</span>
+		<span class="token keyword">goto</span> out<span class="token punctuation">;</span>
+
+	<span class="token comment">/* queue_me and wait for wakeup, timeout, or a signal. */</span>
+	<span class="token function">futex_wait_queue_me</span><span class="token punctuation">(</span>hb<span class="token punctuation">,</span> <span class="token operator">&amp;</span>q<span class="token punctuation">,</span> to<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// ... ... 省略</span>
+
+out<span class="token operator">:</span>
+    <span class="token comment">// ... ... 省略</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  其实我们这里可以看到，关键是通过get_futex_key来根据传入的uaddr获取一个key，然后根据key，来构造一个hash list(注意，这时这个hash list被一个hash数据结构维护了，可通过key查询)，并将当前线程插入到这个list，并将线程/进程挂起。在这个过程中，还会检查*uaddr 是否等于val，否则做相关操作。</p>
+<p>  现在，其实我们基本上也可以猜到FUTEX_WAKE的实现是什么样子，现在我们先来看看其源码节选：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//linux kernel v4.6 kernel/futex.c</span>
+<span class="token keyword">static</span> <span class="token keyword">inline</span> <span class="token keyword">int</span> <span class="token function">match_futex</span><span class="token punctuation">(</span><span class="token keyword">union</span> futex_key <span class="token operator">*</span>key1<span class="token punctuation">,</span> <span class="token keyword">union</span> futex_key <span class="token operator">*</span>key2<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">return</span> <span class="token punctuation">(</span>key1 <span class="token operator">&amp;&amp;</span> key2
+		<span class="token operator">&amp;&amp;</span> key1<span class="token operator">-></span>both<span class="token punctuation">.</span>word <span class="token operator">==</span> key2<span class="token operator">-></span>both<span class="token punctuation">.</span>word
+		<span class="token operator">&amp;&amp;</span> key1<span class="token operator">-></span>both<span class="token punctuation">.</span>ptr <span class="token operator">==</span> key2<span class="token operator">-></span>both<span class="token punctuation">.</span>ptr
+		<span class="token operator">&amp;&amp;</span> key1<span class="token operator">-></span>both<span class="token punctuation">.</span>offset <span class="token operator">==</span> key2<span class="token operator">-></span>both<span class="token punctuation">.</span>offset<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">static</span> <span class="token keyword">int</span>
+<span class="token function">futex_wake_op</span><span class="token punctuation">(</span>u32 __user <span class="token operator">*</span>uaddr1<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> u32 __user <span class="token operator">*</span>uaddr2<span class="token punctuation">,</span>
+	      <span class="token keyword">int</span> nr_wake<span class="token punctuation">,</span> <span class="token keyword">int</span> nr_wake2<span class="token punctuation">,</span> <span class="token keyword">int</span> op<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">union</span> futex_key key1 <span class="token operator">=</span> FUTEX_KEY_INIT<span class="token punctuation">,</span> key2 <span class="token operator">=</span> FUTEX_KEY_INIT<span class="token punctuation">;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">futex_hash_bucket</span> <span class="token operator">*</span>hb1<span class="token punctuation">,</span> <span class="token operator">*</span>hb2<span class="token punctuation">;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">futex_q</span> <span class="token operator">*</span>this<span class="token punctuation">,</span> <span class="token operator">*</span>next<span class="token punctuation">;</span>
+	<span class="token keyword">int</span> ret<span class="token punctuation">,</span> op_ret<span class="token punctuation">;</span>
+	<span class="token function">WAKE_Q</span><span class="token punctuation">(</span>wake_q<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+retry<span class="token operator">:</span>
+	ret <span class="token operator">=</span> <span class="token function">get_futex_key</span><span class="token punctuation">(</span>uaddr1<span class="token punctuation">,</span> flags <span class="token operator">&amp;</span> FLAGS_SHARED<span class="token punctuation">,</span> <span class="token operator">&amp;</span>key1<span class="token punctuation">,</span> VERIFY_READ<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//根据uaddr获取key</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">unlikely</span><span class="token punctuation">(</span>ret <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token keyword">goto</span> out<span class="token punctuation">;</span>
+    <span class="token comment">// ... ... 省略</span>
+
+	hb1 <span class="token operator">=</span> <span class="token function">hash_futex</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>key1<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//根据key获取hash对象</span>
+
+	<span class="token comment">// ... ... 省略</span>
+
+retry_private<span class="token operator">:</span>
+	<span class="token comment">// ... ... 省略</span>
+
+
+	<span class="token function">plist_for_each_entry_safe</span><span class="token punctuation">(</span>this<span class="token punctuation">,</span> next<span class="token punctuation">,</span> <span class="token operator">&amp;</span>hb1<span class="token operator">-></span>chain<span class="token punctuation">,</span> list<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">match_futex</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>this<span class="token operator">-></span>key<span class="token punctuation">,</span> <span class="token operator">&amp;</span>key1<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token comment">//匹配符合条件的key</span>
+			<span class="token keyword">if</span> <span class="token punctuation">(</span>this<span class="token operator">-></span>pi_state <span class="token operator">||</span> this<span class="token operator">-></span>rt_waiter<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+				ret <span class="token operator">=</span> <span class="token operator">-</span>EINVAL<span class="token punctuation">;</span>
+				<span class="token keyword">goto</span> out_unlock<span class="token punctuation">;</span>
+			<span class="token punctuation">&#125;</span>
+			<span class="token function">mark_wake_futex</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>wake_q<span class="token punctuation">,</span> this<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//将符合条件的对象放入到队列wake_q</span>
+			<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">++</span>ret <span class="token operator">>=</span> nr_wake<span class="token punctuation">)</span>
+				<span class="token keyword">break</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">&#125;</span>
+
+    <span class="token comment">// ... ... 省略</span>
+
+out_unlock<span class="token operator">:</span>
+	<span class="token function">double_unlock_hb</span><span class="token punctuation">(</span>hb1<span class="token punctuation">,</span> hb2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">wake_up_q</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>wake_q<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//唤醒线程/进程，wake_up_q在kernel/sched/core.c中定义</span>
+out_put_keys<span class="token operator">:</span>
+	<span class="token function">put_futex_key</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>key2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+out_put_key1<span class="token operator">:</span>
+	<span class="token function">put_futex_key</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>key1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+out<span class="token operator">:</span>
+	<span class="token keyword">return</span> ret<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  从这里我们可以看到，首先我们根据uaddr获取了key，然后通过hash_futex获取key对象，这个时候我们就获取了和uaddr相关的线程/进程list。然后我们遍历list，将符合条件的线程/进程放到wake_q队列中去，最后通过wake_up_q来设置TASK_WAKING，并唤醒线程/进程。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  从这里我们可以看到，这些概念是为了解决前置问题逐步引入的：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>进程具备一定的状态（运行、就绪、等待（阻塞/睡眠） + 新建、终止）。</p>
+</li>
+<li class="lvl-2">
+<p>进程是OS调度的基本单位，调度就是调整进程的状态。</p>
+</li>
+<li class="lvl-2">
+<p>为了高效完成一个任务，我们需要并发，这时我们需要同步，需要信号量。</p>
+</li>
+<li class="lvl-2">
+<p>因为有了并发，我们需要注意临界区。</p>
+</li>
+<li class="lvl-2">
+<p>有了临界区，我们需要互斥量（锁）。</p>
+</li>
+<li class="lvl-2">
+<p>最后，CAS和futex可以实现各种信号量和锁。</p>
+</li>
+</ul>
+<p>  完结散花。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/futex.2.html">https://man7.org/linux/man-pages/man2/futex.2.html</a></p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -3408,274 +3894,8 @@ py<span class="token double-colon punctuation">::</span><span class="token gener
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2021/12/26/blog_idx_115/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/12/26/blog_idx_115/" class="post-title-link" itemprop="url">一种实用性较强的求IOU的算法（任意多边形之间的IOU）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2021-12-26 18:59:56" itemprop="dateCreated datePublished" datetime="2021-12-26T18:59:56+08:00">2021-12-26</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">数据结构与算法</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/" itemprop="url" rel="index"><span itemprop="name">计算机视觉</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>1.7k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>6 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky sky@sky-home.com
- * @LastEditTime: 2023-04-08 11:15:21
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=115） 
-&emsp;&emsp;本文发布于 2021-12-26 18:59:56     （BlogID=115）
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  无</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  提到IOU，如果接触过目标检测，应该是很熟悉的，这个东西简直就是标配了。但是我之前见到的求IOU都是求两个矩形的IOU，由于矩形的特殊性，其IOU可以很简单的求。</p>
-<p>  突然有一天，我要求一个矩形和一个多边形的IOU，这就让我突然有点懵，参考原来求两个矩形的IOU方式，完全无解。经过了询问大佬以及网上冲浪后，在某不起眼的地方发现了一个思路，一个匿名网友貌似提供了一句MATLAB的代码，给了我不错的启发。</p>
-<p>  因此本文用c++和opencv实现了这部分代码。下面将会从IOU概念，两矩形的IOU，以及任意多边形之间的IOU顺序进行讲解。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="交并比（Intersection-of-Union，IOU）">交并比（Intersection of Union，IOU）</h3>
-<hr>
-<p>  我们定义一个多边形的面积为Area0，另外一个多边形的面积为Area1。那么IOU的数学定义为$IOU=\frac{Area_0 \cap Area_1}{Area_0 \cup Area_1}$。</p>
-<p>  下面我们用一个示例图清晰的表达这个概念：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_115/iou_img_example.png" alt="rep_img"/></center>
-    </div>
-</div>    
-<p>  其中B类区域就是两个多边形的交集。IOU求的是B类区域在A,B,C类区域中的占比。注意这里是占比。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="两个矩形之间的IOU求法">两个矩形之间的IOU求法</h3>
-<hr>
-<p>  两个矩形的IOU求法其实交简单，根据一些性质，我们可以直接求出交集区域的宽和高，然后直接得到交集面积即可，这些都是常规写法。详情见如下代码：</p>
-<pre class="line-numbers language-c++" data-language="c++"><code class="language-c++">float IOU(const cv::Rect &amp;r0, const cv::Rect &amp;r1)
-&#123;
-
-    if (r0.x &gt; r1.x + r1.width) return 0.f;&#x2F;&#x2F;top-x  r0 在r1右边
-    if (r0.y &gt; r1.y + r1.height) return 0.f;&#x2F;&#x2F;top-y r0 在r1下边
-    if (r0.x + r0.width &lt; r1.x) return 0.f;&#x2F;&#x2F;bottom-x r0 在r1左边
-    if (r0.y + r0.height &lt; r1.y) return 0.f;&#x2F;&#x2F;bottom-y r0 在r1上边
-
-    &#x2F;&#x2F; 此时必定相交
-    float _overlap_w &#x3D; std::min(r0.x + r0.width, r1.x + r1.width) - std::max(r0.x, r1.x);&#x2F;&#x2F;得到相交矩形w
-
-    float _overlap_h &#x3D; std::min(r0.y + r0.height, r1.y + r1.height) - std::max(r0.y, r1.y);&#x2F;&#x2F;得到相交矩形h
-
-    &#x2F;&#x2F; maybe overflow
-    return (_overlap_w * _overlap_h)&#x2F;(float)((r0.width*r0.height) + (r1.width*r1.height));
-
-&#125;
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  如上可知，可以直接根据相关面积，求出IOU。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="两个多边形之间的IOU求法">两个多边形之间的IOU求法</h3>
-<hr>
-<p>  我们需要求两个多边形的IOU，这个时候我们根据两个矩形的思路想想，貌似不好弄。这个时候我们可以转变一下思路。</p>
-<p>  我们首先肯定是知道两个多边形的最大外接矩形的，这个时候我们得到最大的外界矩形宽和高（注意，这里的宽和高一般是固定的，所以一般我们都不需要去求外接矩）。然后我们创建三个宽和高等于我们预设的一维矩阵M_A, M_B，M_C，并将其所有元素置为0。这个时候，我们分别将矩阵一用多边形P1来来填充M_A，在P1内的元素置为1，外的元素不变。对M_B用同样的方式去填充。这个时候我们去计算M_C，具体计算方法是将对应的M_A，M_B同一位置的元素相与后赋值给M_C(表达式为:$M_C(x,y) = M_A(x,y) &amp; M_B(x,y)$)。这个时候我们去统计M_A,M_B,M_C中1的个数，其实就得到了对应的面积（也可以叫做像素面积），这个时候我们就可以方便的求出IOU，值得注意的是opencv中提供了我们所需要的所有操作。</p>
-<p>  下面我们用c++来实现以上的流程（注意，以下代码是实现的是N个多边形和M个多边形的IOU，若自己的需求不一样，请修改为对应的场景，代码是随手写的，未仔细验证，原理是这样的）。</p>
-<pre class="line-numbers language-c++" data-language="c++"><code class="language-c++">float IoU(const std::vector&lt;std::vector&lt;cv::Point&gt;&gt; &amp;poly_array0, const std::vector&lt;std::vector&lt;cv::Point&gt;&gt; &amp;poly_array1, int max_w, int max_h)&#123;
-
-        cv::Mat _poly0 &#x3D; cv::Mat::zeros(max_h, max_w, CV_8UC1);
-        cv::Mat _poly1 &#x3D; cv::Mat::zeros(max_h, max_w, CV_8UC1);
-        cv::Mat _result;
-
-        std::vector&lt;cv::Point *&gt; _pts0;
-        std::vector&lt;int&gt; _npts0;
-
-        for(auto &amp;_v:poly_array0)&#123;
-
-                if (_v.size() &lt; 3)&#x2F;&#x2F;invalid poly
-                        return -1.f;
-
-                _pts0.push_back((cv::Point *)&amp;_v[0]);
-                _npts0.push_back((int)_v.size());
-        &#125;
-
-        std::vector&lt;cv::Point *&gt; _pts1;
-        std::vector&lt;int&gt; _npts1;
-        for(auto &amp;_v:poly_array1)&#123;
-
-                if (_v.size() &lt; 3)&#x2F;&#x2F;invalid poly
-                        return -1.f;
-
-                _pts1.push_back((cv::Point *)&amp;_v[0]);
-                _npts1.push_back((int)_v.size());
-        &#125;
-&#x2F;*
-
-void cv::fillPoly	(	Mat &amp; 	img,
-const Point ** 	pts,
-const int * 	npts,
-int 	ncontours,
-const Scalar &amp; 	color,
-int 	lineType &#x3D; LINE_8,
-int 	shift &#x3D; 0,
-Point 	offset &#x3D; Point() 
-)	
-*&#x2F;
-        cv::fillPoly(_poly0, (const cv::Point **)&amp;_pts0[0], &amp;_npts0[0], _npts0.size(), cv::Scalar(1));
-
-        cv::fillPoly(_poly0, (const cv::Point **)&amp;_pts1[0], &amp;_npts1[0], _npts1.size(), cv::Scalar(1));
-
-        cv::bitwise_and(_poly0, _poly1, _result);
-
-        int _area0 &#x3D; cv::countNonZero(_poly0);
-        int _area1 &#x3D; cv::countNonZero(_poly1);
-        int _intersection_area &#x3D; cv::countNonZero(_result);
-
-        &#x2F;&#x2F; float _iou &#x3D; (float)_intersection_area&#x2F;(float)(_area0 + _area1 - _intersection_area);
-        float _iou &#x3D; (float)_intersection_area&#x2F;(float)_area1;
-
-        return _iou;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  通过如上代码，我们用opencv就实现了我们预想的效果。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  注意，这里需要延伸一点，求IOU，我们一般是用交集除以并集，但是有些时候，可能我们会用交集除以其中一个集合。比如：一个小矩形，一个大多边形的iou，其实按照标准写法来看，iou的数值不处理的话，不是那么可爱的。</p>
-<p>  其实这里的几种用法还可以延伸出来，比如算两个立方体的重合度等等。</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p><a target="_blank" rel="noopener" href="https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html">https://docs.opencv.org/3.4/d6/d6e/group__imgproc__draw.html</a></p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
@@ -3698,14 +3918,14 @@ Point 	offset &#x3D; Point()
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">289k</span>
+    <span title="站点总字数">296k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:30</span>
+    <span title="站点阅读时长">17:56</span>
   </span>
 </div>
 <div class="busuanzi-count">

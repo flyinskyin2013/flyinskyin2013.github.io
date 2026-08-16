@@ -37819,4 +37819,1715 @@ PS: 有问题请留言，看到后我会第一时间回复。
         <tag>pybind11</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Linux程序性能分析（一）---perf原理分析</title>
+    <url>/2026/08/16/blog_idx_148/</url>
+    <content><![CDATA[ 
+PS：要转载请注明出处，本人版权所有。
+PS: 这个只是基于《我自己》的理解，如果和你的原则及想法相冲突，请谅解，勿喷。
+
+环境说明
+  无
+前言
+
+  前段时间做了很多的基于sdk/demo的大模型程序性能评估，例如一个大模型运行的瓶颈是什么？这里的评估要分为两个部分：
+
+
+异构设备运行性能评估：异构设备的执行时间，例如高通的NSP设备的运行一个模型的性能评估。
+
+
+cpu运行性能评估：sdk/demo执行一次模型推理的性能评估。
+
+
+  对于异构设备来说（例如高通dsp，运行高通自己的rtos），有他专门的profile工具。对于cpu设备来说（Linux系统），有一个常用的性能评估工具，就是perf。
+  对于perf来说，我相信只要是做开发的，多多少少都听过火焰图这个概念，而构建火焰图的一个重要前提是，我们需要通过perf来对目标进程进行cpu cycle采样，然后基于这个采样获取ip/tid/cpu核/callchain等信息。perf除了支持cpu cycle采样外，还支持其他的各种各样的性能参数采样。
+  以前，用perf来做性能分析，只知道能获取这些信息，但是怎么获取的，一知半解。因此，趁着这个机会，基于linux-7.1.6的内核源码，以采集cpu cycle为例，本文尝试从用户态、内核态两个角度来分析perf实现的基本原理。
+
+
+
+
+perf 用户态实现原理
+
+  这里我在AI的辅助下，实现了一个和perf工具非常相似的例子，可以传入pid，对目标进程进行采样，获取ip/tid/cpu核/callchain等信息。
+  下面是一些代码片段分析：
+perf_event.c
+#include "perf_event.h"
+
+#include &lt;linux/perf_event.h>
+#include &lt;sys/ioctl.h>
+#include &lt;sys/syscall.h>
+#include &lt;unistd.h>
+#include &lt;errno.h>
+
+/* ------------------------------------------------------------------ */
+/*  low-level syscall wrapper                                         */
+/* ------------------------------------------------------------------ */
+static long
+_perf_event_open(const struct perf_event_attr *attr,
+                 pid_t                         pid,
+                 int                           cpu,
+                 int                           group_fd,
+                 unsigned long                 flags)
+&#123;
+    return syscall(__NR_perf_event_open, attr, pid, cpu, group_fd, flags);
+&#125;
+
+/* ------------------------------------------------------------------ */
+/*  public API                                                        */
+/* ------------------------------------------------------------------ */
+
+int
+perf_open(const struct perf_event_attr *attr,
+          pid_t                         pid,
+          int                           cpu,
+          int                           group_fd,
+          unsigned long                 flags)
+&#123;
+    if (attr == NULL) &#123;
+        errno = EINVAL;
+        return -1;
+    &#125;
+    return (int) _perf_event_open(attr, pid, cpu, group_fd, flags);
+&#125;
+
+void
+perf_close(int fd)
+&#123;
+    if (fd >= 0) &#123;
+        close(fd);
+    &#125;
+&#125;
+
+int
+perf_start(int fd)
+&#123;
+    if (fd &lt; 0) &#123;
+        errno = EINVAL;
+        return -1;
+    &#125;
+    if (ioctl(fd, PERF_EVENT_IOC_RESET, 0) &lt; 0) &#123;
+        return -1;
+    &#125;
+    if (ioctl(fd, PERF_EVENT_IOC_ENABLE, 0) &lt; 0) &#123;
+        return -1;
+    &#125;
+    return 0;
+&#125;
+
+int
+perf_stop(int fd, uint64_t *count)
+&#123;
+    if (fd &lt; 0) &#123;
+        errno = EINVAL;
+        return -1;
+    &#125;
+    if (ioctl(fd, PERF_EVENT_IOC_DISABLE, 0) &lt; 0) &#123;
+        return -1;
+    &#125;
+
+    uint64_t val = 0;
+    ssize_t  n   = read(fd, &amp;val, sizeof(val));
+    if (n != sizeof(val)) &#123;
+        return -1;
+    &#125;
+    if (count != NULL) &#123;
+        *count = val;
+    &#125;
+    return 0;
+&#125;
+
+perf_event.h
+#ifndef PERF_EVENT_H
+#define PERF_EVENT_H
+
+#include &lt;linux/perf_event.h>
+#include &lt;stdint.h>
+#include &lt;unistd.h>
+
+#ifdef __cplusplus
+extern "C" &#123;
+#endif
+
+/*
+ * perf_open  –  open a perf event counter.
+ *
+ * Direct wrapper for the perf_event_open(2) syscall — all parameters are
+ * passed through unchanged.
+ *
+ *   attr     : fully initialised perf_event_attr.
+ *   pid      : pid to monitor (0 = calling thread, -1 = all threads).
+ *   cpu      : cpu to monitor (-1 = any cpu).
+ *   group_fd : group leader fd (-1 to create a new group).
+ *   flags    : PERF_FLAG_FD_NO_GROUP, PERF_FLAG_FD_OUTPUT, etc. (0 for none).
+ *
+ *   Returns fd >= 0 on success, -1 on failure (errno is set).
+ */
+int perf_open(const struct perf_event_attr *attr,
+              pid_t                         pid,
+              int                           cpu,
+              int                           group_fd,
+              unsigned long                 flags);
+
+/*
+ * perf_close –  close a perf event fd.  No-op when fd &lt; 0.
+ */
+void perf_close(int fd);
+
+/*
+ * perf_start –  reset counter to zero and enable.  Returns 0 / -1.
+ */
+int perf_start(int fd);
+
+/*
+ * perf_stop  –  disable counter and read accumulated value into *count.
+ *               Returns 0 / -1.
+ */
+int perf_stop(int fd, uint64_t *count);
+
+#ifdef __cplusplus
+&#125;
+#endif
+
+#endif /* PERF_EVENT_H */
+
+perf_ringbuf.c
+#include "perf_ringbuf.h"
+
+#include &lt;linux/perf_event.h>
+#include &lt;sys/mman.h>
+#include &lt;unistd.h>
+#include &lt;stdint.h>
+#include &lt;stddef.h>
+
+int
+perf_ringbuf_open(int fd,
+                  int nr_pages,
+                  void **base,
+                  struct perf_event_mmap_page **meta,
+                  size_t *data_size)
+&#123;
+    if (base == NULL || meta == NULL || data_size == NULL || nr_pages &lt; 1) &#123;
+        return -1;
+    &#125;
+
+    long   page_size = sysconf(_SC_PAGESIZE);
+    size_t mmap_size = (1 + (size_t) nr_pages) * page_size;
+
+    void *addr = mmap(NULL, mmap_size, PROT_READ | PROT_WRITE,
+                      MAP_SHARED, fd, 0);
+    if (addr == MAP_FAILED) &#123;
+        return -1;
+    &#125;
+
+    *base      = addr;
+    *meta      = (struct perf_event_mmap_page *) addr;
+    *data_size = (size_t) nr_pages * page_size;
+    return 0;
+&#125;
+
+void
+perf_ringbuf_head_tail(const struct perf_event_mmap_page *meta,
+                       uint64_t *head,
+                       uint64_t *tail)
+&#123;
+    uint64_t h = meta->data_head;
+    __sync_synchronize();
+    uint64_t t = meta->data_tail;
+    if (head != NULL) &#123;
+        *head = h;
+    &#125;
+    if (tail != NULL) &#123;
+        *tail = t;
+    &#125;
+&#125;
+
+void
+perf_ringbuf_close(void *base, size_t data_size)
+&#123;
+    if (base == NULL) &#123;
+        return;
+    &#125;
+    long page_size  = sysconf(_SC_PAGESIZE);
+    long mmap_size  = page_size + (long) data_size;
+    munmap(base, mmap_size);
+&#125;
+
+perf_ringbuf.h
+#ifndef PERF_RINGBUF_H
+#define PERF_RINGBUF_H
+
+#include &lt;linux/perf_event.h>
+#include &lt;stddef.h>
+#include &lt;stdint.h>
+
+#ifdef __cplusplus
+extern "C" &#123;
+#endif
+
+/*
+ * perf_ringbuf_open – mmap the perf event ring buffer.
+ *
+ *   fd        : perf event file descriptor.
+ *   nr_pages  : number of data pages (must be power-of-2, usually 8).
+ *   base      : [out] mmap base address (metadata page).
+ *   meta      : [out] pointer to struct perf_event_mmap_page.
+ *   data_size : [out] size of data area in bytes (= nr_pages * page_size).
+ *
+ *   Returns 0 on success, -1 on failure.
+ */
+int perf_ringbuf_open(int fd,
+                      int nr_pages,
+                      void **base,
+                      struct perf_event_mmap_page **meta,
+                      size_t *data_size);
+
+/*
+ * perf_ringbuf_head_tail – read head and tail with correct memory barrier.
+ *   Caller must pass the meta pointer from perf_ringbuf_open.
+ *   head is written by the kernel, tail is written by userspace.
+ */
+void perf_ringbuf_head_tail(const struct perf_event_mmap_page *meta,
+                            uint64_t *head,
+                            uint64_t *tail);
+
+/*
+ * perf_ringbuf_close – munmap the ring buffer.
+ *
+ *   base      : the base address returned by perf_ringbuf_open.
+ *   data_size : the data_size value returned by perf_ringbuf_open.
+ */
+void perf_ringbuf_close(void *base, size_t data_size);
+
+#ifdef __cplusplus
+&#125;
+#endif
+
+#endif /* PERF_RINGBUF_H */
+
+demo_sample.c
+#define _GNU_SOURCE
+
+#include "perf_event.h"
+#include "perf_ringbuf.h"
+
+#include &lt;linux/perf_event.h>
+#include &lt;sys/mman.h>
+#include &lt;sys/ioctl.h>
+
+#include &lt;unistd.h>
+#include &lt;stdint.h>
+#include &lt;stdio.h>
+#include &lt;stdlib.h>
+#include &lt;string.h>
+#include &lt;errno.h>
+#include &lt;dlfcn.h>
+#include &lt;poll.h>
+#include &lt;time.h>
+
+#define SAMPLE_COUNT   10
+#define MAX_MAPS       512
+
+/* ── memory map entry ─────────────────────────────────────────────── */
+typedef struct &#123;
+    uint64_t start;
+    uint64_t end;
+    char     path[256];
+&#125; mem_map_t;
+
+static mem_map_t maps[MAX_MAPS];
+static int       nr_maps;
+
+/* ── helpers ──────────────────────────────────────────────────────── */
+/* read value at ptr, then advance ptr by sizeof(raw_type) */
+#define NEXT_FIELD(ptr, raw_type) \
+    (*(raw_type *)(ptr)); (ptr) = (void *)((char *)(ptr) + sizeof(raw_type))
+
+/* ── parse /proc/&lt;pid>/maps ───────────────────────────────────────── */
+static int
+parse_maps(pid_t pid)
+&#123;
+    char path[64];
+    snprintf(path, sizeof(path), "/proc/%d/maps", pid);
+    FILE *f = fopen(path, "r");
+    if (f == NULL) &#123;
+        perror("fopen /proc/.../maps");
+        return -1;
+    &#125;
+
+    nr_maps = 0;
+    char line[512];
+    while (fgets(line, sizeof(line), f) != NULL &amp;&amp; nr_maps &lt; MAX_MAPS) &#123;
+        uint64_t start, end;
+        char perms[8], fpath[256] = &#123;0&#125;;
+
+        /* format: start-end perms offset dev inode path */
+        int n = sscanf(line, "%lx-%lx %7s %*s %*s %*u %255s",
+                       &amp;start, &amp;end, perms, fpath);
+
+        if (n &lt; 2) continue;   /* skip malformed lines */
+
+        maps[nr_maps].start = start;
+        maps[nr_maps].end   = end;
+
+        if (n >= 4 &amp;&amp; fpath[0] != '\0') &#123;
+            /* keep only the basename */
+            const char *name = strrchr(fpath, '/');
+            snprintf(maps[nr_maps].path, sizeof(maps[nr_maps].path),
+                     "%s", name ? name + 1 : fpath);
+        &#125; else &#123;
+            /* anonymous mapping – try to identify by permissions */
+            if (strchr(perms, 'x')) &#123;
+                snprintf(maps[nr_maps].path, sizeof(maps[nr_maps].path),
+                         "[anon_exec:%lx]", start);
+            &#125; else &#123;
+                snprintf(maps[nr_maps].path, sizeof(maps[nr_maps].path),
+                         "[anon]");
+            &#125;
+        &#125;
+        nr_maps++;
+    &#125;
+    fclose(f);
+    return 0;
+&#125;
+
+/* ── look up which mapping an address falls into ──────────────────── */
+static const mem_map_t *
+find_map(uint64_t addr)
+&#123;
+    for (int i = 0; i &lt; nr_maps; i++) &#123;
+        if (addr >= maps[i].start &amp;&amp; addr &lt; maps[i].end) &#123;
+            return &amp;maps[i];
+        &#125;
+    &#125;
+    return NULL;
+&#125;
+
+/* ── resolve symbol name ──────────────────────────────────────────── */
+/*
+ * When pid == our own process  →  use dladdr(3) to get function names.
+ * When pid != self              →  fall back to /proc/&lt;pid>/maps and
+ *                                    print &lt;binary>+&lt;offset>.
+ */
+static void
+resolve_symbol(pid_t my_pid, pid_t target_pid, uint64_t addr,
+               char *buf, size_t bufsz)
+&#123;
+    /* dladdr only works for addresses in our own address space */
+    if (target_pid == my_pid || target_pid == 0) &#123;
+        Dl_info info;
+        if (dladdr((void *) (uintptr_t) addr, &amp;info) != 0) &#123;
+            const char *name = info.dli_sname ? info.dli_sname : "???";
+            uint64_t   off   = addr - (uint64_t) (uintptr_t) info.dli_saddr;
+            const char *file = info.dli_fname ? info.dli_fname : "???";
+            const char *base = strrchr(file, '/');
+            snprintf(buf, bufsz, "%s+0x%lx (%s)",
+                     name, off, base ? base + 1 : file);
+            return;
+        &#125;
+        /* dladdr failed – fall through to maps-based lookup */
+    &#125;
+
+    /* kernel-space address */
+    if (addr >= 0xffff000000000000ULL) &#123;
+        snprintf(buf, bufsz, "[kernel]");
+        return;
+    &#125;
+
+    /* maps-based fallback for cross-process or dladdr failure */
+    const mem_map_t *m = find_map(addr);
+    if (m != NULL) &#123;
+        uint64_t off = addr - m->start;
+        snprintf(buf, bufsz, "%s+0x%lx", m->path, off);
+    &#125; else &#123;
+        snprintf(buf, bufsz, "[nomap:0x%lx]", addr);
+    &#125;
+&#125;
+
+/* ── usage ────────────────────────────────────────────────────────── */
+static void
+usage(const char *prog)
+&#123;
+    fprintf(stderr, "Usage: %s [pid]\n", prog);
+    fprintf(stderr, "  pid  – monitor &lt;pid> (default: 0 = calling thread)\n");
+&#125;
+
+/* =================================================================== */
+int
+main(int argc, char *argv[])
+&#123;
+    pid_t target_pid = 0;    /* default: own thread */
+    pid_t my_pid     = getpid();
+
+    if (argc > 1) &#123;
+        if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) &#123;
+            usage(argv[0]);
+            return 0;
+        &#125;
+        target_pid = (pid_t) atoi(argv[1]);
+    &#125;
+
+    /* ── parse /proc/&lt;pid>/maps for symbol resolution ── */
+    pid_t maps_pid = (target_pid == 0) ? my_pid : target_pid;
+    if (parse_maps(maps_pid) != 0) &#123;
+        return -1;
+    &#125;
+    printf("loaded %d memory mappings for pid %d\n", nr_maps, maps_pid);
+
+    /* ── perf event attr ──────────────────────────────────────────── */
+    struct perf_event_attr attr;
+    memset(&amp;attr, 0, sizeof(attr));
+
+    attr.size           = sizeof(attr);
+    attr.type           = PERF_TYPE_HARDWARE;
+    attr.config         = PERF_COUNT_HW_CPU_CYCLES;
+    attr.sample_period  = 10000;
+    attr.disabled       = 1;
+    attr.exclude_kernel = 0;
+    attr.exclude_hv     = 1;
+    attr.wakeup_events  = 1;
+    /* Note: inherit=1 would cover forked children but prevents mmap on
+     *       older ARM kernels.  Use pid=&lt;tgid> to cover all threads. */
+
+    attr.sample_type =
+        PERF_SAMPLE_IP |
+        PERF_SAMPLE_TID |
+        PERF_SAMPLE_TIME |
+        PERF_SAMPLE_CPU |
+        PERF_SAMPLE_CALLCHAIN;
+
+    attr.sample_max_stack = 20;
+
+    /* ── 1. perf_open ─────────────────────────────────────────────── */
+    int fd = perf_open(&amp;attr, target_pid, -1, -1, 0);
+    if (fd &lt; 0) &#123;
+        perror("perf_open");
+        return -1;
+    &#125;
+    printf("perf fd=%d  target_pid=%d\n", fd, target_pid);
+
+    /* ── 2. perf_ringbuf_open ─────────────────────────────────────── */
+    void                          *base;
+    struct perf_event_mmap_page   *meta;
+    size_t                         data_size;
+
+    if (perf_ringbuf_open(fd, 8, &amp;base, &amp;meta, &amp;data_size) != 0) &#123;
+        perror("perf_ringbuf_open");
+        perf_close(fd);
+        return -1;
+    &#125;
+
+    long page_size = sysconf(_SC_PAGESIZE);
+    char *data = (char *) base + page_size;
+
+    printf("page_size=%ld  data_size=%zu\n", page_size, data_size);
+    printf("start sampling (%d samples)...\n", SAMPLE_COUNT);
+
+    /* ── 3. perf_start ────────────────────────────────────────────── */
+    if (perf_start(fd) != 0) &#123;
+        perror("perf_start");
+        perf_ringbuf_close(base, data_size);
+        perf_close(fd);
+        return -1;
+    &#125;
+
+    /* ── produce workload and collect N samples ───────────────────── */
+    int sample_count = 0;
+    int is_self = (target_pid == 0 || target_pid == my_pid);
+
+    struct pollfd pfd = &#123; .fd = fd, .events = POLLIN &#125;;
+
+    /*
+     * Self-monitoring: we must burn CPU ourselves to generate PMU events.
+     *   → poll with short timeout, burn CPU in between.
+     *
+     * Cross-process: the target generates events; we just wait passively.
+     *   → poll blocks until data arrives or total timeout expires.
+     */
+    int   poll_timeout = is_self ? 10 : 5000;   /* ms */
+    struct timespec t_start, t_now;
+    clock_gettime(CLOCK_MONOTONIC, &amp;t_start);
+
+    volatile unsigned long x = 0;
+
+    while (sample_count &lt; SAMPLE_COUNT) &#123;
+        if (is_self) &#123;
+            /* burn CPU while waiting for poll — generates our own samples */
+            for (int i = 0; i &lt; 200000; i++) &#123;
+                x += i;
+            &#125;
+        &#125;
+
+        int ret = poll(&amp;pfd, 1, poll_timeout);
+        if (ret &lt; 0) &#123;
+            perror("poll");
+            break;
+        &#125;
+
+        if (ret == 0) &#123;
+            /* timeout: check total elapsed (safety against infinite hang) */
+            clock_gettime(CLOCK_MONOTONIC, &amp;t_now);
+            double elapsed = (t_now.tv_sec  - t_start.tv_sec) +
+                             (t_now.tv_nsec - t_start.tv_nsec) / 1e9;
+            if (elapsed >= 30.0) &#123;
+                printf("\ntimeout after %.0fs, collected %d samples\n",
+                       elapsed, sample_count);
+                break;
+            &#125;
+            continue;
+        &#125;
+
+        /* fd is readable — drain the ring buffer */
+        uint64_t head, tail;
+        perf_ringbuf_head_tail(meta, &amp;head, &amp;tail);
+
+        while (tail &lt; head) &#123;
+            size_t  offset = tail &amp; (data_size - 1);
+            struct perf_event_header *header =
+                (struct perf_event_header *) (data + offset);
+
+            if (header->type == PERF_RECORD_SAMPLE) &#123;
+                sample_count++;
+
+                void *p = (char *) header +
+                    sizeof(struct perf_event_header);
+
+                /* kernel output order (fixed, not sorted by bit):
+                 *   IP, TID, TIME, ID, CPU, CALLCHAIN(no nr, fills rest)
+                 */
+                uint64_t ip   = NEXT_FIELD(p, uint64_t);
+                uint32_t pid  = NEXT_FIELD(p, uint32_t);
+                uint32_t tid  = NEXT_FIELD(p, uint32_t);
+                uint64_t time = NEXT_FIELD(p, uint64_t);
+                uint64_t id   = NEXT_FIELD(p, uint64_t);
+                uint32_t cpu  = NEXT_FIELD(p, uint32_t);
+          (void) NEXT_FIELD(p, uint32_t);  /* reserved */
+
+                char   *record_end = (char *) header + header->size;
+                uint64_t nr = ((uint64_t)(record_end - (char *) p))
+                              / sizeof(uint64_t);
+                uint64_t *ips = (uint64_t *) p;
+
+                char sym[256];
+
+                printf("\n--- sample %d/%d ---\n", sample_count, SAMPLE_COUNT);
+                resolve_symbol(my_pid, target_pid, ip, sym, sizeof(sym));
+                printf("IP       = 0x%lx  %s\n", ip, sym);
+                printf("PID      = %u\n",       pid);
+                printf("TID      = %u\n",       tid);
+                printf("TIME     = %lu\n",      time);
+                printf("ID       = %lu\n",      id);
+                printf("CPU      = %u\n",       cpu);
+                printf("CALLCHAIN (%lu frames):\n", nr);
+                for (uint64_t i = 0; i &lt; nr; i++) &#123;
+                    resolve_symbol(my_pid, target_pid, ips[i], sym, sizeof(sym));
+                    printf("  [%lu] 0x%lx  %s\n", i, ips[i], sym);
+                &#125;
+
+                if (sample_count >= SAMPLE_COUNT) &#123;
+                    tail += header->size;
+                    meta->data_tail = tail;
+                    goto done;
+                &#125;
+            &#125;
+
+            tail += header->size;
+            meta->data_tail = tail;
+        &#125;
+    &#125;
+done:
+
+    /* ── 4. perf_stop ─────────────────────────────────────────────── */
+    uint64_t count;
+    perf_stop(fd, &amp;count);
+    printf("\nfinal count = %lu\n", count);
+
+    /* ── 5,6. cleanup ─────────────────────────────────────────────── */
+    perf_ringbuf_close(base, data_size);
+    perf_close(fd);
+
+    return 0;
+&#125;
+
+上面的代码有几个重要的关注点：
+
+
+首先，perf的核心就是调用syscall __NR_perf_event_open(perf_event.c)，调用的时候，传入对应的想采样的数据类型、采样模式等参数即可，然后得到了一个fd。
+
+
+在我们开始采样之前，我们还需要通过上面的fd+mmap申请一片空间来作为ring buf，方便perf驱动写入采样数据到我们申请的mmap空间
+
+
+开始采样，然后等待ringbuf有数据，触发我们来读取perf+pmu驱动写入的采样数据。
+
+
+我们获取的数据有ip/tid/cpu核/callchain等，然后callchain就是调用堆栈的地址信息，通过/proc/target_pid/maps，我们可以解析出这些callchain地址属于哪个地址模块，以及这个地址模块的偏移
+
+
+上面的地址模块+地址偏移，根据符号表，可以解析出是哪个函数，这样就得到了调用堆栈（这部分不了解不重要，这部分不是本文重点）
+
+
+
+
+
+
+perf 内核态实现原理
+
+   一个常见的linux的驱动，基本都是在vfs上的基础上暴露相关的接口给用户使用。下面我们通过从open/mmap/ioctl等常见的接口来分析perf驱动。
+
+
+__NR_perf_event_open 实现基本原理
+  perf驱动稍微特殊一点，其不是通过vfs暴露设备节点到用户态，直接调用open来获取资源，他是直接提供了一个__NR_perf_event_open系统调用。下面简单介绍一下这个syscall的实现：
+  代码是linux-7.1.6/kernel/events/core.c
+static const struct file_operations perf_fops = &#123;
+	.release		= perf_release,
+	.read			= perf_read,
+	.poll			= perf_poll,
+	.unlocked_ioctl		= perf_ioctl,
+	.compat_ioctl		= perf_compat_ioctl,
+	.mmap			= perf_mmap,
+	.fasync			= perf_fasync,
+&#125;;
+
+
+/**
+ * sys_perf_event_open - open a performance event, associate it to a task/cpu
+ *
+ * @attr_uptr:	event_id type attributes for monitoring/sampling
+ * @pid:		target pid
+ * @cpu:		target cpu
+ * @group_fd:		group leader event fd
+ * @flags:		perf event open flags
+ */
+SYSCALL_DEFINE5(perf_event_open,
+		struct perf_event_attr __user *, attr_uptr,
+		pid_t, pid, int, cpu, int, group_fd, unsigned long, flags)
+&#123;
+	struct perf_event *group_leader = NULL, *output_event = NULL;
+	struct perf_event_pmu_context *pmu_ctx;
+	struct perf_event *event, *sibling;
+	struct perf_event_attr attr;
+	struct perf_event_context *ctx;
+	struct file *event_file = NULL;
+	struct task_struct *task = NULL;
+	struct pmu *pmu;
+	int event_fd;
+	int move_group = 0;
+	int err;
+	int f_flags = O_RDWR;
+	int cgroup_fd = -1;
+
+    // ... ...
+    // 这个地方先在当前进程申请一个没有使用的fd，后面将perf的数据挂在fd上面
+	event_fd = get_unused_fd_flags(f_flags);
+	if (event_fd &lt; 0)
+		return event_fd;
+
+    // ... ...
+    // 这个地方根据pid得到重要的进程结构体：task
+	if (pid != -1 &amp;&amp; !(flags &amp; PERF_FLAG_PID_CGROUP)) &#123;
+		task = find_lively_task_by_vpid(pid);
+		if (IS_ERR(task)) &#123;
+			err = PTR_ERR(task);
+			goto err_fd;
+		&#125;
+	&#125;
+
+    // ... ...
+
+    
+    /*
+        这个地方是核心，后续的所有操作都是访问的这个核心结构体struct perf_event，主要做的事情是：
+        1 通过	struct perf_event *event __free(__free_event) = kmem_cache_alloc_node(perf_event_cache, GFP_KERNEL | __GFP_ZERO, node);  申请内存
+        2 初始化一些结构体， 设置我们传递的cpu/attr等给event保存
+        3 将目标进程的task结构体保存到event->hw.target
+        4 设置事件溢出时的回调：event->overflow_handler = perf_event_output_forward;（这个就是真正的写数据到ring buf的地方，后面还会提到）
+        5 通过pmu = perf_init_event(event);-> pmu = idr_find(&amp;pmu_idr, PERF_TYPE_RAW) 查询到对应的pmu驱动，并挂在perf_event里面。
+
+        第5点非常重要，这里的pmu_idr是一个全局的注册表，然后可以遍历查询到对应的pmu驱动
+
+        pmu_idr 是通过perf_pmu_register来注册的pmu驱动的，本文将以armv8 pmu驱动为例来说明
+    */
+
+	event = perf_event_alloc(&amp;attr, cpu, task, group_leader, NULL,
+				 NULL, NULL, cgroup_fd);
+
+    // ... ...
+
+    // 这个地方：1 申请一个匿名的文件节点event_file 2 给这个event_file填写文件操作ops 3 给这个event_file填写文件private_data为event
+    //              这里的作用就是，等会儿后面我们返回的fd作为句柄，然后可以通过fd来访问perf_fops里面的方法，以及前面我们构造好的event
+	event_file = anon_inode_getfile("[perf_event]", &amp;perf_fops, event, f_flags);
+	if (IS_ERR(event_file)) &#123;
+		err = PTR_ERR(event_file);
+		event_file = NULL;
+		goto err_context;
+	&#125;
+
+    // ... ...
+
+    // 将perf event 挂到目标进程
+	perf_install_in_context(ctx, event, event->cpu);
+
+    // ... ...
+
+	/*
+	 * File reference in group guarantees that group_leader has been
+	 * kept alive until we place the new event on the sibling_list.
+	 * This ensures destruction of the group leader will find
+	 * the pointer to itself in perf_group_detach().
+	 */
+    /* 注意这个地方： 1 首先通过全局变量current获取进程对应的文件current->files。 
+                    2 通过files_struct 获取fdtable(current->files->fdt)   
+                    3 将event_file挂在到当前进程的fdt表中（类似：current->files->fdt[event_fd] = event_file)
+
+        这样，当这个fd返回给用户态的程序后，我们的程序可以通过fd来调用event_file里面的perf_fops里面定义的接口。
+    */
+	fd_install(event_fd, event_file);
+	return event_fd;
+
+    // ... ...
+&#125;
+  总的来说，这个syscall返回了一个fd，这个fd绑定了一个struct file 对象，这个对象的private数据域就是我们初始化的perf_event *event。这个event中包含了：与pmu驱动的关联，perf采用属性，目标进程的重要结构struct task_struct *task，perf的fops(ioctl/mmap等）等。
+  其实这就是一个普通的驱动申请fd绑定一个私有数据、和fops的常见操作，这里绑定的就是perf_event，细节的内容见上面代码中的注释。
+
+
+perf_mmap 实现基本原理
+  在上面的demo中，我们可以知道，当perf_open完成后，我们先在需要通过mmap来申请ringbuf空间，然后我们就直接调用mmap指定空间，经过文件系统调度后，也就是上文我们的event_file中的fops中的perf_mmap.
+   我们先看一下其实现的源码：
+linux-7.1.6/kernel/events/core.c
+static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+&#123;
+	struct perf_event *event = file->private_data;
+	unsigned long vma_size, nr_pages;
+	mapped_f mapped;
+	int ret;
+
+	/*
+	 * Don't allow mmap() of inherited per-task counters. This would
+	 * create a performance issue due to all children writing to the
+	 * same rb.
+	 */
+	if (event->cpu == -1 &amp;&amp; event->attr.inherit)
+		return -EINVAL;
+
+	if (!(vma->vm_flags &amp; VM_SHARED))
+		return -EINVAL;
+
+	ret = security_perf_event_read(event);
+	if (ret)
+		return ret;
+
+	vma_size = vma->vm_end - vma->vm_start;
+	nr_pages = vma_size / PAGE_SIZE;
+
+	if (nr_pages > INT_MAX)
+		return -ENOMEM;
+
+	if (vma_size != PAGE_SIZE * nr_pages)
+		return -EINVAL;
+
+	scoped_guard (mutex, &amp;event->mmap_mutex) &#123;
+		/*
+		 * This relies on __pmu_detach_event() taking mmap_mutex after marking
+		 * the event REVOKED. Either we observe the state, or __pmu_detach_event()
+		 * will detach the rb created here.
+		 */
+		if (event->state &lt;= PERF_EVENT_STATE_REVOKED)
+			return -ENODEV;
+
+		if (vma->vm_pgoff == 0)
+			ret = perf_mmap_rb(vma, event, nr_pages);
+		else
+			ret = perf_mmap_aux(vma, event, nr_pages);
+		if (ret)
+			return ret;
+
+		/*
+		 * Since pinned accounting is per vm we cannot allow fork() to copy our
+		 * vma.
+		 */
+		vm_flags_set(vma, VM_DONTCOPY | VM_DONTEXPAND | VM_DONTDUMP);
+		vma->vm_ops = &amp;perf_mmap_vmops;
+
+		mapped = get_mapped(event, event_mapped);
+		if (mapped)
+			mapped(event, vma->vm_mm);
+
+		/*
+		 * Try to map it into the page table. On fail undo the above,
+		 * as the callsite expects full cleanup in this case and
+		 * therefore does not invoke vmops::close().
+		 */
+		ret = map_range(event->rb, vma);
+		if (likely(!ret))
+			return 0;
+
+		/* Error path */
+
+		/*
+		 * If this is the first mmap(), then event->mmap_count should
+		 * be stable at 1. It is only modified by:
+		 * perf_mmap_&#123;open,close&#125;() and perf_mmap().
+		 *
+		 * The former are not possible because this mmap() hasn't been
+		 * successful yet, and the latter is serialized by
+		 * event->mmap_mutex which we still hold (note that mmap_lock
+		 * is not strictly sufficient here, because the event fd can
+		 * be passed to another process through trivial means like
+		 * fork(), leading to concurrent mmap() from different mm).
+		 *
+		 * Make sure to remove event->rb before releasing
+		 * event->mmap_mutex, such that any concurrent mmap() will not
+		 * attempt use this failed buffer.
+		 */
+		if (refcount_read(&amp;event->mmap_count) == 1) &#123;
+			/*
+			 * Minimal perf_mmap_close(); there can't be AUX or
+			 * other events on account of this being the first.
+			 */
+			mapped = get_mapped(event, event_unmapped);
+			if (mapped)
+				mapped(event, vma->vm_mm);
+			perf_mmap_unaccount(vma, event->rb);
+			ring_buffer_attach(event, NULL);	/* drops last rb->refcount */
+			refcount_set(&amp;event->mmap_count, 0);
+			return ret;
+		&#125;
+
+		/*
+		 * Otherwise this is an already existing buffer, and there is
+		 * no race vs first exposure, so fall-through and call
+		 * perf_mmap_close().
+		 */
+	&#125;
+
+	perf_mmap_close(vma);
+	return ret;
+&#125;
+   上面这个的核心就是通过mmap系统调用，然后调用perf_mmap，分配一片空间给perf_event，后续会使用到这片空间，其挂在event-&gt;rb中，后续根据这个来操作。
+   注意，全程通过fd访问struct file *file，然后访问file-&gt;private_data来得到struct perf_event *event。
+
+
+armv8_pmuv3_pmu 驱动简介
+  首先我们介绍一下pmu是什么，pmu是Performance Monitoring Unit的简称，是可以监测硬件芯片的一些指标的功能。本文用的监测事件就是cpu执行的周期计数器。
+  对应pmu硬件，有一个叫做pmu的驱动，这里我以我手里的设备为例，我们先来看看dts定义(从/sys/firmware/fdt解析出来的，可能和基线源码定义不一样)：
+&#123;
+    soc&#123;
+            cpu-pmu &#123;
+                compatible &#x3D; &quot;arm,armv8-pmuv3&quot;;
+                interrupts &#x3D; &lt;0x01 0x07 0x04&gt;;
+                phandle &#x3D; &lt;0x365&gt;;
+            &#125;;
+    &#125;
+&#125;
+  然后我们来看看pmu驱动对应的初始化部分
+linux-7.1.6/drivers/perf/arm_pmuv3.c
+static struct platform_driver armv8_pmu_driver = &#123;
+	.driver		= &#123;
+		.name	= ARMV8_PMU_PDEV_NAME,
+		.of_match_table = armv8_pmu_of_device_ids,
+		.suppress_bind_attrs = true,
+	&#125;,
+	.probe		= armv8_pmu_device_probe,
+&#125;;
+
+static int __init armv8_pmu_driver_init(void)
+&#123;
+	int ret;
+
+	if (acpi_disabled)
+		ret = platform_driver_register(&amp;armv8_pmu_driver);
+	else
+		ret = arm_pmu_acpi_probe(armv8_pmuv3_pmu_init);
+
+	if (!ret)
+		lockup_detector_retry_init();
+
+	return ret;
+&#125;
+device_initcall(armv8_pmu_driver_init)
+  当内核启动后，platform_driver会根据dts的定义，探测相关的设备，这里调用的就是armv8_pmu_device_probe，也就是说armv8_pmu_device_probe是pmu驱动的初始化函数。
+linux-7.1.6/drivers/perf/arm_pmuv3.c
+static const struct of_device_id armv8_pmu_of_device_ids[] = &#123;
+	&#123;.compatible = "arm,armv8-pmuv3",	.data = armv8_pmuv3_pmu_init&#125;,
+    // ... ...
+&#125;
+static int armv8_pmu_device_probe(struct platform_device *pdev)
+&#123;
+	return arm_pmu_device_probe(pdev, armv8_pmu_of_device_ids, NULL);
+&#125;
+static int armv8_pmu_init(struct arm_pmu *cpu_pmu, char *name,
+			  int (*map_event)(struct perf_event *event))
+&#123;
+	int ret = armv8pmu_probe_pmu(cpu_pmu);
+	if (ret)
+		return ret;
+
+	cpu_pmu->handle_irq		= armv8pmu_handle_irq;
+	cpu_pmu->enable			= armv8pmu_enable_event;
+	cpu_pmu->disable		= armv8pmu_disable_event;
+	cpu_pmu->read_counter		= armv8pmu_read_counter;
+	cpu_pmu->write_counter		= armv8pmu_write_counter;
+	cpu_pmu->get_event_idx		= armv8pmu_get_event_idx;
+	cpu_pmu->clear_event_idx	= armv8pmu_clear_event_idx;
+	cpu_pmu->start			= armv8pmu_start;
+	cpu_pmu->stop			= armv8pmu_stop;
+	cpu_pmu->reset			= armv8pmu_reset;
+	cpu_pmu->set_event_filter	= armv8pmu_set_event_filter;
+
+	cpu_pmu->pmu.event_idx		= armv8pmu_user_event_idx;
+	if (brbe_num_branch_records(cpu_pmu))
+		cpu_pmu->pmu.sched_task		= armv8pmu_sched_task;
+
+	cpu_pmu->name			= name;
+	cpu_pmu->map_event		= map_event;
+	cpu_pmu->attr_groups[ARMPMU_ATTR_GROUP_EVENTS] = &amp;armv8_pmuv3_events_attr_group;
+	cpu_pmu->attr_groups[ARMPMU_ATTR_GROUP_FORMATS] = &amp;armv8_pmuv3_format_attr_group;
+	cpu_pmu->attr_groups[ARMPMU_ATTR_GROUP_CAPS] = &amp;armv8_pmuv3_caps_attr_group;
+	armv8_pmu_register_sysctl_table();
+	return 0;
+&#125;
+linux-7.1.6/drivers/perf/arm_pmu.c
+struct arm_pmu *armpmu_alloc(void)
+&#123;
+	struct arm_pmu *pmu;
+	int cpu;
+
+	pmu = kzalloc_obj(*pmu);
+	if (!pmu)
+		goto out;
+
+	pmu->hw_events = alloc_percpu_gfp(struct pmu_hw_events, GFP_KERNEL);
+	if (!pmu->hw_events) &#123;
+		pr_info("failed to allocate per-cpu PMU data.\n");
+		goto out_free_pmu;
+	&#125;
+
+	pmu->pmu = (struct pmu) &#123;
+		.pmu_enable	= armpmu_enable,
+		.pmu_disable	= armpmu_disable,
+		.event_init	= armpmu_event_init,
+		.add		= armpmu_add,
+		.del		= armpmu_del,
+		.start		= armpmu_start,
+		.stop		= armpmu_stop,
+		.read		= armpmu_read,
+		.filter		= armpmu_filter,
+		.attr_groups	= pmu->attr_groups,
+		/*
+		 * This is a CPU PMU potentially in a heterogeneous
+		 * configuration (e.g. big.LITTLE) so
+		 * PERF_PMU_CAP_EXTENDED_HW_TYPE is required to open
+		 * PERF_TYPE_HARDWARE and PERF_TYPE_HW_CACHE events on a
+		 * specific PMU.
+		 */
+		.capabilities	= PERF_PMU_CAP_EXTENDED_REGS |
+				  PERF_PMU_CAP_EXTENDED_HW_TYPE,
+	&#125;;
+
+	pmu->attr_groups[ARMPMU_ATTR_GROUP_COMMON] =
+		&amp;armpmu_common_attr_group;
+
+	for_each_possible_cpu(cpu) &#123;
+		struct pmu_hw_events *events;
+
+		events = per_cpu_ptr(pmu->hw_events, cpu);
+		events->percpu_pmu = pmu;
+	&#125;
+
+	return pmu;
+
+out_free_pmu:
+	kfree(pmu);
+out:
+	return NULL;
+&#125;
+
+int armpmu_register(struct arm_pmu *pmu)
+&#123;
+	int ret;
+
+	ret = cpu_pmu_init(pmu);
+	if (ret)
+		return ret;
+
+	/*
+	 * By this stage we know our supported CPUs on either DT/ACPI platforms,
+	 * detect the SMT implementation.
+	 */
+	pmu->has_smt = topology_core_has_smt(cpumask_first(&amp;pmu->supported_cpus));
+
+	if (!pmu->set_event_filter)
+		pmu->pmu.capabilities |= PERF_PMU_CAP_NO_EXCLUDE;
+
+	ret = perf_pmu_register(&amp;pmu->pmu, pmu->name, -1);
+	if (ret)
+		goto out_destroy;
+
+	pr_info("enabled with %s PMU driver, %d (%*pb) counters available%s\n",
+		pmu->name, bitmap_weight(pmu->cntr_mask, ARMPMU_MAX_HWEVENTS),
+		ARMPMU_MAX_HWEVENTS, &amp;pmu->cntr_mask,
+		has_nmi ? ", using NMIs" : "");
+
+	kvm_host_pmu_init(pmu);
+
+	return 0;
+
+out_destroy:
+	cpu_pmu_destroy(pmu);
+	return ret;
+&#125;
+linux-7.1.6/drivers/perf/arm_pmu_platform.c
+
+int arm_pmu_device_probe(struct platform_device *pdev,
+			 const struct of_device_id *of_table,
+			 const struct pmu_probe_info *probe_table)
+&#123;
+	armpmu_init_fn init_fn;
+	struct device *dev = &amp;pdev->dev;
+	struct arm_pmu *pmu;
+	int ret = -ENODEV;
+
+	pmu = armpmu_alloc();
+	if (!pmu)
+		return -ENOMEM;
+
+	pmu->pmu.parent = &amp;pdev->dev;
+	pmu->plat_device = pdev;
+
+	ret = pmu_parse_irqs(pmu);
+	if (ret)
+		goto out_free;
+
+	init_fn = of_device_get_match_data(dev);
+	if (init_fn) &#123;
+		pmu->secure_access = of_property_read_bool(dev->of_node,
+							   "secure-reg-access");
+
+		/* arm64 systems boot only as non-secure */
+		if (IS_ENABLED(CONFIG_ARM64) &amp;&amp; pmu->secure_access) &#123;
+			dev_warn(dev, "ignoring \"secure-reg-access\" property for arm64\n");
+			pmu->secure_access = false;
+		&#125;
+
+		ret = init_fn(pmu);
+	&#125; else if (probe_table) &#123;
+		cpumask_setall(&amp;pmu->supported_cpus);
+		ret = probe_current_pmu(pmu, probe_table);
+	&#125;
+
+	if (ret) &#123;
+		dev_err(dev, "failed to probe PMU!\n");
+		goto out_free;
+	&#125;
+
+	ret = armpmu_request_irqs(pmu);
+	if (ret)
+		goto out_free_irqs;
+
+	ret = armpmu_register(pmu);
+	if (ret) &#123;
+		dev_err(dev, "failed to register PMU devices!\n");
+		goto out_free_irqs;
+	&#125;
+
+	return 0;
+
+out_free_irqs:
+	armpmu_free_irqs(pmu);
+out_free:
+	armpmu_free(pmu);
+	return ret;
+&#125;
+  注意上面的probe函数，有几个比较重要的内容：
+
+
+在armpmu_alloc中，内核会申请pmu结构体，并填写几个重要的接口（struct arm_pmu-&gt;struct pmu	pmu;），比如上面我们在ioctl里面调用的pmu-add()/pmu-enable()等
+
+
+of_device_get_match_data 获取设备表中的初始化函数：armv8_pmu_init，里面最重要的就是armv8pmu_handle_irq（这个其实就是最终的中断服务响应程序）
+
+
+armpmu_request_irqs注册pmu中断服务程序armpmu_dispatch_irq（后面这个地方是重点，perf的采样数据就是这个地方写到mmap的空间）
+
+
+通过armpmu_register调用perf_pmu_register注册pmu到上面的pmu_idr中。
+
+
+  到了这里，通过perf驱动中的pmu_idr全局变量，我们就将 armv8_pmuv3_pmu 与 perf envent驱动建立了联系。后续就可以在perf的open，ioctl等接口里面访问armv8_pmuv3_pmu。
+
+
+perf_ioctl 与 PERF_EVENT_IOC_ENABLE
+  在上一个小节，我们已经为perf_event建立了一片空间，用于输出采样数据，先在我们启动采样。和上面的mmap同样的操作，我们直接看对应的fops的ioctl，代码如下：
+linux-7.1.6/kernel/events/core.c
+static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+&#123;
+	struct perf_event *event = file->private_data;
+	struct perf_event_context *ctx;
+	long ret;
+
+	/* Treat ioctl like writes as it is likely a mutating operation. */
+	ret = security_perf_event_write(event);
+	if (ret)
+		return ret;
+
+	ctx = perf_event_ctx_lock(event);
+	ret = _perf_ioctl(event, cmd, arg);
+	perf_event_ctx_unlock(event, ctx);
+
+	return ret;
+&#125;
+
+static long _perf_ioctl(struct perf_event *event, unsigned int cmd, unsigned long arg)
+&#123;
+	void (*func)(struct perf_event *);
+	u32 flags = arg;
+
+	if (event->state &lt;= PERF_EVENT_STATE_REVOKED)
+		return -ENODEV;
+
+	switch (cmd) &#123;
+	case PERF_EVENT_IOC_ENABLE:
+		func = _perf_event_enable;
+		break;
+	case PERF_EVENT_IOC_DISABLE:
+		func = _perf_event_disable;
+		break;
+
+    // ... ...
+    &#125;
+
+    // ... ... 
+&#125;
+
+static void _perf_event_enable(struct perf_event *event)
+&#123;
+	struct perf_event_context *ctx = event->ctx;
+
+    // ... ...
+
+	event_function_call(event, __perf_event_enable, NULL);
+&#125;
+
+static void __perf_event_enable(struct perf_event *event,
+				struct perf_cpu_context *cpuctx,
+				struct perf_event_context *ctx,
+				void *info)
+&#123;
+	struct perf_event *leader = event->group_leader;
+	struct perf_event_context *task_ctx;
+
+    // ... ...
+
+	ctx_resched(cpuctx, task_ctx, event->pmu_ctx->pmu, get_event_type(event));
+&#125;
+
+// 注意ctx_resched经过多层调用后，到了event_sched_in，开启pmu采样
+// ctx_resched->perf_event_sched_in-> ... .... -> event_sched_in
+
+static int
+event_sched_in(struct perf_event *event, struct perf_event_context *ctx)
+&#123;
+	struct perf_event_pmu_context *epc = event->pmu_ctx;
+	struct perf_cpu_pmu_context *cpc = this_cpc(epc->pmu);
+	int ret = 0;
+
+	WARN_ON_ONCE(event->ctx != ctx);
+
+	lockdep_assert_held(&amp;ctx->lock);
+
+	if (event->state &lt;= PERF_EVENT_STATE_OFF)
+		return 0;
+
+	WRITE_ONCE(event->oncpu, smp_processor_id());
+	/*
+	 * Order event::oncpu write to happen before the ACTIVE state is
+	 * visible. This allows perf_event_&#123;stop,read&#125;() to observe the correct
+	 * ->oncpu if it sees ACTIVE.
+	 */
+	smp_wmb();
+	perf_event_set_state(event, PERF_EVENT_STATE_ACTIVE);
+
+	/*
+	 * Unthrottle events, since we scheduled we might have missed several
+	 * ticks already, also for a heavily scheduling task there is little
+	 * guarantee it'll get a tick in a timely manner.
+	 */
+	if (unlikely(event->hw.interrupts == MAX_INTERRUPTS))
+		perf_event_unthrottle(event, false);
+
+	perf_pmu_disable(event->pmu);
+
+	perf_log_itrace_start(event);
+
+	if (event->pmu->add(event, PERF_EF_START)) &#123;
+		perf_event_set_state(event, PERF_EVENT_STATE_INACTIVE);
+		event->oncpu = -1;
+		ret = -EAGAIN;
+		goto out;
+	&#125;
+
+	if (!is_software_event(event))
+		cpc->active_oncpu++;
+	if (is_event_in_freq_mode(event)) &#123;
+		ctx->nr_freq++;
+		epc->nr_freq++;
+	&#125;
+	if (event->attr.exclusive)
+		cpc->exclusive = 1;
+
+out:
+	perf_pmu_enable(event->pmu);
+
+	return ret;
+&#125;
+
+
+  这个ioctl + PERF_EVENT_IOC_ENABLE 主要是为了调用pmu驱动里面对应的add+enable回调。注意这里的struct pmu，在上面的perf open操作中提到了，在open中查询到对应的pmu驱动（通过perf_pmu_register来注册，本文以armv8 pmu驱动为例）。所以，这里的pmu-&gt;add(), pmu-&gt;enable()其实都是调用的对应pmu驱动的方法。
+
+
+armv8_pmuv3_pmu 中断及采样数据写入 （本文核心）
+  上文，我们提到了pmu是一个硬件单元，当我们通过ioctl + PERF_EVENT_IOC_ENABLE后，pmu硬件单元就开始工作了，当采样的数据达到一定的数量是，就会触发中断。上面我们在armpmu_request_irqs中提到，中断服务程序是armpmu_dispatch_irq，我们先来看看这部分代码：
+linux-7.1.6/drivers/perf/arm_pmu.c
+static irqreturn_t armpmu_dispatch_irq(int irq, void *dev)
+&#123;
+	struct arm_pmu *armpmu;
+	int ret;
+	u64 start_clock, finish_clock;
+
+	/*
+	 * we request the IRQ with a (possibly percpu) struct arm_pmu**, but
+	 * the handlers expect a struct arm_pmu*. The percpu_irq framework will
+	 * do any necessary shifting, we just need to perform the first
+	 * dereference.
+	 */
+	armpmu = *(void **)dev;
+	if (WARN_ON_ONCE(!armpmu))
+		return IRQ_NONE;
+
+	start_clock = sched_clock();
+	ret = armpmu->handle_irq(armpmu);
+	finish_clock = sched_clock();
+
+	perf_sample_event_took(finish_clock - start_clock);
+	return ret;
+&#125;
+
+  这里的armpmu-&gt;handle_irq就是armv8pmu_handle_irq，也就是中断服务程序。
+linux-7.1.6/drivers/perf/arm_pmuv3.c
+static irqreturn_t armv8pmu_handle_irq(struct arm_pmu *cpu_pmu)
+&#123;
+	u64 pmovsr;
+	struct perf_sample_data data;
+	struct pmu_hw_events *cpuc = this_cpu_ptr(cpu_pmu->hw_events);
+	struct pt_regs *regs;
+	int idx;
+
+	/*
+	 * Get and reset the IRQ flags
+	 */
+	pmovsr = armv8pmu_getreset_flags();
+
+	/*
+	 * Did an overflow occur?
+	 */
+	if (!armv8pmu_has_overflowed(pmovsr))
+		return IRQ_NONE;
+
+	/*
+	 * Handle the counter(s) overflow(s)
+	 */
+	regs = get_irq_regs();
+
+	/*
+	 * Stop the PMU while processing the counter overflows
+	 * to prevent skews in group events.
+	 */
+	armv8pmu_stop(cpu_pmu);
+	for_each_set_bit(idx, cpu_pmu->cntr_mask, ARMPMU_MAX_HWEVENTS) &#123;
+		struct perf_event *event = cpuc->events[idx];
+		struct hw_perf_event *hwc;
+
+		/* Ignore if we don't have an event. */
+		if (!event)
+			continue;
+
+		/*
+		 * We have a single interrupt for all counters. Check that
+		 * each counter has overflowed before we process it.
+		 */
+		if (!armv8pmu_counter_has_overflowed(pmovsr, idx))
+			continue;
+
+		hwc = &amp;event->hw;
+		armpmu_event_update(event);
+		perf_sample_data_init(&amp;data, 0, hwc->last_period);
+		if (!armpmu_event_set_period(event))
+			continue;
+
+		if (has_branch_stack(event))
+			read_branch_records(cpuc, event, &amp;data);
+
+		/*
+		 * Perf event overflow will queue the processing of the event as
+		 * an irq_work which will be taken care of in the handling of
+		 * IPI_IRQ_WORK.
+		 */
+		perf_event_overflow(event, &amp;data, regs);
+	&#125;
+	armv8pmu_start(cpu_pmu);
+
+	return IRQ_HANDLED;
+&#125;
+  这个中断服务程序的核心就是，先关闭pmu硬件功能，然后根据当前的pmu的寄存器数据，初始化perf_sample_data，然后调用perf_event_overflow进行处理。
+linux-7.1.6/kernel/events/core.c
+int perf_event_overflow(struct perf_event *event,
+			struct perf_sample_data *data,
+			struct pt_regs *regs)
+&#123;
+	/*
+	 * Entry point from hardware PMI, interrupts should be disabled here.
+	 * This serializes us against perf_event_remove_from_context() in
+	 * things like perf_event_release_kernel().
+	 */
+	lockdep_assert_irqs_disabled();
+
+	return __perf_event_overflow(event, 1, data, regs);
+&#125;
+
+static int __perf_event_overflow(struct perf_event *event,
+				 int throttle, struct perf_sample_data *data,
+				 struct pt_regs *regs)
+&#123;
+	int events = atomic_read(&amp;event->event_limit);
+	int ret = 0;
+
+	/*
+	 * Non-sampling counters might still use the PMI to fold short
+	 * hardware counters, ignore those.
+	 */
+	if (unlikely(!is_sampling_event(event)))
+		return 0;
+
+	ret = __perf_event_account_interrupt(event, throttle);
+
+	if (event->attr.aux_pause)
+		perf_event_aux_pause(event->aux_event, true);
+
+	if (event->prog &amp;&amp; event->prog->type == BPF_PROG_TYPE_PERF_EVENT &amp;&amp;
+	    !bpf_overflow_handler(event, data, regs))
+		goto out;
+
+	/*
+	 * XXX event_limit might not quite work as expected on inherited
+	 * events
+	 */
+
+	event->pending_kill = POLL_IN;
+	if (events &amp;&amp; atomic_dec_and_test(&amp;event->event_limit)) &#123;
+		ret = 1;
+		event->pending_kill = POLL_HUP;
+		perf_event_disable_inatomic(event);
+		event->pmu->stop(event, 0);
+	&#125;
+
+	if (event->attr.sigtrap) &#123;
+		/*
+		 * The desired behaviour of sigtrap vs invalid samples is a bit
+		 * tricky; on the one hand, one should not loose the SIGTRAP if
+		 * it is the first event, on the other hand, we should also not
+		 * trigger the WARN or override the data address.
+		 */
+		bool valid_sample = sample_is_allowed(event, regs);
+		unsigned int pending_id = 1;
+		enum task_work_notify_mode notify_mode;
+
+		if (regs)
+			pending_id = hash32_ptr((void *)instruction_pointer(regs)) ?: 1;
+
+		notify_mode = in_nmi() ? TWA_NMI_CURRENT : TWA_RESUME;
+
+		if (!event->pending_work &amp;&amp;
+		    !task_work_add(current, &amp;event->pending_task, notify_mode)) &#123;
+			event->pending_work = pending_id;
+			local_inc(&amp;event->ctx->nr_no_switch_fast);
+			WARN_ON_ONCE(!atomic_long_inc_not_zero(&amp;event->refcount));
+
+			event->pending_addr = 0;
+			if (valid_sample &amp;&amp; (data->sample_flags &amp; PERF_SAMPLE_ADDR))
+				event->pending_addr = data->addr;
+
+		&#125; else if (event->attr.exclude_kernel &amp;&amp; valid_sample) &#123;
+			/*
+			 * Should not be able to return to user space without
+			 * consuming pending_work; with exceptions:
+			 *
+			 *  1. Where !exclude_kernel, events can overflow again
+			 *     in the kernel without returning to user space.
+			 *
+			 *  2. Events that can overflow again before the IRQ-
+			 *     work without user space progress (e.g. hrtimer).
+			 *     To approximate progress (with false negatives),
+			 *     check 32-bit hash of the current IP.
+			 */
+			WARN_ON_ONCE(event->pending_work != pending_id);
+		&#125;
+	&#125;
+
+	READ_ONCE(event->overflow_handler)(event, data, regs);
+
+	if (*perf_event_fasync(event) &amp;&amp; event->pending_kill) &#123;
+		event->pending_wakeup = 1;
+		irq_work_queue(&amp;event->pending_irq);
+	&#125;
+out:
+	if (event->attr.aux_resume)
+		perf_event_aux_pause(event->aux_event, false);
+
+	return ret;
+&#125;
+  然后通过event-&gt;overflow_handler写入采样数据到mmap申请的内存空间（我们上面在open的时候提到了，这里的溢出处理handler就是perf_event_output_forward）。
+void
+perf_event_output_forward(struct perf_event *event,
+			 struct perf_sample_data *data,
+			 struct pt_regs *regs)
+&#123;
+	__perf_event_output(event, data, regs, perf_output_begin_forward);
+&#125;
+
+static __always_inline int
+__perf_event_output(struct perf_event *event,
+		    struct perf_sample_data *data,
+		    struct pt_regs *regs,
+		    int (*output_begin)(struct perf_output_handle *,
+					struct perf_sample_data *,
+					struct perf_event *,
+					unsigned int))
+&#123;
+	struct perf_output_handle handle;
+	struct perf_event_header header;
+	int err;
+
+	/* protect the callchain buffers */
+	rcu_read_lock();
+
+	perf_prepare_sample(data, event, regs);
+	perf_prepare_header(&amp;header, data, event, regs);
+
+	err = output_begin(&amp;handle, data, event, header.size);
+	if (err)
+		goto exit;
+
+	perf_output_sample(&amp;handle, &amp;header, data, event);
+
+	perf_output_end(&amp;handle);
+
+exit:
+	rcu_read_unlock();
+	return err;
+&#125;
+  在__perf_event_output中：
+
+
+perf_prepare_sample 从寄存器中准备采样数据
+
+
+perf_prepare_header 准备采样数据的头。
+
+
+根据上面的header，通过output_begin 在event-&gt;rb的ringbuf中申请当前这个样本的数据空间
+
+
+然后perf_output_sample开始写入。
+
+
+  在perf_output_end中，我们需要通知用户态的poll可以返回了，现在有数据可以返回了。
+linux-7.1.6/kernel/events/ring_buffer.c
+void perf_output_end(struct perf_output_handle *handle)
+&#123;
+	perf_output_put_handle(handle);
+	rcu_read_unlock();
+&#125;
+
+
+static void perf_output_put_handle(struct perf_output_handle *handle)
+&#123;
+	struct perf_buffer *rb = handle->rb;
+	unsigned long head;
+	unsigned int nest;
+
+    // ... ...
+
+	if (handle->wakeup != local_read(&amp;rb->wakeup))
+		perf_output_wakeup(handle);
+
+out:
+	preempt_enable();
+&#125;
+
+static void perf_output_wakeup(struct perf_output_handle *handle)
+&#123;
+	atomic_set(&amp;handle->rb->poll, EPOLLIN | EPOLLRDNORM);
+
+	handle->event->pending_wakeup = 1;
+
+	if (*perf_event_fasync(handle->event) &amp;&amp; !handle->event->pending_kill)
+		handle->event->pending_kill = POLL_IN;
+
+	irq_work_queue(&amp;handle->event->pending_irq);
+&#125;
+  注意，perf_output_end 还是在pmu中断服务程序内部调用的，为了异步交付数据给用户态，这里给软中断发送一个中断请求，中断服务地址是：event-&gt;pending_irq ，也就是perf_pending_irq，这个是在open的过程中， 初始化指定的。
+linux-7.1.6/kernel/events/ring_buffer.c
+static void perf_pending_irq(struct irq_work *entry)
+&#123;
+	struct perf_event *event = container_of(entry, struct perf_event, pending_irq);
+	int rctx;
+
+	/*
+	 * If we 'fail' here, that's OK, it means recursion is already disabled
+	 * and we won't recurse 'further'.
+	 */
+	rctx = perf_swevent_get_recursion_context();
+
+	/*
+	 * The wakeup isn't bound to the context of the event -- it can happen
+	 * irrespective of where the event is.
+	 */
+	if (event->pending_wakeup) &#123;
+		event->pending_wakeup = 0;
+		perf_event_wakeup(event);
+	&#125;
+
+	if (rctx >= 0)
+		perf_swevent_put_recursion_context(rctx);
+&#125;
+
+void perf_event_wakeup(struct perf_event *event)
+&#123;
+	ring_buffer_wakeup(event);
+
+	if (event->pending_kill) &#123;
+		kill_fasync(perf_event_fasync(event), SIGIO, event->pending_kill);
+		event->pending_kill = 0;
+	&#125;
+&#125;
+
+static void ring_buffer_wakeup(struct perf_event *event)
+&#123;
+	struct perf_buffer *rb;
+
+	if (event->parent)
+		event = event->parent;
+
+	rcu_read_lock();
+	rb = rcu_dereference(event->rb);
+	if (rb) &#123;
+		list_for_each_entry_rcu(event, &amp;rb->event_list, rb_entry)
+			wake_up_all(&amp;event->waitq);
+	&#125;
+	rcu_read_unlock();
+&#125;
+
+
+static __poll_t perf_poll(struct file *file, poll_table *wait)
+&#123;
+	struct perf_event *event = file->private_data;
+	struct perf_buffer *rb;
+	__poll_t events = EPOLLHUP;
+
+	if (event->state &lt;= PERF_EVENT_STATE_REVOKED)
+		return EPOLLERR;
+
+	poll_wait(file, &amp;event->waitq, wait);
+
+	if (event->state &lt;= PERF_EVENT_STATE_REVOKED)
+		return EPOLLERR;
+
+	if (is_event_hup(event))
+		return events;
+
+	if (unlikely(READ_ONCE(event->state) == PERF_EVENT_STATE_ERROR &amp;&amp;
+		     event->attr.pinned))
+		return EPOLLERR;
+
+	/*
+	 * Pin the event->rb by taking event->mmap_mutex; otherwise
+	 * perf_event_set_output() can swizzle our rb and make us miss wakeups.
+	 */
+	mutex_lock(&amp;event->mmap_mutex);
+	rb = event->rb;
+	if (rb)
+		events = atomic_xchg(&amp;rb->poll, 0);
+	mutex_unlock(&amp;event->mmap_mutex);
+	return events;
+&#125;
+
+  注意，通过perf_pending_irq，我们调用到了ring_buffer_wakeup，我们可以wake_up_all(&amp;event-&gt;waitq)所有等待队列上面的进程，每个进程自己检查，是否有poll数据了，我们在软中断中标记了handle-&gt;rb-&gt;poll为有数据。。
+
+
+
+
+后记
+
+  总的来说，perf的工作原理（以采集cpu cycle为例）大概如下：
+
+
+cpu有一个叫做pmu的硬件监测单元，因此设备平台编写了一个叫做pmu的平台驱动，本文是：armv8_pmuv3_pmu驱动。在内核启动的时候，根据dts的定义，自动探测到armv8_pmuv3_pmu驱动，并将pmu驱动注册到perf驱动中的pmu_idr全局变量中。
+
+
+用户通过__NR_perf_event_open 系统调用创建一个struct perf_event，绑定armv8_pmuv3_pmu驱动，然后绑定给一个struct file，并给struct file装载各种fops的实现（例如：ioctl/mmap/poll等）。
+
+
+用户通过mmap访问perf_mmap，然后将申请的vm挂在到struct perf_event-&gt;rb中
+
+
+用户通过ioctl+PERF_EVENT_IOC_ENABLE，通过struct perf_event-&gt;pmu里面的相关ops，设置pmu，然后开启pmu中断
+
+
+pmu中断开始响应，将采样数据写入到struct perf_event-&gt;rb中，标记了struct perf_event-&gt;rb-&gt;poll有数据，然后发出一个新的irq软中断，pmu中断结束。
+
+
+在perf_pending_irq中，唤醒struct perf_event-&gt;waitq上面的所有进程，irq软中断结束。
+
+
+在perf_poll中，由于vfs poll的实现原理，在反复调用perf_poll，当我们通过软中断唤醒所有等待队列的进程后，再次调用perf_poll，然后检查struct perf_event-&gt;rb-&gt;poll，然后返回用户态，用户态开始处理新的采样数据，然后返回。
+
+
+  完结散花。
+参考文献
+
+
+无
+
+
+
+
+
+
+
+    
+        
+        打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）
+    
+
+
+    
+        
+    
+
+
+PS: 请尊重原创，不喜勿喷。
+PS: 要转载请注明出处，本人版权所有。
+PS: 有问题请留言，看到后我会第一时间回复。
+]]></content>
+      <categories>
+        <category>C++</category>
+        <category>perf</category>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>linux</tag>
+        <tag>perf</tag>
+      </tags>
+  </entry>
 </search>
