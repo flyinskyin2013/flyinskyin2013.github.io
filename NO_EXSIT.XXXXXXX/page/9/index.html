@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">141</span>
+          <span class="site-state-item-count">142</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -259,6 +259,351 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/05/11/blog_idx_061/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/11/blog_idx_061/" class="post-title-link" itemprop="url">FFmpeg 基本操作摘要(一) （转流、解码、编码）</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-05-11 15:47:25" itemprop="dateCreated datePublished" datetime="2018-05-11T15:47:25+08:00">2018-05-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%A7%86%E9%A2%91%E5%A4%84%E7%90%86%E5%8F%8A%E6%B5%81%E5%AA%92%E4%BD%93/" itemprop="url" rel="index"><span itemprop="name">视频处理及流媒体</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>8 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-23 16:37:45
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=061） 
+&emsp;&emsp;本文发布于 2018-05-11 15:47:25，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=061） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  近一段时间来，自己的主要工作都在是在做数据源端（设备端）音视频传输、编解码相关的事情，于是逐渐又和FFmpeg打上了交到，用到了其中的一些常见的内容，同时也解决了一些不常见的事情。</p>
+<p><font color = red >同时这里表达对“”“”雷神“”“”的敬意（一路走好，雷神），其blog上相关的FFmpeg教程是我学习FFmpeg的启蒙教程，其的blog可以不夸张的说，是国内非常非常非常好非常非常非常好非常非常非常好的音视频相关入门教程了，建议搞音视频的人可以多参考。这里提供一个链接指向雷神的博客地址，供大家参考（需从零学习FFmpeg，请参考其FFmpeg专栏）：<a target="_blank" rel="noopener" href="https://blog.csdn.net/leixiaohua1020">https://blog.csdn.net/leixiaohua1020</a> </font></p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="FFmpeg-相关内容简介">FFmpeg 相关内容简介</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="FFmpeg常用结构体">FFmpeg常用结构体</h5>
+<pre class="line-numbers language-C" data-language="C"><code class="language-C">AVFormatContext   
+&#x2F;&#x2F;Format I&#x2F;O context.（FFmpeg中的IO流的格式容器，具体来说就是用来记录打开的流的格式相关信息，列如：记录打开的rtsp流中的音视频流格式信息、MP4
+文件的流格式信息等等）
+AVCodecContext    &#x2F;&#x2F;FFmpeg中记录编码器相关信息的容器
+
+AVCodec  &#x2F;&#x2F;FFmpeg 中编码器容器
+
+AVFrame &#x2F;&#x2F;This structure describes decoded (raw) audio or video data.（FFmpeg中用于描述裸音视频数据的容器，列如：视频中的YUV数据，音频中的PCM数据）
+
+AVPacket  &#x2F;&#x2F; This structure stores compressed data. It is typically exported by demuxers
+ &#x2F;&#x2F;and then passed as input to decoders, or received as output from encoders and
+ &#x2F;&#x2F;then passed to muxers.(此结构体用于描述音视频编码后的数据，主要用在把编码后的数据送入解码器或者接收编码器输出的数据，列如：视频中的H264数据, 音频中的：G711A数据)
+
+SwsContext &#x2F;&#x2F;图像缩放和变换的关键容器
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="FFmpeg中常见调用">FFmpeg中常见调用</h5>
+<pre class="line-numbers language-C" data-language="C"><code class="language-C">void av_register_all(void); &#x2F;&#x2F; Initialize libavformat and register all the muxers, demuxers and
+ &#x2F;&#x2F; protocols. If you do not call this function, then you can select
+ &#x2F;&#x2F; exactly which formats you want to support.
+ &#x2F;&#x2F;FFmpeg 中用于初始化libavformat 库，注册音视频复用器，各种协议等等。 这里需要注意的是，许多没有用到了内容都注册了，可能造成浪费，若需要指定注册哪些内容，可参考av_register_output_format（）、av_register_input_format（）
+
+
+int avformat_network_init(void); &#x2F;&#x2F;此函数用于初始化网络相关的组件，列如：你要解析RTSP流，需要先调用此函数
+&#x2F;**
+ * Do global initialization of network components. This is optional,
+ * but recommended, since it avoids the overhead of implicitly
+ * doing the setup for each session.
+ *
+ * Calling this function will become mandatory if using network
+ * protocols at some major version bump.
+ *&#x2F;
+
+AVFormatContext *avformat_alloc_context(void); &#x2F;&#x2F;为AVFormatContext分配空间
+void avformat_free_context(AVFormatContext *s); &#x2F;&#x2F;释放AVFormatContext空间
+
+int avformat_open_input(AVFormatContext **ps, const char *filename, AVInputFormat *fmt, AVDictionary **options);&#x2F;&#x2F;Open an input stream and read the header.
+
+
+int avio_open(AVIOContext **s, const char *url, int flags); &#x2F;&#x2F; 用于初始化AVIOContext，此结构体用于文件的读写操作
+ &#x2F;&#x2F;* Create and initialize a AVIOContext for accessing the
+ &#x2F;&#x2F;* resource indicated by url.
+
+int avio_close(AVIOContext *s); &#x2F;&#x2F;释放一个AVIOContext对象
+
+int avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options); &#x2F;&#x2F;读取流数据，分析流信息
+&#x2F;&#x2F;Read packets of a media file to get stream information. 
+
+void av_dump_format(AVFormatContext *ic,
+                    int index,
+                    const char *url,
+                    int is_output);&#x2F;&#x2F;就是打印一下AVFormatContext 里面存放的一些我们关心的信息
+ &#x2F;*
+  * Print detailed information about the input or output format, such as
+ * duration, bitrate, streams, container, programs, metadata, side data,
+ * codec and time base.
+*&#x2F;
+
+
+AVCodec *avcodec_find_decoder(enum AVCodecID id);查找一个解码器
+&#x2F;&#x2F;Find a registered decoder with a matching codec ID.
+
+int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);&#x2F;&#x2F;初始化一个编码器，初始化此结构体AVCodecContext 
+
+&#x2F;*
+ * Initialize the AVCodecContext to use the given AVCodec. Prior to using this
+ * function the context has to be allocated with avcodec_alloc_context3().
+*&#x2F;
+
+int avcodec_close(AVCodecContext *avctx);&#x2F;&#x2F;释放AVCodecContext 空间
+
+int av_read_frame(AVFormatContext *s, AVPacket *pkt);&#x2F;&#x2F;返回下一帧，数据（编码后的数据）存放到pkt里面，这里会给AVPacket 分配空间，此处一定要释放，否则将会发生内存泄漏
+&#x2F;&#x2F;Return the next frame of a stream.
+
+int av_new_packet(AVPacket *pkt, int size);&#x2F;&#x2F;给AVPacket buf成员分配空间，同理上文
+&#x2F;*
+ * Allocate the payload of a packet and initialize its fields with
+ * default values.
+*&#x2F;
+void av_free_packet(AVPacket *pkt);&#x2F;&#x2F;释放AVPacket 
+
+AVFrame *av_frame_alloc(void);&#x2F;&#x2F;申请AVFrame空间 
+void av_frame_free(AVFrame **frame);&#x2F;&#x2F;释放AVFrame空间 
+
+void *av_malloc(size_t size);&#x2F;&#x2F;ffmpeg中申请一定大小的内存空间
+void av_free(void *ptr);&#x2F;&#x2F;释放空间
+&#x2F;&#x2F;av_malloc  av_free是对malloc和free的封装，本质就是基础内存操作
+
+struct SwsContext *sws_getContext(int srcW, int srcH, enum AVPixelFormat srcFormat,
+                                  int dstW, int dstH, enum AVPixelFormat dstFormat,
+                                  int flags, SwsFilter *srcFilter,
+                                  SwsFilter *dstFilter, const double *param);&#x2F;&#x2F;创建一个指定大小和颜色空间的SwsContext 
+&#x2F;*
+ * Allocate and return an SwsContext. You need it to perform
+ * scaling&#x2F;conversion operations using sws_scale().
+*&#x2F;
+
+int sws_scale(struct SwsContext *c, const uint8_t *const srcSlice[],
+              const int srcStride[], int srcSliceY, int srcSliceH,
+              uint8_t *const dst[], const int dstStride[]);&#x2F;&#x2F;根据指定SwsContext ，来对原始图像进行变换
+&#x2F;*
+ * Scale the image slice in srcSlice and put the resulting scaled
+ * slice in the image in dst. A slice is a sequence of consecutive
+ * rows in an image.
+*&#x2F;
+
+int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
+                         int *got_picture_ptr,
+                         const AVPacket *avpkt);&#x2F;&#x2F;对一帧数据进行解码
+&#x2F; * Decode the video frame of size avpkt-&gt;size from avpkt-&gt;data into picture.
+ * Some decoders may support multiple frames in a single AVPacket, such
+ * decoders would then just decode the first frame.
+ * &#x2F;
+int avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt,
+                          const AVFrame *frame, int *got_packet_ptr);&#x2F;&#x2F;对一帧数据进行编码
+                          
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="FFmpeg中需要注意的事项">FFmpeg中需要注意的事项</h5>
+<p>  FFmpeg中除了正常使用外，需要我们注意的就是内存泄漏的问题了。</p>
+<p>  这里我们需要关注几个问题：</p>
+<pre class="line-numbers language-C" data-language="C"><code class="language-C">&#x2F;*
+对于以下的结构体，一定要重点关注，申请了内存，一定要释放，否则在循环调用一些内容时，一定会发生内存泄漏。
+AVFormatContext   
+AVCodecContext    
+AVCodec  
+AVFrame 
+AVPacket  
+
+其中我们需要核心关注AVPacket这个结构体，这个结构体很容易让我们懵逼，出现内存泄漏。
+av_read_frame
+av_new_packet
+上面两个都会申请内存，需要我们释放内存
+av_free_packet
+av_packet_unref
+由于AVPacket 设计为缓冲区计数的方式，实现了一定的数据共享，方便FFmpeg管理内存，但是这里也给我们埋下了地雷：那就是AVPacket的生命周期就不好确定了，因为你调用了以上的函数，而内存不一定释放了。关于AVPacket还有许多函数，比如av_copy_packet、av_packet_ref、av_init_packet等，使用它们一定要小心，如果需要深入研究，建议查看它们的源码，这样就能够对这些调用有了更深刻的理解。
+*&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  这里我再多说一句：由于FFmpeg2 和FFmpeg3有巨大的区别，很多东西也发生了变化，网上的教程很多是FFmpeg3以后的，使用的时候需要注意。同时，FFmpeg真的一不留神就发生内存泄漏了，需要我们注意。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="FFmpeg-使用的一般流程">FFmpeg 使用的一般流程</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="解码过程">解码过程</h5>
+<pre class="line-numbers language-C" data-language="C"><code class="language-C">av_register_all  
+avformat_network_init
+avformat_alloc_context&#x2F;&#x2F;初始化AVFormatContext
+avformat_open_input &#x2F;&#x2F;打开流
+avformat_find_stream_info &#x2F;&#x2F;读取流信息
+avcodec_find_decoder &#x2F;&#x2F;根据上调用来确定编码器id，然后来查找相关编码器
+avcodec_open2 &#x2F;&#x2F;打开编码器，初始化AVCodecContext    
+av_read_frame &#x2F;&#x2F;读取一帧压缩数据
+avcodec_decode_video2 &#x2F;&#x2F;解压一帧数据
+sws_scale &#x2F;&#x2F;数据转换
+&#x2F;&#x2F;后续对原始音视频数据进行相关处理<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="编码过程">编码过程</h5>
+<pre class="line-numbers language-C" data-language="C"><code class="language-C">av_register_all  
+avformat_network_init
+avformat_alloc_context
+avio_open
+avformat_new_stream
+&#x2F;&#x2F;这里通过相关方法把原始音视频数据准备好
+avcodec_find_decoder &#x2F;&#x2F;根据上调用来确定编码器id，然后来查找相关编码器
+avcodec_open2 &#x2F;&#x2F;打开编码器，初始化AVCodecContext   
+avcodec_encode_video2 &#x2F;&#x2F;编码
+&#x2F;&#x2F;后续处理编码后的事情 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<h5 id="转流过程">转流过程</h5>
+<pre class="line-numbers language-C" data-language="C"><code class="language-C">av_register_all  
+avformat_network_init
+avformat_alloc_context&#x2F;&#x2F;初始化AVFormatContext
+avformat_open_input &#x2F;&#x2F;打开流
+avformat_find_stream_info &#x2F;&#x2F;读取流信息
+avcodec_find_decoder &#x2F;&#x2F;根据上调用来确定编码器id，然后来查找相关编码器
+avcodec_open2 &#x2F;&#x2F;打开编码器，初始化AVCodecContext    
+av_read_frame &#x2F;&#x2F;读取一帧压缩数据
+&#x2F;&#x2F;这里对av_read_frame 中的pkt data数据域和size数据域进行处理即可<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -3656,254 +4001,6 @@ Java_JNI_Operate_1Gpio_OpenGpio(JNIEnv * env, jobject obj)&#123;
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/01/04/blog_idx_051/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/04/blog_idx_051/" class="post-title-link" itemprop="url">移植openssh-7.5p1(包括openssl-1.0.2l、zlib-1.2.11)到HISI3520d(部署篇)</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-04 14:09:56" itemprop="dateCreated datePublished" datetime="2018-01-04T14:09:56+08:00">2018-01-04</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>1.1k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>4 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky sky@sky-home.com
- * @LastEditTime: 2022-10-23 14:44:59
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=051） 
-&emsp;&emsp;本文发布于 2018-01-04 14:09:56，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=051） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  无</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  此文的编译篇在：<a target="_blank" rel="noopener" href="http://blog.csdn.net/u011728480/article/details/78037404">http://blog.csdn.net/u011728480/article/details/78037404</a></p>
-<p>  原本不想写这篇文章的，但是最近，新的需求下来，需要配置一个ssh服务端，但是板子的nand经过精打细算之后，只剩了几MB的空间了，于是得重新对编译和部署进行整理。然后将SSH部署到板子的SD卡上去。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="openssh-的部署">openssh 的部署</h3>
-<hr>
-<p>  首先根据编译篇的内容，将你要指定的SD卡的挂载目录参数添加上，而不是按照ssh的默认目录去部署。</p>
-<p>  最终，configure之后得到下图：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_051/configure.png" alt="rep_img"/></center>
-    </div>
-</div>   
-<p>  可以看到，我已经指定了我想要的路径，这个路径很重要，有些ssh相关的二进制文件根据编译时的参数写死了，所以，需要编译时指定。</p>
-<br/>
-<br/>
-<h5 id="开始部署：">开始部署：</h5>
-<ol>
-<li class="lvl-3">
-<p>首先根据前文，准备以下的文件到一个目录。</p>
-</li>
-</ol>
-<p>  如图：（ssh相关的bin文件和配置文件）</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_051/ssh_bin.png" alt="rep_img"/></center>
-    </div>
-</div>  
-<p>  （ssh 所依赖的so库）</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_051/ssh_dep.png" alt="rep_img"/></center>
-    </div>
-</div>  
-<ol start="2">
-<li class="lvl-3">
-<p>创建相关的文件夹</p>
-</li>
-</ol>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /TFDISK/rootfs/bin/
-<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /TFDISK/rootfs/sbin/
-<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /TFDISK/rootfs/etc/
-<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /TFDISK/rootfs/libexec/
-<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /TFDISK/rootfs/share/
-<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /TFDISK/rootfs/lib/
-<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /var/run/
-<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /var/empty/<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<ol start="3">
-<li class="lvl-3">
-<p>修改相关文件夹权限以及添加ssh所需的用户组和用户</p>
-</li>
-</ol>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">chown</span> root:root /var/empty
-<span class="token function">chmod</span> <span class="token number">755</span> /var/empty
-addgroup sshd
-adduser <span class="token parameter variable">-G</span> sshd <span class="token parameter variable">-g</span> <span class="token string">'sshd privsep'</span> <span class="token parameter variable">-h</span> /var/empty <span class="token parameter variable">-s</span> /bin/ssh sshd
-<span class="token punctuation">(</span>添加用户时，也可直接修改/etc/passwd 文件，在最后一行添加sshd:x:74:74:Sky-SSH:/var/empty/sshd:/sbin/nologin<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//username:password:User ID:Group ID:comment:home directory:shell</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<ol start="4">
-<li class="lvl-3">
-<p>复制相关文件及so库到相关的文件夹</p>
-</li>
-</ol>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">cp</span> sshd /TFDISK/rootfs/sbin/
-<span class="token function">cp</span> <span class="token function">scp</span> <span class="token function">sftp</span> <span class="token function">ssh</span> ssh-add ssh-agent ssh-keygen ssh-keyscan ssh-pkcs11-helper /TFDISK/rootfs/bin/
-<span class="token function">cp</span> sftp-server ssh-keysign /TFDISK/rootfs/libexec/
-<span class="token function">cp</span> sshd_config ssh_config moduli /TFDISK/rootfs/etc/
-
-<span class="token comment">#libcrypto.so libssl.so libz.so</span>
-<span class="token function">cp</span> lib*.so* /TFDISK/rootfs/lib/<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<ol start="5">
-<li class="lvl-3">
-<p>到开发板上，在ssh所需的etc/目录生成相关的秘钥文件，并修改权限</p>
-</li>
-</ol>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> /TFDISK/rootfs/etc/
-ssh-keygen <span class="token parameter variable">-t</span> rsa <span class="token parameter variable">-f</span> ssh_host_rsa_key <span class="token parameter variable">-N</span> <span class="token string">""</span>
-ssh-keygen <span class="token parameter variable">-t</span> dsa <span class="token parameter variable">-f</span> ssh_host_dsa_key <span class="token parameter variable">-N</span> <span class="token string">""</span>
-ssh-keygen <span class="token parameter variable">-t</span> ecdsa <span class="token parameter variable">-f</span> ssh_host_ecdsa_key <span class="token parameter variable">-N</span> <span class="token string">""</span>
-ssh-keygen <span class="token parameter variable">-t</span> dsa <span class="token parameter variable">-f</span> ssh_host_ed25519_key <span class="token parameter variable">-N</span> <span class="token string">""</span>
-<span class="token function">chmod</span> <span class="token number">600</span> ssh_host_ed25519_key<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<ol start="6">
-<li class="lvl-3">
-<p>到此，直接可以通过/TFDISK/rootfs/sbin/sshd&amp;运行，然后连接即可。（此时root和空密码是无法登录的）</p>
-</li>
-</ol>
-<br/>
-<br/>
-<h5 id="号外号外：必须注意相关的额外配置">号外号外：必须注意相关的额外配置</h5>
-<ol>
-<li class="lvl-4">
-<p>若想使用root登录，那么必须在sshd_config 里面，取消PermitRootLogin yes注释，并改值为yes，如果需要无密码登录，需要取消PermitEmptyPasswords yes注释，设置登录名密码为空（此选项不建议使用，因为我这里是开发板可以这样，毕竟不安全）。</p>
-</li>
-<li class="lvl-3">
-<p>因为上文实现了不安全的免密登录，安全的免密登录可以使用公钥来配置，具体可以去网上查找相关资料。</p>
-</li>
-</ol>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/8/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/10/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -3928,14 +4025,14 @@ ssh-keygen <span class="token parameter variable">-t</span> dsa <span class="tok
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">296k</span>
+    <span title="站点总字数">297k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:56</span>
+    <span title="站点阅读时长">18:01</span>
   </span>
 </div>
 <div class="busuanzi-count">

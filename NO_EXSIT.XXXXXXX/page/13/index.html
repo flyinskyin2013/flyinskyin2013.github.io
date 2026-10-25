@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">141</span>
+          <span class="site-state-item-count">142</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -259,6 +259,232 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2016/06/14/blog_idx_021/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/06/14/blog_idx_021/" class="post-title-link" itemprop="url">Linux Char-Driver （字符驱动　摘要）(一)</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-06-14 20:49:38" itemprop="dateCreated datePublished" datetime="2016-06-14T20:49:38+08:00">2016-06-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">linux开发</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux%E5%BC%80%E5%8F%91/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-04-17 19:27:09
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=021） 
+&emsp;&emsp;本文发布于 2016-06-14 20:49:38，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=021） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Linux-系统运行时，文件系统与驱动的前世今生">Linux 系统运行时，文件系统与驱动的前世今生</h3>
+<hr>
+<p>  在Linux系统中，一切皆文件．所以在Linux中，设备也被作为一种文件来操作．而实现这些操作的，就叫做设备驱动．在Linux中，设备被分为三类:</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>字符设备（如，鼠标，键盘＝＝）</p>
+</li>
+<li class="lvl-2">
+<p>块设备（如硬盘）</p>
+</li>
+<li class="lvl-2">
+<p>网络设备（这里指网络接口，如常见的eth0,wlan0,lo）</p>
+</li>
+</ul>
+<p>  我们都知道，Linux一切皆文件，且，Linux具有两个空间－－用户与内核．那么具体到用户态的表现就是，我们Open某个设备后，我们就会得到一个在系统中唯一的文件描述符号fd.我们所有关于设备的操作，都是以fd为依据进行操作．那么我们来看一个字符驱动在的调用过程．</p>
+<ol>
+<li class="lvl-3">
+<p>当我们在用户态执行到open(“/dev/xxx-device”,mode,flag)函数时．</p>
+</li>
+<li class="lvl-3">
+<p>文件系统会到系统中找一个与设备文件（例子中的/dev/xxx-device）对应的inode结构体，同时在一个设备表中去查到对应设备号i_rdev的struct cdev 地址赋值给i_cdev.</p>
+</li>
+</ol>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">inode</span><span class="token punctuation">&#123;</span>
+		<span class="token class-name">dev_t</span> i_rdev<span class="token punctuation">;</span> <span class="token comment">//设备编号</span>
+		<span class="token class-name">umode_t</span> i_mode<span class="token punctuation">;</span><span class="token comment">//设备类型</span>
+		<span class="token keyword">struct</span> <span class="token class-name">cdev</span> <span class="token operator">*</span>i_cdev<span class="token punctuation">;</span> <span class="token comment">//cdev 指向设备的内核的内部驱动结构</span>
+		<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+		<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span class="token comment">// 内核中的struct cdev</span>
+<span class="token keyword">struct</span> <span class="token class-name">cdev</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">struct</span> <span class="token class-name">kobject</span> kobj<span class="token punctuation">;</span><span class="token comment">//内嵌的kobject对象</span>
+  <span class="token keyword">struct</span> <span class="token class-name">module</span> <span class="token operator">*</span>owner<span class="token punctuation">;</span><span class="token comment">//所属模块</span>
+  <span class="token keyword">struct</span> <span class="token class-name">file_operations</span> <span class="token operator">*</span>ops<span class="token punctuation">;</span><span class="token comment">//文件操作结构体</span>
+  <span class="token keyword">struct</span> <span class="token class-name">list_head</span> list<span class="token punctuation">;</span>
+  <span class="token class-name">dev_t</span> dev<span class="token punctuation">;</span><span class="token comment">//设备号,长度为32位，其中高12为主设备号，低20位为此设备号</span>
+  <span class="token keyword">unsigned</span> <span class="token keyword">int</span> count<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<ol start="3">
+<li class="lvl-3">
+<p>找到了设备文件对应的inode后，文件系统将会建立file结构体．并初始化其中的变量，其中最重要的，也是我们写驱动将会用到的是f_op变量的值，这个就是我们驱动中的 struct file_operations 变量的地址．也就是为了使用这个地址，能够调用到我们在驱动中提供的操作设备的一些基本调用．</p>
+</li>
+</ol>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">file</span><span class="token punctuation">&#123;</span>
+ 
+ <span class="token class-name">mode_t</span> fmode<span class="token punctuation">;</span> <span class="token comment">//文件模式，如FMODE_READ，FMODE_WRITE</span>
+ 
+ <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+ 
+ <span class="token class-name">loff_t</span> f_pos<span class="token punctuation">;</span> <span class="token comment">//loff_t 是一个64位的数，需要时，须强制转换为32位</span>
+ 
+ <span class="token keyword">unsigned</span> <span class="token keyword">int</span> f_flags<span class="token punctuation">;</span> <span class="token comment">//文件标志，如：O_NONBLOCK</span>
+
+<span class="token keyword">struct</span> <span class="token class-name">file_operations</span> <span class="token operator">*</span>f_op<span class="token punctuation">;</span>
+
+<span class="token keyword">void</span> <span class="token operator">*</span>private_data<span class="token punctuation">;</span> <span class="token comment">//非常重要，用于存放转换后的设备描述结构指针</span>
+
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<ol start="4">
+<li class="lvl-3">
+<p>当以上的所有流程走完，那么我们就可以操作设备了．别如read(),write,ioctl()等等</p>
+</li>
+</ol>
+<p>  以上就是Linux中，驱动与文件系统的故事，只有了解了这些，我们才能够知道我们为何要用那样的方式，结构，架构等等去写Linux的驱动．</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  友情提示：我们在用户态操作设备，而驱动在内核态，是两个不同的地址空间．所以我们在用户态的一系列函数(如open(),read(),write(),ioctl()等等)都会被翻译为内核空间中对应的系统调用去执行．而不是直接执行的操作．想详细了解，可自行搜索关键字:Linux 系统调用</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -2409,182 +2635,6 @@ iptables <span class="token parameter variable">-t</span> nat <span class="token
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2015/01/02/blog_idx_011/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2015/01/02/blog_idx_011/" class="post-title-link" itemprop="url">ubuntu 14.04 x64 安装ia32-libs(时间点为2015.1.2)</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2015-01-02 22:45:12" itemprop="dateCreated datePublished" datetime="2015-01-02T22:45:12+08:00">2015-01-02</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/Ubuntu%E4%BD%BF%E7%94%A8/" itemprop="url" rel="index"><span itemprop="name">Ubuntu使用</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>542</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>2 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky
- * @LastEditTime: 2021-12-20 13:45:51
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=011） 
-&emsp;&emsp;本文发布于  2015-01-02 22:45:12，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=011） 
--->
-<h6 id="前置说明">前置说明</h6>
-<p>  本文发布于  2015-01-02 22:45:12，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=011）</p>
-<h6 id="环境说明">环境说明</h6>
-<p>  系统:ubuntu14.04 x64</p>
-<p>  测试时间:2015.1.2</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  无</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="开启32位支持">开启32位支持</h3>
-<hr>
-<p>  解释:由于时间的推移,网上流传的关于安装ia32-libs的方法失效(包括使用13.10的源等等)</p>
-<p>  使用下面的命令:</p>
-<p>  这是我写的脚本命令:</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token shebang important">#!/bin/sh</span>
-<span class="token function">sudo</span> dpkg --add-architecture i386
-<span class="token function">sudo</span> <span class="token function">apt-get</span> update
-<span class="token comment">#开启多架构支持</span>
-
-
-<span class="token builtin class-name">cd</span> /etc/apt/sources.list.d
-<span class="token builtin class-name">echo</span> <span class="token string">"deb http://old-releases.ubuntu.com/ubuntu raring main restricted universe multiverse"</span> <span class="token operator">></span> ia32-libs-raring.list
-<span class="token function">sudo</span> <span class="token function">apt-get</span> update
-<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> ia32-libs
-<span class="token function">sudo</span> <span class="token function">rm</span> ia32-libs-raring.list
-<span class="token function">sudo</span> <span class="token function">apt-get</span> update
-<span class="token comment">#在旧的ubuntu源中安装ia32-libs</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  脚本下载地址:<a target="_blank" rel="noopener" href="http://download.csdn.net/detail/u011728480/8321431">http://download.csdn.net/detail/u011728480/8321431</a></p>
-<p>  执行脚本命令:</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> xxxxx<span class="token punctuation">(</span>脚本所在的目录<span class="token punctuation">)</span>
-
-<span class="token function">sudo</span> <span class="token function">sh</span> xxx.sh<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<p>  无</p>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/12/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/14/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -2609,14 +2659,14 @@ iptables <span class="token parameter variable">-t</span> nat <span class="token
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">296k</span>
+    <span title="站点总字数">297k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:56</span>
+    <span title="站点阅读时长">18:01</span>
   </span>
 </div>
 <div class="busuanzi-count">

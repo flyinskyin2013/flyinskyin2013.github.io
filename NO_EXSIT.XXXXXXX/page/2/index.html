@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">141</span>
+          <span class="site-state-item-count">142</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -259,6 +259,671 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2025/07/05/blog_idx_139/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/07/05/blog_idx_139/" class="post-title-link" itemprop="url">大模型基础补全计划(三)---RNN实例与测试</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-07-05 17:47:00 / 修改时间：17:52:32" itemprop="dateCreated datePublished" datetime="2025-07-05T17:47:00+08:00">2025-07-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/NLP/" itemprop="url" rel="index"><span itemprop="name">NLP</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/NLP/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/NLP/LLM/LM/" itemprop="url" rel="index"><span itemprop="name">LM</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>16 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-06-29 15:04:48
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=139） 
+&emsp;&emsp;本文发布于 2025-07-05 17:47:00           （BlogID=139） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>   本文是这个系列第三篇，它们是：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>《大模型基础补全计划(一)—重温一些深度学习相关的数学知识》 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/Iflyinsky/p/18717317">https://www.cnblogs.com/Iflyinsky/p/18717317</a></p>
+</li>
+<li class="lvl-2">
+<p>《大模型基础补全计划(二)—词嵌入(word embedding) 》 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/Iflyinsky/p/18775451">https://www.cnblogs.com/Iflyinsky/p/18775451</a></p>
+</li>
+</ul>
+<p>   在CV世界里，卷积神经网络一直是主流。在以前，NLP的世界里，循环神经网络是主流，站在今天大模型时代，Transformer 及相关变体，是当今的NLP的绝对主流。但是我们要了解Transformer提出的原因，还需要回到循环神经网络，了解其历史变迁。当然，在循环神经网络中，一些主流的概念当前也还在使用，例如：token、词表等等。</p>
+<p>  因此，如本文题目所示，本文主要简单介绍一下RNN，并尝试用RNN训练一个简单的文本续写模型。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="RNN-（Recurrent-Neural-Network）">RNN （Recurrent Neural Network）</h3>
+<hr>
+<p>  </p>
+<br/>
+<br/>
+<h5 id="RNN的意义">RNN的意义</h5>
+<p>  在提到rnn之前，我们还是有必要先提一下cnn，cnn的应用目标是指定一个输入，获得一个模型输出，多次输入之间是没有必然联系。然而，在日常生活中，我们还有许多其他的任务是多个输入之间是有前后关系的。例如：机翻、对话模型等等，这些任务都有明显的特征，那就是输入数据是一个序列，前面输入的数据会对后面的输出产生了影响，因此有了rnn模型结构。</p>
+<br/>
+<br/>
+<h5 id="RNN的结构">RNN的结构</h5>
+<p>  如图（注意，此图找不到来源出处，看到网络大部分文章都引用了此图，若有侵权，联系删除）rnn的基础结构就三层：输入层、隐藏层、输出层，：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_139/rnn_struct.jpg" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  从图中可以知道，W是一个隐藏参数，是作为来至于上一次模型计算值$S_{t-1}$的参数。V是输出的参数，U是输入的参数。那么我们就可以简单定义模型结构是：$S_t = U<em>X_t + W</em>S_{t-1} + b_i$和  $O_t = V*S_t + b_o$</p>
+<p>  对于输入层来说，其是一个输入序列，我们输出的内容也是一个序列。</p>
+<p>  注意，这里的核心就是$S_t$，前面的输入$X_t$对应一个$S_t$，那么在计算$O_{t+1}$的时候，会用到$S_t$。这样对于这个模型来说，$X_t$对$O_{t+1}$是有影响的，也就意味着，模型可能可以学习到$X_t$和$X_{t+1}$的关系。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="基于RNN训练一个简单的文字序列输出模型">基于RNN训练一个简单的文字序列输出模型</h3>
+<hr>
+<p>  </p>
+<br/>
+<br/>
+<h5 id="文本预处理">文本预处理</h5>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> collections
+<span class="token comment"># [</span>
+<span class="token comment">#     [line0],</span>
+<span class="token comment">#     [line1],</span>
+<span class="token comment">#     .....</span>
+<span class="token comment"># ]</span>
+<span class="token keyword">def</span> <span class="token function">read_data_from_txt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'诛仙 (萧鼎).txt'</span><span class="token punctuation">,</span> <span class="token string">'r'</span><span class="token punctuation">,</span> encoding<span class="token operator">=</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f<span class="token punctuation">:</span>
+        lines <span class="token operator">=</span> f<span class="token punctuation">.</span>readlines<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token keyword">return</span> <span class="token punctuation">[</span>line<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> line <span class="token keyword">in</span> lines<span class="token punctuation">]</span>
+
+<span class="token comment"># 下面的tokenize函数将文本行列表（lines）作为输入， 列表中的每个元素是一个文本序列（如一条文本行）。 </span>
+<span class="token comment"># 每个文本序列又被拆分成一个词元列表，词元（token）是文本的基本单位。 最后，返回一个由词元列表组成的列表，</span>
+<span class="token comment"># 其中的每个词元都是一个字符串（string）。</span>
+<span class="token comment"># [</span>
+<span class="token comment">#     [line0-char0, line0-char1, line0-char2, ....],</span>
+<span class="token comment">#     [line1-char0, line1-char1, line1-char2, ....],</span>
+<span class="token comment">#     .....</span>
+<span class="token comment"># ]</span>
+<span class="token keyword">def</span> <span class="token function">tokenize</span><span class="token punctuation">(</span>lines<span class="token punctuation">,</span> token<span class="token operator">=</span><span class="token string">'char'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment">#@save</span>
+    <span class="token triple-quoted-string string">"""将文本行拆分为单词或字符词元"""</span>
+    <span class="token keyword">if</span> token <span class="token operator">==</span> <span class="token string">'word'</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token punctuation">[</span>line<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">for</span> line <span class="token keyword">in</span> lines<span class="token punctuation">]</span>
+    <span class="token keyword">elif</span> token <span class="token operator">==</span> <span class="token string">'char'</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span> <span class="token keyword">for</span> line <span class="token keyword">in</span> lines<span class="token punctuation">]</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'错误：未知词元类型：'</span> <span class="token operator">+</span> token<span class="token punctuation">)</span>
+
+
+<span class="token comment"># 词元的类型是字符串，而模型需要的输入是数字，因此这种类型不方便模型使用。 现在，让我们构建一个字典，</span>
+<span class="token comment"># 通常也叫做词表（vocabulary）， 用来将字符串类型的词元映射到从开始的数字索引中。</span>
+<span class="token keyword">def</span> <span class="token function">count_corpus</span><span class="token punctuation">(</span>tokens<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment">#@save</span>
+    <span class="token triple-quoted-string string">"""统计词元的频率"""</span>
+    <span class="token comment"># 这里的tokens是1D列表或2D列表</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>tokens<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">or</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>tokens<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token builtin">list</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 将词元列表展平成一个列表</span>
+        tokens <span class="token operator">=</span> <span class="token punctuation">[</span>token <span class="token keyword">for</span> line <span class="token keyword">in</span> tokens <span class="token keyword">for</span> token <span class="token keyword">in</span> line<span class="token punctuation">]</span>
+    <span class="token keyword">return</span> collections<span class="token punctuation">.</span>Counter<span class="token punctuation">(</span>tokens<span class="token punctuation">)</span>
+
+<span class="token comment"># 返回类似&#123;'l': 3, 'o': 2, 'h': 1, 'e': 1, ' ': 1, 'w': 1, 'r': 1, 'd': 1&#125;的一个字典</span>
+<span class="token keyword">class</span> <span class="token class-name">Vocab</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""文本词表"""</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> tokens<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">,</span> min_freq<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">,</span> reserved_tokens<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> tokens <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            tokens <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">if</span> reserved_tokens <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+            reserved_tokens <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token comment"># 按出现频率排序</span>
+        <span class="token comment"># 对于Counter("hello world")，结果如下</span>
+        <span class="token comment"># Counter(&#123;'l': 3, 'o': 2, 'h': 1, 'e': 1, ' ': 1, 'w': 1, 'r': 1, 'd': 1&#125;)</span>
+        counter <span class="token operator">=</span> count_corpus<span class="token punctuation">(</span>tokens<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>_token_freqs <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>counter<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                                   reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+        <span class="token comment"># 未知词元的索引为0</span>
+        self<span class="token punctuation">.</span>idx_to_token <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'&lt;unk>'</span><span class="token punctuation">]</span> <span class="token operator">+</span> reserved_tokens
+        self<span class="token punctuation">.</span>token_to_idx <span class="token operator">=</span> <span class="token punctuation">&#123;</span>token<span class="token punctuation">:</span> idx
+                             <span class="token keyword">for</span> idx<span class="token punctuation">,</span> token <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>idx_to_token<span class="token punctuation">)</span><span class="token punctuation">&#125;</span>
+        <span class="token keyword">for</span> token<span class="token punctuation">,</span> freq <span class="token keyword">in</span> self<span class="token punctuation">.</span>_token_freqs<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> freq <span class="token operator">&lt;</span> min_freq<span class="token punctuation">:</span>
+                <span class="token keyword">break</span>
+            <span class="token keyword">if</span> token <span class="token keyword">not</span> <span class="token keyword">in</span> self<span class="token punctuation">.</span>token_to_idx<span class="token punctuation">:</span>
+                self<span class="token punctuation">.</span>idx_to_token<span class="token punctuation">.</span>append<span class="token punctuation">(</span>token<span class="token punctuation">)</span>
+                self<span class="token punctuation">.</span>token_to_idx<span class="token punctuation">[</span>token<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>idx_to_token<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span>
+
+    <span class="token keyword">def</span> <span class="token function">__len__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token builtin">len</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>idx_to_token<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">__getitem__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> tokens<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>tokens<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">,</span> <span class="token builtin">tuple</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> self<span class="token punctuation">.</span>token_to_idx<span class="token punctuation">.</span>get<span class="token punctuation">(</span>tokens<span class="token punctuation">,</span> self<span class="token punctuation">.</span>unk<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token punctuation">[</span>self<span class="token punctuation">.</span>__getitem__<span class="token punctuation">(</span>token<span class="token punctuation">)</span> <span class="token keyword">for</span> token <span class="token keyword">in</span> tokens<span class="token punctuation">]</span>
+
+    <span class="token keyword">def</span> <span class="token function">to_tokens</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> indices<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>indices<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">,</span> <span class="token builtin">tuple</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> self<span class="token punctuation">.</span>idx_to_token<span class="token punctuation">[</span>indices<span class="token punctuation">]</span>
+        <span class="token keyword">return</span> <span class="token punctuation">[</span>self<span class="token punctuation">.</span>idx_to_token<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token keyword">for</span> index <span class="token keyword">in</span> indices<span class="token punctuation">]</span>
+
+    <span class="token decorator annotation punctuation">@property</span>
+    <span class="token keyword">def</span> <span class="token function">unk</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment"># 未知词元的索引为0</span>
+        <span class="token keyword">return</span> <span class="token number">0</span>
+
+    <span class="token decorator annotation punctuation">@property</span>
+    <span class="token keyword">def</span> <span class="token function">token_freqs</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>_token_freqs    
+
+<span class="token comment"># 将传入的数据集映射为一个索引表</span>
+<span class="token comment"># 返回传入文本的索引、词表</span>
+<span class="token keyword">def</span> <span class="token function">load_dataset</span><span class="token punctuation">(</span>max_tokens<span class="token operator">=</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+    lines <span class="token operator">=</span> read_data_from_txt<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'# 文本总行数: </span><span class="token interpolation"><span class="token punctuation">&#123;</span><span class="token builtin">len</span><span class="token punctuation">(</span>lines<span class="token punctuation">)</span><span class="token punctuation">&#125;</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+    <span class="token comment"># print(lines[0])</span>
+    <span class="token comment"># print(lines[10])</span>
+
+    tokens <span class="token operator">=</span> tokenize<span class="token punctuation">(</span>lines<span class="token punctuation">)</span>
+    <span class="token comment"># for i in range(11):</span>
+    <span class="token comment">#     print(tokens[i])</span>
+
+    vocab <span class="token operator">=</span> Vocab<span class="token punctuation">(</span>tokens<span class="token punctuation">,</span> reserved_tokens<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'&lt;pad>'</span><span class="token punctuation">,</span> <span class="token string">'&lt;bos>'</span><span class="token punctuation">,</span> <span class="token string">'&lt;eos>'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># print(list(vocab.token_to_idx.items())[:10])</span>
+
+    <span class="token comment"># for i in [0, 10]:</span>
+    <span class="token comment">#     print('文本:', tokens[i])</span>
+    <span class="token comment">#     print('索引:', vocab[tokens[i]])</span>
+
+
+    corpus <span class="token operator">=</span> <span class="token punctuation">[</span>vocab<span class="token punctuation">[</span>token<span class="token punctuation">]</span> <span class="token keyword">for</span> line <span class="token keyword">in</span> tokens <span class="token keyword">for</span> token <span class="token keyword">in</span> line<span class="token punctuation">]</span>
+    <span class="token keyword">if</span> max_tokens <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">:</span>
+        corpus <span class="token operator">=</span> corpus<span class="token punctuation">[</span><span class="token punctuation">:</span>max_tokens<span class="token punctuation">]</span>
+    <span class="token keyword">return</span> corpus<span class="token punctuation">,</span> vocab<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  上面代码做了如下事情：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>首先我们随便找了一部中文小说，然后读取其所有的行，然后得到一个包含所有行的二维列表。</p>
+</li>
+<li class="lvl-2">
+<p>然后我们对每一行进行文字切割，得到了一个二维列表，列表中的每一行又被分割为一个个中文文字，也就得到了一个个token。(特别注意，站在当前的时刻，这里的token和现在主流的大语言模型的token概念是一样的，但是不是一样的实现。)</p>
+</li>
+<li class="lvl-2">
+<p>由于模型不能直接处理文字，我们需要将文字转换为数字，那么直接的做法就是将一个个token编号即可，这个时候我们得到了词表（vocabulary）。</p>
+</li>
+<li class="lvl-2">
+<p>然后我们根据我们得到的词表，对原始数据集进行数字化，得到一个列表，列表中每个元素就是一个个token对应的索引。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<h5 id="构造数据集及加载器">构造数据集及加载器</h5>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 以num_steps为步长，从随机的起始位置开始，返回</span>
+<span class="token comment"># x1=[ [random_offset1:random_offset1 + num_steps], ... , [random_offset_batchsize:random_offset_batchsize + num_steps] ]</span>
+<span class="token comment"># y1=[ [random_offset1 + 1:random_offset1 + num_steps + 1], ... , [random_offset_batchsize + 1:random_offset_batchsize + num_steps + 1] ]</span>
+<span class="token keyword">def</span> <span class="token function">seq_data_iter_random</span><span class="token punctuation">(</span>corpus<span class="token punctuation">,</span> batch_size<span class="token punctuation">,</span> num_steps<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment">#@save</span>
+    <span class="token triple-quoted-string string">"""使用随机抽样生成一个小批量子序列"""</span>
+    <span class="token comment"># 从随机偏移量开始对序列进行分区，随机范围包括num_steps-1</span>
+    corpus <span class="token operator">=</span> corpus<span class="token punctuation">[</span>random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> num_steps <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token punctuation">]</span>
+    <span class="token comment"># 减去1，是因为我们需要考虑标签</span>
+    num_subseqs <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>corpus<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">//</span> num_steps
+    <span class="token comment"># 长度为num_steps的子序列的起始索引</span>
+    <span class="token comment"># [0, num_steps*1, num_steps*2, num_steps*3, ...]</span>
+    initial_indices <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> num_subseqs <span class="token operator">*</span> num_steps<span class="token punctuation">,</span> num_steps<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># 在随机抽样的迭代过程中，</span>
+    <span class="token comment"># 来自两个相邻的、随机的、小批量中的子序列不一定在原始序列上相邻</span>
+    random<span class="token punctuation">.</span>shuffle<span class="token punctuation">(</span>initial_indices<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">data</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 返回从pos位置开始的长度为num_steps的序列</span>
+        <span class="token keyword">return</span> corpus<span class="token punctuation">[</span>pos<span class="token punctuation">:</span> pos <span class="token operator">+</span> num_steps<span class="token punctuation">]</span>
+
+    num_batches <span class="token operator">=</span> num_subseqs <span class="token operator">//</span> batch_size
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> batch_size <span class="token operator">*</span> num_batches<span class="token punctuation">,</span> batch_size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 在这里，initial_indices包含子序列的随机起始索引</span>
+        initial_indices_per_batch <span class="token operator">=</span> initial_indices<span class="token punctuation">[</span>i<span class="token punctuation">:</span> i <span class="token operator">+</span> batch_size<span class="token punctuation">]</span>
+        X <span class="token operator">=</span> <span class="token punctuation">[</span>data<span class="token punctuation">(</span>j<span class="token punctuation">)</span> <span class="token keyword">for</span> j <span class="token keyword">in</span> initial_indices_per_batch<span class="token punctuation">]</span>
+        Y <span class="token operator">=</span> <span class="token punctuation">[</span>data<span class="token punctuation">(</span>j <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">for</span> j <span class="token keyword">in</span> initial_indices_per_batch<span class="token punctuation">]</span>
+        <span class="token keyword">yield</span> torch<span class="token punctuation">.</span>tensor<span class="token punctuation">(</span>X<span class="token punctuation">)</span><span class="token punctuation">,</span> torch<span class="token punctuation">.</span>tensor<span class="token punctuation">(</span>Y<span class="token punctuation">)</span>
+
+<span class="token comment"># 以num_steps为步长，从随机的起始位置开始，返回</span>
+<span class="token comment"># x1=[:, random_offset1:random_offset1 + num_steps]</span>
+<span class="token comment"># y1=[:, random_offset1 + 1:random_offset1 + num_steps + 1]</span>
+
+<span class="token keyword">def</span> <span class="token function">seq_data_iter_sequential</span><span class="token punctuation">(</span>corpus<span class="token punctuation">,</span> batch_size<span class="token punctuation">,</span> num_steps<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment">#@save</span>
+    <span class="token triple-quoted-string string">"""使用顺序分区生成一个小批量子序列"""</span>
+    <span class="token comment"># 从随机偏移量开始划分序列</span>
+    offset <span class="token operator">=</span> random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> num_steps<span class="token punctuation">)</span>
+    num_tokens <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>corpus<span class="token punctuation">)</span> <span class="token operator">-</span> offset <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">//</span> batch_size<span class="token punctuation">)</span> <span class="token operator">*</span> batch_size
+    <span class="token comment"># 重新根据corpus建立X_corpus, Y_corpus，两者之间差一位。注意X_corpus, Y_corpus的长度是batch_size的整数倍</span>
+    Xs <span class="token operator">=</span> torch<span class="token punctuation">.</span>tensor<span class="token punctuation">(</span>corpus<span class="token punctuation">[</span>offset<span class="token punctuation">:</span> offset <span class="token operator">+</span> num_tokens<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    Ys <span class="token operator">=</span> torch<span class="token punctuation">.</span>tensor<span class="token punctuation">(</span>corpus<span class="token punctuation">[</span>offset <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">:</span> offset <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">+</span> num_tokens<span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 直接根据batchsize划分X_corpus, Y_corpus</span>
+    Xs<span class="token punctuation">,</span> Ys <span class="token operator">=</span> Xs<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>batch_size<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> Ys<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>batch_size<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token comment"># 计算出需要多少次才能取完数据</span>
+    num_batches <span class="token operator">=</span> Xs<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">//</span> num_steps
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> num_steps <span class="token operator">*</span> num_batches<span class="token punctuation">,</span> num_steps<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        X <span class="token operator">=</span> Xs<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">,</span> i<span class="token punctuation">:</span> i <span class="token operator">+</span> num_steps<span class="token punctuation">]</span>
+        Y <span class="token operator">=</span> Ys<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">,</span> i<span class="token punctuation">:</span> i <span class="token operator">+</span> num_steps<span class="token punctuation">]</span>
+        <span class="token keyword">yield</span> X<span class="token punctuation">,</span> Y
+
+
+<span class="token keyword">class</span> <span class="token class-name">SeqDataLoader</span><span class="token punctuation">:</span>  <span class="token comment">#@save</span>
+    <span class="token triple-quoted-string string">"""加载序列数据的迭代器"""</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> batch_size<span class="token punctuation">,</span> num_steps<span class="token punctuation">,</span> use_random_iter<span class="token punctuation">,</span> max_tokens<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> use_random_iter<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>data_iter_fn <span class="token operator">=</span> seq_data_iter_random
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>data_iter_fn <span class="token operator">=</span> seq_data_iter_sequential
+        self<span class="token punctuation">.</span>corpus<span class="token punctuation">,</span> self<span class="token punctuation">.</span>vocab <span class="token operator">=</span> dateset<span class="token punctuation">.</span>load_dataset<span class="token punctuation">(</span>max_tokens<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> self<span class="token punctuation">.</span>num_steps <span class="token operator">=</span> batch_size<span class="token punctuation">,</span> num_steps
+
+    <span class="token keyword">def</span> <span class="token function">__iter__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>data_iter_fn<span class="token punctuation">(</span>self<span class="token punctuation">.</span>corpus<span class="token punctuation">,</span> self<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> self<span class="token punctuation">.</span>num_steps<span class="token punctuation">)</span>
+    
+<span class="token keyword">def</span> <span class="token function">load_data_epoch</span><span class="token punctuation">(</span>batch_size<span class="token punctuation">,</span> num_steps<span class="token punctuation">,</span>  <span class="token comment">#@save</span>
+                           use_random_iter<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span> max_tokens<span class="token operator">=</span><span class="token number">10000</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""返回时光机器数据集的迭代器和词表"""</span>
+    data_iter <span class="token operator">=</span> SeqDataLoader<span class="token punctuation">(</span>
+        batch_size<span class="token punctuation">,</span> num_steps<span class="token punctuation">,</span> use_random_iter<span class="token punctuation">,</span> max_tokens<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> data_iter<span class="token punctuation">,</span> data_iter<span class="token punctuation">.</span>vocab<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  上面的代码主要作用是：在训练的时候，从我们在文本预处理数据中，以随机顺序或者相邻顺序抽取其中的部分数据作为随机批量数据。每次抽取的数据维度是：(batch_size, num_steps)</p>
+<br/>
+<br/>
+<h5 id="搭建RNN训练框架">搭建RNN训练框架</h5>
+<p>  按照原来的经验，我们要设计一个训练框架，第一步就要搭建网络，此网络用于接收一个输入，输出一个输出。</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">rnn</span><span class="token punctuation">(</span>inputs<span class="token punctuation">,</span> state<span class="token punctuation">,</span> params<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># inputs的形状：(时间步数量，批量大小，词表大小)</span>
+    <span class="token comment"># inputs的形状：(num_steps，batch_size，词表大小)</span>
+    <span class="token comment"># W_xh的形状: (词表大小, num_hiddens)</span>
+    <span class="token comment"># W_hh的形状：(num_hiddens, num_hiddens)</span>
+    <span class="token comment"># b_h 的形状：(num_hiddens)</span>
+    <span class="token comment"># W_hq的形状：(num_hiddens, 词表大小)</span>
+    <span class="token comment"># b_q 的形状：(词表大小)</span>
+    W_xh<span class="token punctuation">,</span> W_hh<span class="token punctuation">,</span> b_h<span class="token punctuation">,</span> W_hq<span class="token punctuation">,</span> b_q <span class="token operator">=</span> params
+    <span class="token comment"># H的形状：（batch_size, num_hiddens）</span>
+    H<span class="token punctuation">,</span> <span class="token operator">=</span> state
+    outputs <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token comment"># X的形状：(批量大小，词表大小)</span>
+    <span class="token comment"># X的形状：(batch_size，词表大小)</span>
+    <span class="token keyword">for</span> X <span class="token keyword">in</span> inputs<span class="token punctuation">:</span>
+        <span class="token comment"># H是上一次预测的一个参数，每次计算隐藏层值后，更新H的值</span>
+        <span class="token comment"># H = tanh(X*W_xh + H*W_hh + b_h) </span>
+        H <span class="token operator">=</span> torch<span class="token punctuation">.</span>tanh<span class="token punctuation">(</span>torch<span class="token punctuation">.</span>mm<span class="token punctuation">(</span>X<span class="token punctuation">,</span> W_xh<span class="token punctuation">)</span> <span class="token operator">+</span> torch<span class="token punctuation">.</span>mm<span class="token punctuation">(</span>H<span class="token punctuation">,</span> W_hh<span class="token punctuation">)</span> <span class="token operator">+</span> b_h<span class="token punctuation">)</span>
+        <span class="token comment"># Y是输出值，每次rnn输出的时候，都会输出从开始到当前的所有值，因此我们需要保存所有的输出值</span>
+        <span class="token comment"># Y = H * W_hq + b_q</span>
+        <span class="token comment"># Y的形状：(batch_size，词表大小)</span>
+        Y <span class="token operator">=</span> torch<span class="token punctuation">.</span>mm<span class="token punctuation">(</span>H<span class="token punctuation">,</span> W_hq<span class="token punctuation">)</span> <span class="token operator">+</span> b_q
+        outputs<span class="token punctuation">.</span>append<span class="token punctuation">(</span>Y<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> torch<span class="token punctuation">.</span>cat<span class="token punctuation">(</span>outputs<span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>H<span class="token punctuation">,</span><span class="token punctuation">)</span>
+
+<span class="token keyword">class</span> <span class="token class-name">RNNModelScratch</span><span class="token punctuation">:</span> <span class="token comment">#@save</span>
+    <span class="token triple-quoted-string string">"""从零开始实现的循环神经网络模型"""</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> vocab_size<span class="token punctuation">,</span> num_hiddens<span class="token punctuation">,</span> device<span class="token punctuation">,</span>
+                 get_params<span class="token punctuation">,</span> init_state<span class="token punctuation">,</span> forward_fn<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>vocab_size<span class="token punctuation">,</span> self<span class="token punctuation">.</span>num_hiddens <span class="token operator">=</span> vocab_size<span class="token punctuation">,</span> num_hiddens
+        <span class="token comment"># 初始化了隐藏参数 W_xh, W_hh, b_h,  W_hq, b_q</span>
+        self<span class="token punctuation">.</span>params <span class="token operator">=</span> get_params<span class="token punctuation">(</span>vocab_size<span class="token punctuation">,</span> num_hiddens<span class="token punctuation">,</span> device<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>init_state<span class="token punctuation">,</span> self<span class="token punctuation">.</span>forward_fn <span class="token operator">=</span> init_state<span class="token punctuation">,</span> forward_fn
+
+    <span class="token keyword">def</span> <span class="token function">__call__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> X<span class="token punctuation">,</span> state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># X的形状：(batch_size, num_steps)</span>
+        <span class="token comment"># X one_hot之后的形状：(num_steps，batch_size，词表大小)</span>
+        X <span class="token operator">=</span> F<span class="token punctuation">.</span>one_hot<span class="token punctuation">(</span>X<span class="token punctuation">.</span>T<span class="token punctuation">,</span> self<span class="token punctuation">.</span>vocab_size<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">type</span><span class="token punctuation">(</span>torch<span class="token punctuation">.</span>float32<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>forward_fn<span class="token punctuation">(</span>X<span class="token punctuation">,</span> state<span class="token punctuation">,</span> self<span class="token punctuation">.</span>params<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">begin_state</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> batch_size<span class="token punctuation">,</span> device<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>init_state<span class="token punctuation">(</span>batch_size<span class="token punctuation">,</span> self<span class="token punctuation">.</span>num_hiddens<span class="token punctuation">,</span> device<span class="token punctuation">)</span>
+
+<span class="token comment"># 用框架</span>
+<span class="token comment">#@save</span>
+<span class="token keyword">class</span> <span class="token class-name">RNNModel</span><span class="token punctuation">(</span>nn<span class="token punctuation">.</span>Module<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""循环神经网络模型"""</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> rnn_layer<span class="token punctuation">,</span> vocab_size<span class="token punctuation">,</span> device<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span>RNNModel<span class="token punctuation">,</span> self<span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token operator">**</span>kwargs<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>rnn <span class="token operator">=</span> rnn_layer
+        self<span class="token punctuation">.</span>vocab_size <span class="token operator">=</span> vocab_size
+        self<span class="token punctuation">.</span>num_hiddens <span class="token operator">=</span> self<span class="token punctuation">.</span>rnn<span class="token punctuation">.</span>hidden_size
+        <span class="token comment"># 如果RNN是双向的（之后将介绍），num_directions应该是2，否则应该是1</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> self<span class="token punctuation">.</span>rnn<span class="token punctuation">.</span>bidirectional<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>num_directions <span class="token operator">=</span> <span class="token number">1</span>
+            self<span class="token punctuation">.</span>linear <span class="token operator">=</span> nn<span class="token punctuation">.</span>Linear<span class="token punctuation">(</span>self<span class="token punctuation">.</span>num_hiddens<span class="token punctuation">,</span> self<span class="token punctuation">.</span>vocab_size<span class="token punctuation">,</span> device<span class="token operator">=</span>device<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>num_directions <span class="token operator">=</span> <span class="token number">2</span>
+            self<span class="token punctuation">.</span>linear <span class="token operator">=</span> nn<span class="token punctuation">.</span>Linear<span class="token punctuation">(</span>self<span class="token punctuation">.</span>num_hiddens <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">,</span> self<span class="token punctuation">.</span>vocab_size<span class="token punctuation">,</span> device<span class="token operator">=</span>device<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">forward</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> inputs<span class="token punctuation">,</span> state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        X <span class="token operator">=</span> F<span class="token punctuation">.</span>one_hot<span class="token punctuation">(</span>inputs<span class="token punctuation">.</span>T<span class="token punctuation">.</span><span class="token builtin">long</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> self<span class="token punctuation">.</span>vocab_size<span class="token punctuation">)</span>
+        X <span class="token operator">=</span> X<span class="token punctuation">.</span>to<span class="token punctuation">(</span>torch<span class="token punctuation">.</span>float32<span class="token punctuation">)</span>
+        Y<span class="token punctuation">,</span> state <span class="token operator">=</span> self<span class="token punctuation">.</span>rnn<span class="token punctuation">(</span>X<span class="token punctuation">,</span> state<span class="token punctuation">)</span>
+        <span class="token comment"># 全连接层首先将Y的形状改为(时间步数*批量大小,隐藏单元数)</span>
+        <span class="token comment"># 它的输出形状是(时间步数*批量大小,词表大小)。</span>
+        output <span class="token operator">=</span> self<span class="token punctuation">.</span>linear<span class="token punctuation">(</span>Y<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> Y<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> output<span class="token punctuation">,</span> state
+
+    <span class="token keyword">def</span> <span class="token function">begin_state</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> device<span class="token punctuation">,</span> batch_size<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>rnn<span class="token punctuation">,</span> nn<span class="token punctuation">.</span>LSTM<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># nn.GRU以张量作为隐状态</span>
+            <span class="token keyword">return</span>  torch<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>num_directions <span class="token operator">*</span> self<span class="token punctuation">.</span>rnn<span class="token punctuation">.</span>num_layers<span class="token punctuation">,</span>
+                                 batch_size<span class="token punctuation">,</span> self<span class="token punctuation">.</span>num_hiddens<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                                device<span class="token operator">=</span>device<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># nn.LSTM以元组作为隐状态</span>
+            <span class="token keyword">return</span> <span class="token punctuation">(</span>torch<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token punctuation">(</span>
+                self<span class="token punctuation">.</span>num_directions <span class="token operator">*</span> self<span class="token punctuation">.</span>rnn<span class="token punctuation">.</span>num_layers<span class="token punctuation">,</span>
+                batch_size<span class="token punctuation">,</span> self<span class="token punctuation">.</span>num_hiddens<span class="token punctuation">)</span><span class="token punctuation">,</span> device<span class="token operator">=</span>device<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    torch<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token punctuation">(</span>
+                        self<span class="token punctuation">.</span>num_directions <span class="token operator">*</span> self<span class="token punctuation">.</span>rnn<span class="token punctuation">.</span>num_layers<span class="token punctuation">,</span>
+                        batch_size<span class="token punctuation">,</span> self<span class="token punctuation">.</span>num_hiddens<span class="token punctuation">)</span><span class="token punctuation">,</span> device<span class="token operator">=</span>device<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  上面主要是设计了两个网络类：RNNModelScratch、RNNModel。前者是手搓rnn实现。后者是借用torch框架来实现一个简单的rnn网络。他们的主要做了如下几个事情：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>接收(batch_size, num_steps)的输入，并将输入转换为one_hot向量模式，其shape是(num_steps，batch_size，词表大小)</p>
+</li>
+<li class="lvl-2">
+<p>通过rnn的计算，然后通过变换，将最终输出映射到（batch_size * num_steps， 词表大小）</p>
+</li>
+</ul>
+<p>  其实我们观察输入和输出，就可以理解一个事情：输入的内容就是输入序列所有的字符对应的one_hot向量。输出的内容就是batch_size * num_steps个向量，代表输出的文字序列信息，每个向量里面的最大值就代表了网络预测的文字id。</p>
+<p>  有了网络，对于部署角度来说，我们只需要实现预测过程即可：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">predict_ch8</span><span class="token punctuation">(</span>prefix<span class="token punctuation">,</span> num_preds<span class="token punctuation">,</span> net<span class="token punctuation">,</span> vocab<span class="token punctuation">,</span> device<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment">#@save</span>
+    <span class="token triple-quoted-string string">"""在prefix后面生成新字符"""</span>
+    state <span class="token operator">=</span> net<span class="token punctuation">.</span>begin_state<span class="token punctuation">(</span>batch_size<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> device<span class="token operator">=</span>device<span class="token punctuation">)</span>
+    outputs <span class="token operator">=</span> <span class="token punctuation">[</span>vocab<span class="token punctuation">[</span>prefix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">]</span>
+    get_input <span class="token operator">=</span> <span class="token keyword">lambda</span><span class="token punctuation">:</span> torch<span class="token punctuation">.</span>tensor<span class="token punctuation">(</span><span class="token punctuation">[</span>outputs<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> device<span class="token operator">=</span>device<span class="token punctuation">)</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> y <span class="token keyword">in</span> prefix<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">:</span>  <span class="token comment"># 预热期</span>
+        _<span class="token punctuation">,</span> state <span class="token operator">=</span> net<span class="token punctuation">(</span>get_input<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> state<span class="token punctuation">)</span>
+        outputs<span class="token punctuation">.</span>append<span class="token punctuation">(</span>vocab<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_preds<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment"># 预测num_preds步</span>
+        <span class="token comment"># y 包含从开始到现在的所有输出</span>
+        <span class="token comment"># state是当前计算出来的隐藏参数</span>
+        y<span class="token punctuation">,</span> state <span class="token operator">=</span> net<span class="token punctuation">(</span>get_input<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> state<span class="token punctuation">)</span>
+        outputs<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>y<span class="token punctuation">.</span>argmax<span class="token punctuation">(</span>dim<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token string">''</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token punctuation">[</span>vocab<span class="token punctuation">.</span>idx_to_token<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> outputs<span class="token punctuation">]</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  由于输出的信息就是batch_size * num_steps个向量，那么只需要计算每一个向量的最大值id就得到了网络输出的tokenid，然后通过词表反向映射回词表，完成了预测文字输出的功能。</p>
+<p>  有了网络、预测过程，然后就可以搭建训练过程，训练过程最重要的一步就是通过网络得到输入对应的输出，然后根据输出计算loss信息，然后根据loss信息进行梯度下降（这就是通用流程）</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">train_epoch_ch8</span><span class="token punctuation">(</span>net<span class="token punctuation">,</span> train_iter<span class="token punctuation">,</span> loss<span class="token punctuation">,</span> updater<span class="token punctuation">,</span> device<span class="token punctuation">,</span> use_random_iter<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""训练网络一个迭代周期（定义见第8章）"""</span>
+    state<span class="token punctuation">,</span> timer <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">,</span> Timer<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    metric <span class="token operator">=</span> Accumulator<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>  <span class="token comment"># 训练损失之和,词元数量</span>
+    <span class="token comment"># X的形状：(batch_size, num_steps)</span>
+    <span class="token comment"># Y的形状：(batch_size, num_steps)</span>
+    <span class="token keyword">for</span> X<span class="token punctuation">,</span> Y <span class="token keyword">in</span> train_iter<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> state <span class="token keyword">is</span> <span class="token boolean">None</span> <span class="token keyword">or</span> use_random_iter<span class="token punctuation">:</span>
+            <span class="token comment"># 在第一次迭代或使用随机抽样时初始化state</span>
+            state <span class="token operator">=</span> net<span class="token punctuation">.</span>begin_state<span class="token punctuation">(</span>batch_size<span class="token operator">=</span>X<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> device<span class="token operator">=</span>device<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>net<span class="token punctuation">,</span> nn<span class="token punctuation">.</span>Module<span class="token punctuation">)</span> <span class="token keyword">and</span> <span class="token keyword">not</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token builtin">tuple</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token comment"># state对于nn.GRU是个张量</span>
+                state<span class="token punctuation">.</span>detach_<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                <span class="token comment"># state对于nn.LSTM或对于我们从零开始实现的模型是个张量</span>
+                <span class="token keyword">for</span> s <span class="token keyword">in</span> state<span class="token punctuation">:</span>
+                    s<span class="token punctuation">.</span>detach_<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        y <span class="token operator">=</span> Y<span class="token punctuation">.</span>T<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+        X<span class="token punctuation">,</span> y <span class="token operator">=</span> X<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span><span class="token punctuation">,</span> y<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span>
+        <span class="token comment"># y_hat 包含从开始到现在的所有输出</span>
+        <span class="token comment"># y_hat的形状：（batch_size * num_steps， 词表大小）</span>
+        <span class="token comment"># state是当前计算出来的隐藏参数</span>
+        y_hat<span class="token punctuation">,</span> state <span class="token operator">=</span> net<span class="token punctuation">(</span>X<span class="token punctuation">,</span> state<span class="token punctuation">)</span>
+        <span class="token comment"># 交叉熵损失函数，传入预测值和标签值，并求平均值</span>
+        l <span class="token operator">=</span> loss<span class="token punctuation">(</span>y_hat<span class="token punctuation">,</span> y<span class="token punctuation">.</span><span class="token builtin">long</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>mean<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>updater<span class="token punctuation">,</span> torch<span class="token punctuation">.</span>optim<span class="token punctuation">.</span>Optimizer<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            updater<span class="token punctuation">.</span>zero_grad<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            l<span class="token punctuation">.</span>backward<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            grad_clipping<span class="token punctuation">(</span>net<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+            updater<span class="token punctuation">.</span>step<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            l<span class="token punctuation">.</span>backward<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            grad_clipping<span class="token punctuation">(</span>net<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+            <span class="token comment"># 因为已经调用了mean函数</span>
+            updater<span class="token punctuation">(</span>batch_size<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+        <span class="token comment"># 这里记录交叉熵损失的值的和，以及记录对应交叉熵损失值的样本个数</span>
+        metric<span class="token punctuation">.</span>add<span class="token punctuation">(</span>l <span class="token operator">*</span> y<span class="token punctuation">.</span>numel<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> y<span class="token punctuation">.</span>numel<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># 求交叉熵损失的平均值，再求exp，即可得到困惑度</span>
+    <span class="token keyword">return</span> math<span class="token punctuation">.</span>exp<span class="token punctuation">(</span>metric<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">/</span> metric<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> metric<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">/</span> timer<span class="token punctuation">.</span>stop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">sgd</span><span class="token punctuation">(</span>params<span class="token punctuation">,</span> lr<span class="token punctuation">,</span> batch_size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""小批量随机梯度下降
+
+    Defined in :numref:`sec_linear_scratch`"""</span>
+    <span class="token keyword">with</span> torch<span class="token punctuation">.</span>no_grad<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> param <span class="token keyword">in</span> params<span class="token punctuation">:</span>
+            param <span class="token operator">-=</span> lr <span class="token operator">*</span> param<span class="token punctuation">.</span>grad <span class="token operator">/</span> batch_size
+            param<span class="token punctuation">.</span>grad<span class="token punctuation">.</span>zero_<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment">#@save</span>
+<span class="token keyword">def</span> <span class="token function">train_ch8</span><span class="token punctuation">(</span>net<span class="token punctuation">,</span> train_iter<span class="token punctuation">,</span> vocab<span class="token punctuation">,</span> lr<span class="token punctuation">,</span> num_epochs<span class="token punctuation">,</span> device<span class="token punctuation">,</span>
+              use_random_iter<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""训练模型（定义见第8章）"""</span>
+    loss <span class="token operator">=</span> nn<span class="token punctuation">.</span>CrossEntropyLoss<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 新建一个连接客户端</span>
+    <span class="token comment"># 指定 env=u'test1'，默认端口为 8097，host 是 'localhost'</span>
+    vis <span class="token operator">=</span> visdom<span class="token punctuation">.</span>Visdom<span class="token punctuation">(</span>env<span class="token operator">=</span><span class="token string">u'test1'</span><span class="token punctuation">,</span> server<span class="token operator">=</span><span class="token string">"http://127.0.0.1"</span><span class="token punctuation">,</span> port<span class="token operator">=</span><span class="token number">8097</span><span class="token punctuation">)</span>
+    animator <span class="token operator">=</span> vis
+    <span class="token comment"># 初始化</span>
+    <span class="token keyword">if</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>net<span class="token punctuation">,</span> nn<span class="token punctuation">.</span>Module<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        updater <span class="token operator">=</span> torch<span class="token punctuation">.</span>optim<span class="token punctuation">.</span>SGD<span class="token punctuation">(</span>net<span class="token punctuation">.</span>parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> lr<span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        updater <span class="token operator">=</span> <span class="token keyword">lambda</span> batch_size<span class="token punctuation">:</span> sgd<span class="token punctuation">(</span>net<span class="token punctuation">.</span>params<span class="token punctuation">,</span> lr<span class="token punctuation">,</span> batch_size<span class="token punctuation">)</span>
+    predict <span class="token operator">=</span> <span class="token keyword">lambda</span> prefix<span class="token punctuation">:</span> predict_ch8<span class="token punctuation">(</span>prefix<span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> net<span class="token punctuation">,</span> vocab<span class="token punctuation">,</span> device<span class="token punctuation">)</span>
+    <span class="token comment"># 训练和预测</span>
+    <span class="token keyword">for</span> epoch <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_epochs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        ppl<span class="token punctuation">,</span> speed <span class="token operator">=</span> train_epoch_ch8<span class="token punctuation">(</span>
+            net<span class="token punctuation">,</span> train_iter<span class="token punctuation">,</span> loss<span class="token punctuation">,</span> updater<span class="token punctuation">,</span> device<span class="token punctuation">,</span> use_random_iter<span class="token punctuation">)</span>
+        
+
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>epoch <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">%</span> <span class="token number">10</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token comment"># print(predict('你是？'))</span>
+            <span class="token comment"># print(epoch)</span>
+            <span class="token comment"># animator.add(epoch + 1, )</span>
+
+            <span class="token keyword">if</span> epoch <span class="token operator">==</span> <span class="token number">9</span><span class="token punctuation">:</span>
+                <span class="token comment"># 清空图表：使用空数组来替换现有内容</span>
+                vis<span class="token punctuation">.</span>line<span class="token punctuation">(</span>X<span class="token operator">=</span>np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> Y<span class="token operator">=</span>np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> win<span class="token operator">=</span><span class="token string">'train_ch8'</span><span class="token punctuation">,</span> update<span class="token operator">=</span><span class="token string">'replace'</span><span class="token punctuation">)</span>
+
+            vis<span class="token punctuation">.</span>line<span class="token punctuation">(</span>
+                X<span class="token operator">=</span>np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span>epoch <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                Y<span class="token operator">=</span><span class="token punctuation">[</span>ppl<span class="token punctuation">]</span><span class="token punctuation">,</span>
+                win<span class="token operator">=</span><span class="token string">'train_ch8'</span><span class="token punctuation">,</span>
+                update<span class="token operator">=</span><span class="token string">'append'</span><span class="token punctuation">,</span>
+                opts<span class="token operator">=</span><span class="token punctuation">&#123;</span>
+                    <span class="token string">'title'</span><span class="token punctuation">:</span> <span class="token string">'train_ch8'</span><span class="token punctuation">,</span>
+                    <span class="token string">'xlabel'</span><span class="token punctuation">:</span> <span class="token string">'epoch'</span><span class="token punctuation">,</span>
+                    <span class="token string">'ylabel'</span><span class="token punctuation">:</span> <span class="token string">'ppl'</span><span class="token punctuation">,</span>
+                    <span class="token string">'linecolor'</span><span class="token punctuation">:</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">255</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>  <span class="token comment"># 蓝色线条</span>
+                <span class="token punctuation">&#125;</span>
+            <span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'困惑度 </span><span class="token interpolation"><span class="token punctuation">&#123;</span>ppl<span class="token punctuation">:</span><span class="token format-spec">.1f</span><span class="token punctuation">&#125;</span></span><span class="token string">, </span><span class="token interpolation"><span class="token punctuation">&#123;</span>speed<span class="token punctuation">:</span><span class="token format-spec">.1f</span><span class="token punctuation">&#125;</span></span><span class="token string"> 词元/秒 </span><span class="token interpolation"><span class="token punctuation">&#123;</span><span class="token builtin">str</span><span class="token punctuation">(</span>device<span class="token punctuation">)</span><span class="token punctuation">&#125;</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>predict<span class="token punctuation">(</span><span class="token string">'你是'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>predict<span class="token punctuation">(</span><span class="token string">'我有一剑'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  其实从上面的代码就可以看到，我们传入数据，得到输出，计算了交叉熵loss，然后使用sgd最小化loss，最终我们计算困惑度，得到了模型的质量。注意，这里面有关于梯度截断的计算，这个我们只需要它是避免梯度爆炸的一个方法即可。</p>
+<p>  然后我们使用如下的代码就可以开始训练，注意使用net就是自定义rnn，net1就是使用框架的rnn。</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">try_gpu</span><span class="token punctuation">(</span>i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""如果存在，则返回gpu(i)，否则返回cpu()
+
+    Defined in :numref:`sec_use_gpu`"""</span>
+    <span class="token keyword">if</span> torch<span class="token punctuation">.</span>cuda<span class="token punctuation">.</span>device_count<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">>=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> torch<span class="token punctuation">.</span>device<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f'cuda:</span><span class="token interpolation"><span class="token punctuation">&#123;</span>i<span class="token punctuation">&#125;</span></span><span class="token string">'</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> torch<span class="token punctuation">.</span>device<span class="token punctuation">(</span><span class="token string">'cpu'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    num_epochs<span class="token punctuation">,</span> lr <span class="token operator">=</span> <span class="token number">1000</span><span class="token punctuation">,</span> <span class="token number">0.5</span>
+    batch_size<span class="token punctuation">,</span> num_steps <span class="token operator">=</span> <span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">35</span>
+    data_iter<span class="token punctuation">,</span> vocab  <span class="token operator">=</span> load_data_epoch<span class="token punctuation">(</span>batch_size<span class="token punctuation">,</span> num_steps<span class="token punctuation">)</span>
+    num_hiddens <span class="token operator">=</span> <span class="token number">512</span>
+    device <span class="token operator">=</span> try_gpu<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    net <span class="token operator">=</span> RNNModelScratch<span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>vocab<span class="token punctuation">)</span><span class="token punctuation">,</span> num_hiddens<span class="token punctuation">,</span> device<span class="token punctuation">,</span> get_params<span class="token punctuation">,</span>
+                        init_rnn_state<span class="token punctuation">,</span> rnn<span class="token punctuation">)</span>
+    
+    rnn_layer <span class="token operator">=</span> nn<span class="token punctuation">.</span>RNN<span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>vocab<span class="token punctuation">)</span><span class="token punctuation">,</span> num_hiddens<span class="token punctuation">,</span> device<span class="token operator">=</span>device<span class="token punctuation">)</span>
+    net1 <span class="token operator">=</span> RNNModel<span class="token punctuation">(</span>rnn_layer<span class="token punctuation">,</span> vocab_size<span class="token operator">=</span><span class="token builtin">len</span><span class="token punctuation">(</span>vocab<span class="token punctuation">)</span><span class="token punctuation">,</span>  device<span class="token operator">=</span>device<span class="token punctuation">)</span>
+    
+    <span class="token keyword">print</span><span class="token punctuation">(</span>predict_ch8<span class="token punctuation">(</span><span class="token string">'你是'</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> net<span class="token punctuation">,</span> vocab<span class="token punctuation">,</span> device<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    train_ch8<span class="token punctuation">(</span>net<span class="token punctuation">,</span> data_iter<span class="token punctuation">,</span> vocab<span class="token punctuation">,</span> lr<span class="token punctuation">,</span> num_epochs<span class="token punctuation">,</span> device<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>  我们分别使用手动构建的rnn和框架构建的rnn进行训练和测试，结果如下：</p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_139/scratch_train.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_139/scratch_ret.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_139/torch_train.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_139/torch_ret.png" alt="rep_img"/></center>
+    </div>
+</div>   
+<p>  我们可以看到，模型未训练和训练后的对比，明显训练后能说两句人话，虽然感觉还是胡说八道，但是感觉还是有点效果。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  总的来说，未训练的模型和已训练的模型的文字续写效果完全不一样，明显感觉训练之后的模型，文字续写给人一种可以读感觉。</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/30844905">https://zhuanlan.zhihu.com/p/30844905</a></p>
+</li>
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="https://zh.d2l.ai/chapter_recurrent-neural-networks/rnn.html">https://zh.d2l.ai/chapter_recurrent-neural-networks/rnn.html</a></p>
+</li>
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="https://zh.d2l.ai/chapter_recurrent-neural-networks/text-preprocessing.html">https://zh.d2l.ai/chapter_recurrent-neural-networks/text-preprocessing.html</a></p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -3121,1192 +3786,6 @@ commit-id:cebe85d570cf84804e848332d6721bc9e5300e07<span aria-hidden="true" class
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2024/04/21/blog_idx_129/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/04/21/blog_idx_129/" class="post-title-link" itemprop="url">Linux_aarch64_head.S到main.c的环境建立</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2024-04-21 16:56:00" itemprop="dateCreated datePublished" datetime="2024-04-21T16:56:00+08:00">2024-04-21</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B8%B8%E8%AF%86/" itemprop="url" rel="index"><span itemprop="name">常识</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B8%B8%E8%AF%86/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B8%B8%E8%AF%86/%E5%B5%8C%E5%85%A5%E5%BC%8F/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>7.5k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>27 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky
- * @LastEditTime: 2021-06-29 15:04:48
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人github blog/cnblog的主站的备份。（BlogID=129） 
-&emsp;&emsp;本文发布于 2024-04-21 16:56:00             （BlogID=129） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  无</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  最开始，我仅仅是对linux比较感兴趣，觉得其很神奇的，能够做到很多事情。后面了解到其源码也是开源的，于是抱着学习的态度，简要的看了看相关的代码，在那个时候，我还看的比较粗略，仅仅是简单的会点编译，执行linux命令等等。这期间还有一个有印象的有趣的事儿就是那个pdf《Linux 那些事儿之USB》，大概就是讲述了作者因为要看pian儿，但是U盘识别不到，所以去细读USB相关linux 内核内容的资料。这精神，虽然我看不懂，但是我大为震撼！！！</p>
-<p>  在我工作的近几年来，逐渐的和linux打上了交道，从最开始的hisi 3520a<a href="#refer-anchor-1"><sup>1</sup></a>系列的流媒体处理开始，为其搭建了文件系统，编译内核，同时为其适配EC20 4G模块，这期间，我基本都是照着别人的教程或者说文档，渐渐的熟悉了一些linux内核的一些事务。同时这期间，我做过一些简单的字符驱动玩耍模块，只能说玩玩可以的。</p>
-<p>  在前几年中的某段时间，我接到一个任务，要在android进程之间大量传输数据<a href="#refer-anchor-2"><sup>2</sup></a>。这个时候我调研到了一个叫做android 匿名共享内存的东西，我发现了一个binder的驱动程序和linux unix socket的功能可以在android 和 linux 里面实现进程间的文件描述符的共享，注意这个方法是通用的，不像某些功能在linux里面能够使用，在android里面不能够使用。在这个时候，我天马行空实现了一个类似 binder的驱动demo<a href="#refer-anchor-3"><sup>3</sup></a>。这可以说是我第一个为了自己写的内核及的相关代码，而且具有实际应用意义。</p>
-<p>  在这些工作过程中，我逐渐的觉得自己学习的《操作系统原理》与现实的差别，特别想把书中知识和实际系统结合起来，经过查询，如果想要大概了解linux 内核，最好从其远古的版本读起来，因为大概的脉络没有变，新内核只是更加的结构化，多了很多现代的功能。于是乎，有了《Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)》一文<a href="#refer-anchor-4"><sup>4</sup></a>。经过了《Linux Kernel 0.12 启动简介，调试记录(Ubuntu1804, Bochs, gdb)》一文的学习之后，我基本了解了linux kernel 0.12版本内核的基本工作原理，例如其调度，内存管理等。其次是对于x86架构下，linux kernel 0.12的启动流程有了一个简要的认知。</p>
-<p>  在最近这段时间，我的工作有部分和ai相关，有部分和android和linux的差异相关，需要我对linux内核有更深的印象和见解。于是在以前的基础上，这次，我要实际分析我们工作中所用的最新版本的内核，再一次的去验证一个内核从上电开始，到系统完整起来的过程。由于现代linux内核非常的巨大，所以我只关注我喜欢的部分。</p>
-<p>  本文主要是分析aarch64架构的arch/arm64/kernel/head.S 到 init/main.c 中的start_kernel的过程。这可能也是我短时间内最后一次分析这种启动的过程，因为其实道理都是相同的，大部分都是cpu初始化，虚拟内存启用，由实地址切换为虚拟地址，创建init_task，设置sp，进入start_kernel。其实这里很多都是和特定的CPU有关系，内容是固定的。但是虚拟内存启用，初始task创建，初始sp指针初始化这些和《操作系统原理》有关联，可以印证我们所学。</p>
-<p>  本文分为两大部分，一部分是head.S到main.c的调试环境建立， 二是从上电开始到进入start_kernel的代码注释分析和部分解释。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="准备">准备</h3>
-<hr>
-<ol>
-<li class="lvl-3">
-<p>AARCH64 异常等级要简单了解一下<a href="#refer-anchor-5"><sup>5</sup></a>。</p>
-</li>
-<li class="lvl-3">
-<p>AARCH64 内存布局要简单了解一下<a href="#refer-anchor-6"><sup>6</sup></a>。</p>
-</li>
-<li class="lvl-3">
-<p>看长文警告，一定要有耐心，否则看不下去。</p>
-</li>
-</ol>
-<h3 id="汇编部分的调试环境搭建">汇编部分的调试环境搭建</h3>
-<hr>
-<p>  本文的测试环境为qemu-system-aarch64 raspi3b 模拟板卡。linux内核为树莓派内核 rpi-5.15.y， 下载地址为：<a target="_blank" rel="noopener" href="https://github.com/raspberrypi/linux.git">https://github.com/raspberrypi/linux.git</a></p>
-<br/>
-<br/>
-<h5 id="生成带调试符号的linux-kernel-镜像">生成带调试符号的linux kernel 镜像</h5>
-<p>  在make menu的时候勾选： Kernel hacking &gt; Compile-time checks and compiler options &gt; Compile the kernel with debug info<br>
-通过如下命令生成镜像：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> rpi-linux-kernel-dir
-<span class="token function">cp</span> arch/arm64/configs/bcm2711_defconfig .config
-<span class="token function">make</span> <span class="token assign-left variable">ARCH</span><span class="token operator">=</span>arm64 <span class="token assign-left variable">CROSS_COMPILE</span><span class="token operator">=</span>aarch64-linux-gnu- menuconfig
-<span class="token function">make</span> <span class="token assign-left variable">ARCH</span><span class="token operator">=</span>arm64 <span class="token assign-left variable">CROSS_COMPILE</span><span class="token operator">=</span>aarch64-linux-gnu- Image modules dtbs
-``<span class="token variable"><span class="token variable">`</span>   
-
-<span class="token operator">&lt;</span>br/<span class="token operator">></span>
-<span class="token operator">&lt;</span>br/<span class="token operator">></span>
-
-<span class="token comment">##### 生成rootfs.img镜像</span>
-<span class="token operator">&amp;</span>emsp<span class="token punctuation">;</span><span class="token operator">&amp;</span>emsp<span class="token punctuation">;</span>下载ubuntu-base-18.04.5-base-arm64.tar.gz的基础文件系统。
-<span class="token variable">`</span></span>``shell
-<span class="token comment"># 解压文件系统到指定目录</span>
-<span class="token function">tar</span> <span class="token parameter variable">-xzf</span> ubuntu-base-18.04.5-base-arm64.tar.gz <span class="token parameter variable">-C</span> temp/*
-
-<span class="token comment"># 制作裸文件镜像</span>
-<span class="token function">dd</span> <span class="token assign-left variable">if</span><span class="token operator">=</span>/dev/zero <span class="token assign-left variable">of</span><span class="token operator">=</span>linuxroot.img <span class="token assign-left variable">bs</span><span class="token operator">=</span>1M <span class="token assign-left variable">count</span><span class="token operator">=</span><span class="token number">2048</span>
-<span class="token function">sudo</span> mkfs.ext4 linuxroot.img
-<span class="token function">mkdir</span>  rootfs
-<span class="token function">sudo</span> <span class="token function">mount</span> linuxroot.img rootfs/
-<span class="token function">sudo</span> <span class="token function">cp</span> <span class="token parameter variable">-rfp</span> temp/*  rootfs/
-<span class="token function">sudo</span> <span class="token function">umount</span> rootfs/
-e2fsck <span class="token parameter variable">-p</span> <span class="token parameter variable">-f</span> linuxroot.img
-resize2fs  <span class="token parameter variable">-M</span> linuxroot.img<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<h5 id="编译生成最新版qemu">编译生成最新版qemu</h5>
-<p>  只有新版的qemu才支持raspi3b模拟板卡</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 下载qemu代码</span>
-<span class="token function">git</span> clone https://github.com/qemu/qemu.git
-<span class="token builtin class-name">cd</span> qemu
-<span class="token function">mkdir</span> build
-<span class="token builtin class-name">cd</span> build
-<span class="token punctuation">..</span>/configure <span class="token parameter variable">--prefix</span><span class="token operator">=</span>/home/sky/LinuxKernel/qemu_install --target-list<span class="token operator">=</span>arm-softmmu,arm-linux-user,armeb-linux-user,aarch64-softmmu,aarch64-linux-user,aarch64_be-linux-user 
-<span class="token function">make</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="执行qemu加载镜像">执行qemu加载镜像</h5>
-<p>  这里的linux目录是内核目录，qemu_install是qemu生成的最新可执行文件目录，当前目录有rootfs镜像linuxroot.img。</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># -S              freeze CPU at startup (use 'c' to start execution)</span>
-<span class="token comment"># -s              shorthand for -gdb tcp::1234</span>
-<span class="token comment">#  注意下面命令如果要直接运行，而不是等待gdb调试，请去掉最后的-s 和 -S。</span>
-./qemu_install/bin/qemu-system-aarch64 <span class="token punctuation">\</span>
-	<span class="token parameter variable">-M</span> raspi3b <span class="token punctuation">\</span>
-	<span class="token parameter variable">-kernel</span> ./linux/arch/arm64/boot/Image <span class="token punctuation">\</span>
-	<span class="token parameter variable">-dtb</span> ./linux/arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b.dtb <span class="token punctuation">\</span>
-	<span class="token parameter variable">-drive</span> <span class="token assign-left variable">id</span><span class="token operator">=</span>hd-root,format<span class="token operator">=</span>raw,file<span class="token operator">=</span>./linuxroot.img <span class="token punctuation">\</span>
-	<span class="token parameter variable">-m</span> 1024M <span class="token punctuation">\</span>
-	<span class="token parameter variable">-serial</span> stdio <span class="token punctuation">\</span>
-	<span class="token parameter variable">-smp</span> <span class="token number">4</span> <span class="token punctuation">\</span>
-	<span class="token parameter variable">-device</span> usb-kbd <span class="token punctuation">\</span>
-	<span class="token parameter variable">-device</span> usb-tablet <span class="token punctuation">\</span>
-	<span class="token parameter variable">-device</span> usb-net,netdev<span class="token operator">=</span>net0 <span class="token punctuation">\</span>
-	<span class="token parameter variable">-netdev</span> user,id<span class="token operator">=</span>net0,hostfwd<span class="token operator">=</span>tcp::5555-:22 <span class="token punctuation">\</span>
-	<span class="token parameter variable">-append</span> <span class="token string">"rw earlycon=pl011,0x3f201000 console=ttyAMA0 loglevel=8 root=/dev/mmcblk0 rootwait"</span> <span class="token parameter variable">-S</span> <span class="token parameter variable">-s</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="gdb-连接调试">gdb 连接调试</h5>
-<p>  注意请在qemu启动后面加上-s 和 -S。当连接成功时，这个时候cpu还未执行，输入ni执行到第一条指令。</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 没有gdb-multiarch自行安装</span>
-<span class="token comment"># 这里的vmlinux就是编译生成的最终镜像</span>
-gdb-multiarch  linux/vmlinux
-
-<span class="token comment"># 在gdb cli中执行</span>
-target remote localhost:1234<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<br/>
-<br/>
-<h5 id="汇编代码调试">汇编代码调试</h5>
-<p>  我这里把整个head.S里面重要的部分都dump下来了。跟着这个部分然后参考head.S去阅读，会有奇效。长文注释警告。</p>
-<p>  首先是上电部分，当板卡上电后，会执行bootloader，bootloader会将内核和dtb放到特定的位置，然后按照Linux arm64 boot protocal去初始化对应的寄存器，最后进入head.S的第一条指令。</p>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">@ boot start ... ...
-&#x2F;&#x2F;Linux arm64 boot protocal
-@ https:&#x2F;&#x2F;www.kernel.org&#x2F;doc&#x2F;Documentation&#x2F;arm64&#x2F;booting.txt
-@ 0x08000000 FDT
-&#x2F;*
-- 主 CPU 通用寄存器设置
-  x0 &#x3D; 系统 RAM 中设备树 blob (dtb) 的物理地址。
-  x1 &#x3D; 0（留作将来使用）
-  x2 &#x3D; 0（留作将来使用）
-  x3 &#x3D; 0（留作将来使用）
-*&#x2F;
-&#x2F;&#x2F;注意这里的0x18地址存放的是fdt的地址，地址为0x08000000
-
-0x0000000000000000:	ldr	x0, 0x18
-0x0000000000000004:	mov	x1, xzr
-0x0000000000000008:	mov	x2, xzr
-0x000000000000000c:	mov	x3, xzr
-&#x2F;&#x2F;注意这里的0x20是存放的kernel地址，地址为0x00200000
-0x0000000000000010:	ldr	x4, 0x20
-0x0000000000000014:	br	x4
-@ 0x00200000 head.S start ... ...
-@ &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&gt; now, go to 0x00200000<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  注意，当我们进入head.S的最开始的地方的时候，有一个标准得到头如下。其中code1的部分将会跳转到真正执行的地方。</p>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">@ The decompressed kernel image contains a 64-byte header as follows:
-@   u32 code0;			&#x2F;* Executable code *&#x2F; 
-@   u32 code1;			&#x2F;* Executable code *&#x2F;
-@   u64 text_offset;		&#x2F;* Image load offset, little endian *&#x2F;
-@   u64 image_size;		&#x2F;* Effective Image size, little endian *&#x2F;
-@   u64 flags;			&#x2F;* kernel flags, little endian *&#x2F;
-@   u64 res2	&#x3D; 0;		&#x2F;* reserved *&#x2F;
-@   u64 res3	&#x3D; 0;		&#x2F;* reserved *&#x2F;
-@   u64 res4	&#x3D; 0;		&#x2F;* reserved *&#x2F;
-@   u32 magic	&#x3D; 0x644d5241;	&#x2F;* Magic number, little endian, &quot;ARM\x64&quot; *&#x2F;
-@   u32 res5;			&#x2F;* reserved (used for PE COFF offset) *&#x2F;
-
-@ 0x200000  code0
-@ 0x200004  code1                            
-@ 0x200008  text_offset 
-@ 0x20000c                           
-@ 0x200010  image_size                    
-@ 0x200014                    
-@ 0x200018  flags                       
-@ 0x20001c                          
-@ 0x200020  res2                    
-@ 0x200024                          
-@ 0x200028  res3                       
-@ 0x20002c                      
-@ 0x200030  res4                       
-@ 0x200034                    
-@ 0x200038  magic       
-@ 0x20003c  res5
-&#x2F;&#x2F;注意，这里的code0,code1就是地址0x200000和0x200004的指令。整个0x200000到0x200040就是内核镜像的64字节头。
-0x0000000000200000:	ccmp	x18, #0x0, #0xd, pl  &#x2F;&#x2F; special NOP to identity as PE&#x2F;COFF executable
-0x0000000000200004:	b	0x1190000 @ &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&gt; now, go to 0x1190000（primary_entry）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  这是整个内核启动部分最重要的函数，所有的东西都在这里做完，然后跳转到start_kernel。下面我们会来重点分析这个部分的内容。详细请看注释。</p>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">&#x2F;&#x2F;注意这里的几个bl指令，覆盖了进入kernel_start前的所有操作
-@ SYM_CODE_START(primary_entry)
-
-&#x2F;&#x2F;跳转过去保存boot参数
-&#x2F;&#x2F;保存x0(fdt),x1,x2,x3到符号boot_args的变量中,靠dcache_inval_poc中的ret返回到下一行指令
-0x0000000001190000:	bl	0x1190020 &#x2F;&#x2F;preserve_boot_args
-
-&#x2F;&#x2F;跳转过去执行不同异常等级的初始化,这里比较复杂，从开始的el2异常级别跳转到el1级别。
-0x0000000001190004:	bl	0xd5d000 &#x2F;&#x2F;init_kernel_el
-
-&#x2F;&#x2F;将内核镜像开始地址给x23，也就是0x200000
-0x0000000001190008:	adrp	x23, 0x200000
-&#x2F;&#x2F; KASLR offset, defaults to 0
-0x000000000119000c:	and	x23, x23, #0x1fffff
-
-&#x2F;&#x2F;跳转过去根据w0的值，保存相关的cpu boot mode，注意当前我们的cpu已经处于el1等级，w0 存的是 el2 的标识符
-0x0000000001190010:	bl	0xd5d1f8
-
-&#x2F;&#x2F;创建页表，这里面的创建只填充了相关的页表项，并没有开启mmu
-&#x2F;&#x2F;idmap &#x3D; 0x117e00, 0x117e0 &#x3D; 0x117f03, 0x117f30 &#x3D; 0x00c00701, 
-&#x2F;&#x2F;    注意，这时页表项表示2MB的区域。idmap区域包含了__cpu_setup和__primary_switch
-&#x2F;&#x2F;这里执行完，有两个重要的数据结构：idmap_pg_dir 和 init_pg_dir
-&#x2F;&#x2F;我们将物理地址__idmap_text_start映射到虚拟地址[__idmap_text_start, __idmap_text_end],注意观察，物理地址和虚拟地址基本是一致的。
-&#x2F;&#x2F;还将物理地址_text映射到虚拟地址[KIMAGE_VADDR + KASLR, _end]
-0x0000000001190014:	bl	0x1190040
-
-&#x2F;&#x2F;The following calls CPU setup code, see arch&#x2F;arm64&#x2F;mm&#x2F;proc.S
-&#x2F;&#x2F;注意，这里已经准备好了SCTLR在x0中，下面就是相关的初始化，然后准备打开mmu的参数
-0x0000000001190018:	bl	0xd5d6f4
-
-&#x2F;&#x2F;最终的初始化，开启mmu，并跳转到kernel_start
-0x000000000119001c:	b	0xd5d3d8
-
-@ SYM_CODE_END(primary_entry)
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  此部分对应保存启动参数，主要还是保存启动时，x0~x3。</p>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">
-@ SYM_CODE_START_LOCAL(preserve_boot_args)
-&#x2F;&#x2F;x21保存dtb物理地址
-0x0000000001190020:	mov	x21, x0
-&#x2F;&#x2F;将dtb，x1,x2,x3物理地址存放到变量arch&#x2F;arm64&#x2F;kernel&#x2F;setup.c:u64 __cacheline_aligned boot_args[4];
-0x0000000001190024:	adrp	x0, 0x1545000
-0x0000000001190028:	add	x0, x0, #0x0
-&#x2F;&#x2F;存放dtb,x1
-0x000000000119002c:	stp	x21, x1, [x0]
-&#x2F;&#x2F;存放x2,x3
-0x0000000001190030:	stp	x2, x3, [x0, #16]
-
-@ 刷新cache
-0x0000000001190034:	dmb	sy
-0x0000000001190038:	add	x1, x0, #0x20
-0x000000000119003c:	b	0x2346a8
-
-@ SYM_CODE_END(preserve_boot_args)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  此部分很长，其实主要是汇编代码稍微复杂，其基本的作用就是创建页表，这里面的创建只填充了相关的页表项。分别创建了这里执行完，有两个重要的数据结构：idmap_pg_dir和init_pg_dir的数据结构。这里用的是两级映射，第一级是全局映射，第二级是每个项2MB的映射。这里的idmap_pg_dir映射的是__cpu_setup和__primary_switch部分的内容，这部分主要涉及到mmu开启的过程，需要将物理地址和虚拟地址对应起来。init_pg_dir主要是映射的是kernel虚拟地址和kernel镜像地址。</p>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">@ SYM_FUNC_START_LOCAL(__create_page_tables)
-&#x2F;&#x2F;保存返回值到x28
-0x0000000001190040:	mov	x28, x30
-&#x2F;&#x2F;加载init_pg_dir 到x0
-0x0000000001190044:	adrp	x0, 0x181d000
-&#x2F;&#x2F;加载init_pg_end 到x1
-0x0000000001190048:	adrp	x1, 0x1820000
-@ 刷新cache
-0x000000000119004c:	bl	0x2346a8
-
-&#x2F;&#x2F;加载init_pg_dir 到x0
-0x0000000001190050:	adrp	x0, 0x181d000
-&#x2F;&#x2F;加载init_pg_end 到x1
-0x0000000001190054:	adrp	x1, 0x1820000
-&#x2F;&#x2F;求出init_pg的大小放入x1中count
-0x0000000001190058:	sub	x1, x1, x0
-&#x2F;&#x2F;向x0中写入0，然后x1 -&#x3D; 64，当x1等于0时候，所有pg清理完毕。
-0x000000000119005c:	stp	xzr, xzr, [x0], #16
-0x0000000001190060:	stp	xzr, xzr, [x0], #16
-0x0000000001190064:	stp	xzr, xzr, [x0], #16
-0x0000000001190068:	stp	xzr, xzr, [x0], #16
-0x000000000119006c:	subs	x1, x1, #0x40
-0x0000000001190070:	b.ne	0x119005c  &#x2F;&#x2F; b.any
-
-&#x2F;&#x2F;根据配置加载不同的flag, SWAPPER_MM_MMUFLAGS
-0x0000000001190074:	mov	x7, #0x701                 	&#x2F;&#x2F; #1793
-
-&#x2F;&#x2F; 获取idmap的页表基地址,idmap_pg_dir
-0x0000000001190078:	adrp	x0, 0x117e000
-@ 获取idmap的代码段虚地址，__idmap_text_start
-0x000000000119007c:	adrp	x3, 0xd5d000
-@ 将系统地址线位数给x5, VA_BITS_MIN
-0x0000000001190080:	mov	x5, #0x27                  	&#x2F;&#x2F; #39
-&#x2F;&#x2F;获取变量地址到x6, vabits_actual
-0x0000000001190084:	adrp	x6, 0x1728000
-0x0000000001190088:	add	x6, x6, #0x10
-&#x2F;&#x2F;将39写入变量vabits_actual
-0x000000000119008c:	str	x5, [x6]
-0x0000000001190090:	dmb	sy
-0x0000000001190094:	dc	ivac, x6
-
-@ 判断虚拟地址空间是否够IDmap来映射
-0x0000000001190098:	adrp	x5, 0xd5d000
-0x000000000119009c:	clz	x5, x5
-0x00000000011900a0:	cmp	x5, #0x19
-@ 这里要跳转，不需要扩展虚拟地址
-0x00000000011900a4:	b.ge	0x11900e0  &#x2F;&#x2F; b.tcont
-
-@ 这部分是虚拟地址扩展的相关操作，这里不做详解
-0x00000000011900a8:	adrp	x6, 0x1555000
-0x00000000011900ac:	add	x6, x6, #0xcc8
-0x00000000011900b0:	str	x5, [x6]
-0x00000000011900b4:	dmb	sy
-0x00000000011900b8:	dc	ivac, x6
-0x00000000011900bc:	mov	x4, #0x200                 	&#x2F;&#x2F; #512
-0x00000000011900c0:	add	x5, x0, #0x1, lsl #12
-0x00000000011900c4:	mov	x6, x5
-0x00000000011900c8:	orr	x6, x6, #0x3
-0x00000000011900cc:	lsr	x5, x3, #39
-0x00000000011900d0:	sub	x4, x4, #0x1
-0x00000000011900d4:	and	x5, x5, x4
-0x00000000011900d8:	str	x6, [x0, x5, lsl #3]
-0x00000000011900dc:	add	x0, x0, #0x1, lsl #12
-
-@ 从上面不需要扩展虚拟地址跳转而来，0x00000000011900a4
-@ 将512 个 pgd entry存入x4
-0x00000000011900e0:	adrp	x4, 0x1555000
-0x00000000011900e4:	ldr	x4, [x4, #3280]
-
-@ 将__idmap_text_end放入x6
-0x00000000011900e8:	adrp	x6, 0xd5d000
-0x00000000011900ec:	add	x6, x6, #0x7e0
-
-@ 这里开始映射[__idmap_text_start, __idmap_text_end] 到 idmap_pg_dir中，
-@	且，这部分内容就是cpu_setup部分的内容，恰好对应开启mmu的代码。
-&#x2F;&#x2F;tbl:    x0 &#x3D; idmap_pg_dir &#x3D; 0x117e000
-&#x2F;&#x2F;rtbl:   x1 &#x3D; 0 
-&#x2F;&#x2F;vstart: x3 &#x3D; __idmap_text_start &#x3D; 0xd5d000
-&#x2F;&#x2F;vend:   x6 &#x3D; __idmap_text_end &#x3D; 0xd5d7e0
-&#x2F;&#x2F;flags:  x7 &#x3D; SWAPPER_MM_MMUFLAGS
-&#x2F;&#x2F;phys:   x3 &#x3D; __idmap_text_start &#x3D; 0xd5d000
-&#x2F;&#x2F;pgds:   x4 &#x3D; idmap_ptrs_per_pgd &#x3D; 512
-&#x2F;&#x2F;tmp regs: x10, x11, x12, x13, x14
-@ macro map_memory start ...
-@ __idmap_text_end - 1 是idmap映射结束的地方
-0x00000000011900f0:	sub	x6, x6, #0x1
-@ x1 &#x3D; idmap的页表基地址（idmap_pg_dir） + 2^12 ，并指向了下一个page entry
-0x00000000011900f4:	add	x1, x0, #0x1, lsl #12
-@ 将x1 保存到 x14
-0x00000000011900f8:	mov	x14, x1
-@ 将count赋值为0
-0x00000000011900fc:	mov	x13, #0x0                   	&#x2F;&#x2F; #0
-
-&#x2F;&#x2F; vstart:	x3 &#x3D; __idmap_text_start &#x3D; 0xd5d000
-&#x2F;&#x2F; vend:	x6 &#x3D; __idmap_text_end &#x3D; 0xd5d7e0
-&#x2F;&#x2F; shift:	30
-&#x2F;&#x2F; ptrs:	x4 &#x3D; idmap_ptrs_per_pgd &#x3D; 512
-&#x2F;&#x2F; istart:	x10
-&#x2F;&#x2F; iend:	
-&#x2F;&#x2F; count:	x13
-@ compute_indices  start ...
-&#x2F;&#x2F;将vend右逻辑偏移shift(30)位
-0x0000000001190100:	lsr	x11, x6, #30
-&#x2F;&#x2F;将ptrs（number of entries in page table）存放到istart, 每个表512项
-0x0000000001190104:	mov	x10, x4
-&#x2F;&#x2F;pte 数量减一
-0x0000000001190108:	sub	x10, x10, #0x1
-
-&#x2F;&#x2F;此时算出来vend的pgd index,根据虚拟地址右移30位，还剩9位，恰好表示512个项的id。
-&#x2F;&#x2F; iend &#x3D; (vend &gt;&gt; shift) &amp; (ptrs - 1)
-0x000000000119010c:	and	x11, x11, x10
-0x0000000001190110:	mov	x10, x4
-0x0000000001190114:	mul	x10, x10, x13
-&#x2F;&#x2F; iend +&#x3D; count * ptrs
-0x0000000001190118:	add	x11, x11, x10
-
-&#x2F;&#x2F;将vstart右逻辑偏移shift位
-0x000000000119011c:	lsr	x10, x3, #30
-0x0000000001190120:	mov	x13, x4
-0x0000000001190124:	sub	x13, x13, #0x1
-&#x2F;&#x2F; istart &#x3D; (vstart &gt;&gt; shift) &amp; (ptrs - 1), 此时算出来vstart的pgd index
-0x0000000001190128:	and	x10, x10, x13
-&#x2F;&#x2F;计算出多少项page entry
-0x000000000119012c:	sub	x13, x11, x10
-@ compute_indices  end ...
-
-
-
-@ populate_entries start ... 
-0x0000000001190130:	mov	x12, x1
-&#x2F;&#x2F;给当前entry设置内存属性
-0x0000000001190134:	orr	x12, x12, #0x3
-@ 向一级页表idmap_pg_dir（0x117e000）存入二级页表地址（0x117f000）
-0x0000000001190138:	str	x12, [x0, x10, lsl #3]
-0x000000000119013c:	add	x1, x1, #0x1, lsl #12
-0x0000000001190140:	add	x10, x10, #0x1
-0x0000000001190144:	cmp	x10, x11
-0x0000000001190148:	b.ls	0x1190130  &#x2F;&#x2F; b.plast
-@ populate_entries end ... 
-
-&#x2F;&#x2F;注意，这里相当于tbl&#x3D;tbl+PAGE_SIZE,主要还是指向了二级页表
-&#x2F;&#x2F;相当于现在一级页表为:idmap_pg_dir（0x117e000）,里面存放的是0x0117f003
-&#x2F;&#x2F;这里的x14是二级页表的地址，为0x0117f000
-0x000000000119014c:	mov	x0, x14
-&#x2F;&#x2F;sv &#x3D; rtbl &#x3D; tbl+PAGE_SIZE+PAGE_SIZE，相当于指向了三级页表
-0x0000000001190150:	mov	x14, x1
-
-@ compute_indices  start ...
-&#x2F;&#x2F;将vend右逻辑偏移shift位
-0x0000000001190154:	lsr	x11, x6, #21
-&#x2F;&#x2F;将ptrs（number of entries in page table）存放到istart, 每个表512项
-0x0000000001190158:	mov	x10, #0x200                 	&#x2F;&#x2F; #512
-&#x2F;&#x2F;pte 数量减一
-0x000000000119015c:	sub	x10, x10, #0x1
-
-&#x2F;&#x2F;此时算出来vend的pgd index
-&#x2F;&#x2F; iend &#x3D; (vend &gt;&gt; shift) &amp; (ptrs - 1)
-0x0000000001190160:	and	x11, x11, x10
-0x0000000001190164:	mov	x10, #0x200                 	&#x2F;&#x2F; #512
-0x0000000001190168:	mul	x10, x10, x13
-&#x2F;&#x2F; iend +&#x3D; count * ptrs
-0x000000000119016c:	add	x11, x11, x10
-
-&#x2F;&#x2F;将vstart右逻辑偏移shift位
-0x0000000001190170:	lsr	x10, x3, #21
-0x0000000001190174:	mov	x13, #0x200                 	&#x2F;&#x2F; #512
-0x0000000001190178:	sub	x13, x13, #0x1
-&#x2F;&#x2F; istart &#x3D; (vstart &gt;&gt; shift) &amp; (ptrs - 1), 此时算出来vstart的pgd index
-0x000000000119017c:	and	x10, x10, x13
-&#x2F;&#x2F;计算出多少项page entry
-0x0000000001190180:	sub	x13, x11, x10
-@ compute_indices  end ...
-
-@ x13 &#x3D; 0xc00000, x3 &#x3D; 0xd5d000
-0x0000000001190184:	and	x13, x3, #0xffffffffffe00000
-
-@ populate_entries start ... 
-@ x12 &#x3D; 0xc00000
-0x0000000001190188:	mov	x12, x13
-&#x2F;&#x2F;给当前entry设置内存属性
-0x000000000119018c:	orr	x12, x12, x7
-@ 向二级页表(0x117f000 + 6*8 &#x3D; 0x117f030)存入地址0xc00701
-0x0000000001190190:	str	x12, [x0, x10, lsl #3]
-0x0000000001190194:	add	x13, x13, #0x200, lsl #12
-0x0000000001190198:	add	x10, x10, #0x1
-0x000000000119019c:	cmp	x10, x11
-0x00000000011901a0:	b.ls	0x1190188  &#x2F;&#x2F; b.plast
-@ populate_entries end ... 
-
-@ init_pg_dir  给x0
-0x00000000011901a4:	adrp	x0, 0x181d000
-@ KIMAGE_VADDR 给x5
-0x00000000011901a8:	mov	x5, #0xffffffc0ffffffff    	&#x2F;&#x2F; #-270582939649
-0x00000000011901ac:	movk	x5, #0x800, lsl #16
-0x00000000011901b0:	movk	x5, #0x0
-&#x2F;&#x2F; add KASLR displacement
-0x00000000011901b4:	add	x5, x5, x23
-@ 将页表项数目给x4
-0x00000000011901b8:	mov	x4, #0x200                 	&#x2F;&#x2F; #512
-@ _end 给x6
-0x00000000011901bc:	adrp	x6, 0x1820000
-@ _start 给x3
-0x00000000011901c0:	adrp	x3, 0x200000
-@ 求出_end-_start
-0x00000000011901c4:	sub	x6, x6, x3
-@ 算出基于KIMAGE_VADDR和KASLR的偏移
-0x00000000011901c8:	add	x6, x6, x5
-
-&#x2F;&#x2F;tbl:    x0 &#x3D; init_pg_dir
-&#x2F;&#x2F;rtbl:   x1 &#x3D; 0
-&#x2F;&#x2F;vstart: x5 &#x3D; KIMAGE_VADDR + KASLR
-&#x2F;&#x2F;vend:   x6 &#x3D; _end
-&#x2F;&#x2F;flags:  x7 &#x3D; SWAPPER_MM_MMUFLAGS
-&#x2F;&#x2F;phys:   x3 &#x3D; _text
-&#x2F;&#x2F;pgds:   x4 &#x3D; PTRS_PER_PGD
-&#x2F;&#x2F;tmp regs: x10, x11, x12, x13, x14
-@ macro map_memory start ...
-@ 开始填充页表init_pg_dir
-0x00000000011901cc:	sub	x6, x6, #0x1
-0x00000000011901d0:	add	x1, x0, #0x1, lsl #12
-0x00000000011901d4:	mov	x14, x1
-0x00000000011901d8:	mov	x13, #0x0                   	&#x2F;&#x2F; #0
-0x00000000011901dc:	lsr	x11, x6, #30
-0x00000000011901e0:	mov	x10, x4
-0x00000000011901e4:	sub	x10, x10, #0x1
-0x00000000011901e8:	and	x11, x11, x10
-0x00000000011901ec:	mov	x10, x4
-0x00000000011901f0:	mul	x10, x10, x13
-0x00000000011901f4:	add	x11, x11, x10
-0x00000000011901f8:	lsr	x10, x5, #30
-0x00000000011901fc:	mov	x13, x4
-0x0000000001190200:	sub	x13, x13, #0x1
-0x0000000001190204:	and	x10, x10, x13
-0x0000000001190208:	sub	x13, x11, x10
-0x000000000119020c:	mov	x12, x1
-0x0000000001190210:	orr	x12, x12, #0x3
-0x0000000001190214:	str	x12, [x0, x10, lsl #3]
-0x0000000001190218:	add	x1, x1, #0x1, lsl #12
-0x000000000119021c:	add	x10, x10, #0x1
-0x0000000001190220:	cmp	x10, x11
-0x0000000001190224:	b.ls	0x119020c  &#x2F;&#x2F; b.plast
-0x0000000001190228:	mov	x0, x14
-0x000000000119022c:	mov	x14, x1
-0x0000000001190230:	lsr	x11, x6, #21
-0x0000000001190234:	mov	x10, #0x200                 	&#x2F;&#x2F; #512
-0x0000000001190238:	sub	x10, x10, #0x1
-0x000000000119023c:	and	x11, x11, x10
-0x0000000001190240:	mov	x10, #0x200                 	&#x2F;&#x2F; #512
-0x0000000001190244:	mul	x10, x10, x13
-0x0000000001190248:	add	x11, x11, x10
-0x000000000119024c:	lsr	x10, x5, #21
-0x0000000001190250:	mov	x13, #0x200                 	&#x2F;&#x2F; #512
-0x0000000001190254:	sub	x13, x13, #0x1
-0x0000000001190258:	and	x10, x10, x13
-0x000000000119025c:	sub	x13, x11, x10
-0x0000000001190260:	and	x13, x3, #0xffffffffffe00000
-0x0000000001190264:	mov	x12, x13
-0x0000000001190268:	orr	x12, x12, x7
-0x000000000119026c:	str	x12, [x0, x10, lsl #3]
-0x0000000001190270:	add	x13, x13, #0x200, lsl #12
-0x0000000001190274:	add	x10, x10, #0x1
-0x0000000001190278:	cmp	x10, x11
-0x000000000119027c:	b.ls	0x1190264  &#x2F;&#x2F; b.plast
-@ macro map_memory end ...
-
-
-&#x2F;&#x2F;内存屏障
-0x0000000001190280:	dmb	sy
-@ 刷新cache
-0x0000000001190284:	adrp	x0, 0x117e000
-0x0000000001190288:	adrp	x1, 0x1181000
-0x000000000119028c:	bl	0x2346a8
-@ 刷新cache
-0x0000000001190290:	adrp	x0, 0x181d000
-0x0000000001190294:	adrp	x1, 0x1820000
-0x0000000001190298:	bl	0x2346a8
-@ 返回到bl	__cpu_setup
-0x000000000119029c:	ret	x28
-
-
-@ SYM_FUNC_END(__create_page_tables)
-
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  这部分是刷新i/d cache</p>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">
-@ dcache_inval_poc start ...
-0x00000000002346a8:	mrs	x3, ctr_el0
-0x00000000002346ac:	nop
-0x00000000002346b0:	ubfx	x3, x3, #16, #4
-0x00000000002346b4:	mov	x2, #0x4                   	&#x2F;&#x2F; #4
-0x00000000002346b8:	lsl	x2, x2, x3
-0x00000000002346bc:	sub	x3, x2, #0x1
-0x00000000002346c0:	tst	x1, x3
-0x00000000002346c4:	bic	x1, x1, x3
-0x00000000002346c8:	b.eq	0x2346d0  &#x2F;&#x2F; b.none
-0x00000000002346cc:	dc	civac, x1
-0x00000000002346d0:	tst	x0, x3
-0x00000000002346d4:	bic	x0, x0, x3
-0x00000000002346d8:	b.eq	0x2346e4  &#x2F;&#x2F; b.none
-0x00000000002346dc:	dc	civac, x0
-0x00000000002346e0:	b	0x2346e8
-0x00000000002346e4:	dc	ivac, x0
-0x00000000002346e8:	add	x0, x0, x2
-0x00000000002346ec:	cmp	x0, x1
-0x00000000002346f0:	b.cc	0x2346e4  &#x2F;&#x2F; b.lo, b.ul, b.last
-0x00000000002346f4:	dsb	sy
-0x00000000002346f8:	ret
-@ dcache_inval_poc end ...<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  这部分就是对应的是开始的在el2模式下初始化，并返回到el1，并保存启动参数。</p>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">@ SYM_FUNC_START(init_kernel_el)
-&#x2F;&#x2F;读取当前的异常等级
-0x0000000000d5d000:	mrs	x0, currentel
-&#x2F;&#x2F;判断是否为异常等级2
-0x0000000000d5d004:	cmp	x0, #0x8
-&#x2F;&#x2F;跳转到el2(qemu 模拟机器执行路径)， init_el2
-0x0000000000d5d008:	b.eq	0xd5d034  &#x2F;&#x2F; b.none
-0x0000000000d5d00c:	mov	x0, #0x30500000            	&#x2F;&#x2F; #810549248
-0x0000000000d5d010:	movk	x0, #0x800
-0x0000000000d5d014:	msr	sctlr_el1, x0
-0x0000000000d5d018:	isb
-0x0000000000d5d01c:	movz	x0, #0x0, lsl #16
-0x0000000000d5d020:	movk	x0, #0x3c5
-0x0000000000d5d024:	msr	spsr_el1, x0
-0x0000000000d5d028:	msr	elr_el1, x30
-0x0000000000d5d02c:	mov	w0, #0xe11                 	&#x2F;&#x2F; #3601
-0x0000000000d5d030:	eret
-
-@ init_el2 start ... ...
-&#x2F;&#x2F;配置hcr_el2寄存器,HCR(Hypervisor Configuration Register)
-0x0000000000d5d034:	mov	x0, #0x100000000000000     	&#x2F;&#x2F; #72057594037927936
-0x0000000000d5d038:	movk	x0, #0x300, lsl #32
-0x0000000000d5d03c:	movk	x0, #0x8000, lsl #16
-0x0000000000d5d040:	movk	x0, #0x0
-0x0000000000d5d044:	msr	hcr_el2, x0
-&#x2F;&#x2F;ISB. 指令同步屏障
-0x0000000000d5d048:	isb
-
-&#x2F;&#x2F;初始化el2下的各种状态
-&#x2F;*
-.macro init_el2_state
-	__init_el2_sctlr
-	__init_el2_timers
-	__init_el2_debug
-	__init_el2_lor
-	__init_el2_stage2
-	__init_el2_gicv3
-	__init_el2_hstr
-	__init_el2_nvhe_idregs
-	__init_el2_nvhe_cptr
-	__init_el2_nvhe_sve
-	__init_el2_fgt
-	__init_el2_nvhe_prepare_eret
-.endm
-*&#x2F;
-
-&#x2F;&#x2F;__init_el2_sctlr
-0x0000000000d5d04c:	mov	x0, #0x30c50000            	&#x2F;&#x2F; #818216960
-0x0000000000d5d050:	movk	x0, #0x830
-0x0000000000d5d054:	msr	sctlr_el2, x0
-0x0000000000d5d058:	isb
-
-&#x2F;&#x2F;__init_el2_timers
-0x0000000000d5d05c:	mov	x0, #0x3                   	&#x2F;&#x2F; #3
-0x0000000000d5d060:	msr	cnthctl_el2, x0
-0x0000000000d5d064:	msr	cntvoff_el2, xzr
-
-&#x2F;&#x2F;__init_el2_debug
-0x0000000000d5d068:	mrs	x1, id_aa64dfr0_el1
-0x0000000000d5d06c:	sbfx	x0, x1, #8, #4
-0x0000000000d5d070:	cmp	x0, #0x1
-0x0000000000d5d074:	b.lt	0xd5d080  &#x2F;&#x2F; b.tstop
-0x0000000000d5d078:	mrs	x0, pmcr_el0
-0x0000000000d5d07c:	ubfx	x0, x0, #11, #5
-0x0000000000d5d080:	csel	x2, xzr, x0, lt  &#x2F;&#x2F; lt &#x3D; tstop
-0x0000000000d5d084:	ubfx	x0, x1, #32, #4
-0x0000000000d5d088:	cbz	x0, 0xd5d0a8
-0x0000000000d5d08c:	mrs	x0, pmbidr_el1
-0x0000000000d5d090:	and	x0, x0, #0x10
-0x0000000000d5d094:	cbnz	x0, 0xd5d0a0
-0x0000000000d5d098:	mov	x0, #0x50                  	&#x2F;&#x2F; #80
-0x0000000000d5d09c:	msr	pmscr_el2, x0
-0x0000000000d5d0a0:	mov	x0, #0x3000                	&#x2F;&#x2F; #12288
-0x0000000000d5d0a4:	orr	x2, x2, x0
-0x0000000000d5d0a8:	ubfx	x0, x1, #44, #4
-0x0000000000d5d0ac:	cbz	x0, 0xd5d0c4
-0x0000000000d5d0b0:	mrs	x0, s3_0_c9_c11_7
-0x0000000000d5d0b4:	and	x0, x0, #0x10
-0x0000000000d5d0b8:	cbnz	x0, 0xd5d0c4
-0x0000000000d5d0bc:	mov	x0, #0x3000000             	&#x2F;&#x2F; #50331648
-0x0000000000d5d0c0:	orr	x2, x2, x0
-0x0000000000d5d0c4:	msr	mdcr_el2, x2
-
-&#x2F;&#x2F;__init_el2_lor
-0x0000000000d5d0c8:	mrs	x1, id_aa64mmfr1_el1
-0x0000000000d5d0cc:	ubfx	x0, x1, #16, #4
-0x0000000000d5d0d0:	cbz	x0, 0xd5d0d8
-0x0000000000d5d0d4:	msr	s3_0_c10_c4_3, xzr
-
-&#x2F;&#x2F;__init_el2_stage2
-0x0000000000d5d0d8:	msr	vttbr_el2, xzr
-
-&#x2F;&#x2F;__init_el2_gicv3
-0x0000000000d5d0dc:	mrs	x0, id_aa64pfr0_el1
-0x0000000000d5d0e0:	ubfx	x0, x0, #24, #4
-0x0000000000d5d0e4:	cbz	x0, 0xd5d108
-0x0000000000d5d0e8:	mrs	x0, s3_4_c12_c9_5
-0x0000000000d5d0ec:	orr	x0, x0, #0x1
-0x0000000000d5d0f0:	orr	x0, x0, #0x8
-0x0000000000d5d0f4:	msr	s3_4_c12_c9_5, x0
-0x0000000000d5d0f8:	isb
-0x0000000000d5d0fc:	mrs	x0, s3_4_c12_c9_5
-0x0000000000d5d100:	tbz	w0, #0, 0xd5d108
-0x0000000000d5d104:	msr	s3_4_c12_c11_0, xzr
-
-&#x2F;&#x2F;__init_el2_hstr
-0x0000000000d5d108:	msr	hstr_el2, xzr
-
-&#x2F;&#x2F;__init_el2_nvhe_idregs
-0x0000000000d5d10c:	mrs	x0, midr_el1
-0x0000000000d5d110:	mrs	x1, mpidr_el1
-0x0000000000d5d114:	msr	vpidr_el2, x0
-0x0000000000d5d118:	msr	vmpidr_el2, x1
-
-&#x2F;&#x2F;__init_el2_nvhe_cptr
-0x0000000000d5d11c:	mov	x0, #0x33ff                	&#x2F;&#x2F; #13311
-0x0000000000d5d120:	msr	cptr_el2, x0
-
-&#x2F;&#x2F;__init_el2_nvhe_sve
-0x0000000000d5d124:	mrs	x1, id_aa64pfr0_el1
-0x0000000000d5d128:	ubfx	x1, x1, #32, #4
-0x0000000000d5d12c:	cbz	x1, 0xd5d144
-0x0000000000d5d130:	and	x0, x0, #0xfffffffffffffeff
-0x0000000000d5d134:	msr	cptr_el2, x0
-0x0000000000d5d138:	isb
-0x0000000000d5d13c:	mov	x1, #0x1ff                 	&#x2F;&#x2F; #511
-0x0000000000d5d140:	msr	zcr_el2, x1
-
-&#x2F;&#x2F;__init_el2_fgt
-0x0000000000d5d144:	mrs	x1, id_aa64mmfr0_el1
-0x0000000000d5d148:	ubfx	x1, x1, #56, #4
-0x0000000000d5d14c:	cbz	x1, 0xd5d18c
-0x0000000000d5d150:	mov	x0, xzr
-0x0000000000d5d154:	mrs	x1, id_aa64dfr0_el1
-0x0000000000d5d158:	ubfx	x1, x1, #32, #4
-0x0000000000d5d15c:	cmp	x1, #0x3
-0x0000000000d5d160:	b.lt	0xd5d168  &#x2F;&#x2F; b.tstop
-0x0000000000d5d164:	orr	x0, x0, #0x4000000000000000
-0x0000000000d5d168:	msr	s3_4_c3_c1_4, x0
-0x0000000000d5d16c:	msr	s3_4_c3_c1_5, x0
-0x0000000000d5d170:	msr	s3_4_c1_c1_4, xzr
-0x0000000000d5d174:	msr	s3_4_c1_c1_5, xzr
-0x0000000000d5d178:	msr	s3_4_c1_c1_6, xzr
-0x0000000000d5d17c:	mrs	x1, id_aa64pfr0_el1
-0x0000000000d5d180:	ubfx	x1, x1, #44, #4
-0x0000000000d5d184:	cbz	x1, 0xd5d18c
-0x0000000000d5d188:	msr	s3_4_c3_c1_6, xzr
-
-&#x2F;&#x2F; __init_el2_nvhe_prepare_eret
-0x0000000000d5d18c:	mov	x0, #0x3c5                 	&#x2F;&#x2F; #965
-0x0000000000d5d190:	msr	spsr_el2, x0
-
-
-&#x2F;&#x2F;加载el2的中断向量表
-0x0000000000d5d194:	adrp	x0, 0xd4f000
-0x0000000000d5d198:	add	x0, x0, #0x0
-0x0000000000d5d19c:	msr	vbar_el2, x0
-0x0000000000d5d1a0:	isb
-
-&#x2F;*
-	* Fruity CPUs seem to have HCR_EL2.E2H set to RES1,
-	* making it impossible to start in nVHE mode. Is that
-	* compliant with the architecture? Absolutely not!
-*&#x2F;
-0x0000000000d5d1a4:	mrs	x0, hcr_el2
-0x0000000000d5d1a8:	and	x0, x0, #0x400000000
-&#x2F;&#x2F;跳转到1f(0xd5d1d0)位置继续执行
-0x0000000000d5d1ac:	cbz	x0, 0xd5d1d0
-
-0x0000000000d5d1b0:	mov	x0, #0x30500000            	&#x2F;&#x2F; #810549248
-0x0000000000d5d1b4:	movk	x0, #0x800
-0x0000000000d5d1b8:	msr	sctlr_el12, x0
-0x0000000000d5d1bc:	mov	x0, #0x3c9                 	&#x2F;&#x2F; #969
-0x0000000000d5d1c0:	msr	spsr_el1, x0
-0x0000000000d5d1c4:	adr	x0, 0xd5d1e8
-0x0000000000d5d1c8:	msr	elr_el1, x0
-0x0000000000d5d1cc:	eret
-
-&#x2F;&#x2F;将x0写入sctlr_el1
-0x0000000000d5d1d0:	mov	x0, #0x30500000            	&#x2F;&#x2F; #810549248
-0x0000000000d5d1d4:	movk	x0, #0x800
-0x0000000000d5d1d8:	msr	sctlr_el1, x0
-
-&#x2F;&#x2F;将当前的lr(x30)地址放到elr_el2中，后续eret到el1时，跳转到此地址执行
-0x0000000000d5d1dc:	msr	elr_el2, x30
-&#x2F;&#x2F;将flag写入w0中
-0x0000000000d5d1e0:	mov	w0, #0xe12                 	&#x2F;&#x2F; #3602
-&#x2F;&#x2F;注意这里的返回值，这里返回到elr_el2指向的地方，
-&#x2F;&#x2F;也就是adrp	x23, __PHYS_OFFSET, 0x0000000001190008
-0x0000000000d5d1e4:	eret
-
-
-0x0000000000d5d1e8:	mov	x0, #0x3                   	&#x2F;&#x2F; #3
-0x0000000000d5d1ec:	hvc	#0x0
-0x0000000000d5d1f0:	mov	x0, #0xe12                 	&#x2F;&#x2F; #3602
-0x0000000000d5d1f4:	ret
-
-@ SYM_FUNC_END(init_kernel_el)
-
-
-@ SYM_FUNC_START_LOCAL(set_cpu_boot_mode_flag)
-&#x2F;&#x2F;加载__boot_cpu_mode符号地址，此地址存放
-0x0000000000d5d1f8:	adrp	x1, 0x1728000
-0x0000000000d5d1fc:	add	x1, x1, #0x0
-0x0000000000d5d200:	cmp	w0, #0xe12
-0x0000000000d5d204:	b.ne	0xd5d20c  &#x2F;&#x2F; b.any
-0x0000000000d5d208:	add	x1, x1, #0x4
-0x0000000000d5d20c:	str	w0, [x1]
-0x0000000000d5d210:	dmb	sy
-0x0000000000d5d214:	dc	ivac, x1
-@ 返回到0x0000000001190014
-0x0000000000d5d218:	ret
-
-@ SYM_FUNC_END(set_cpu_boot_mode_flag)
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  这里包含3个步骤：</p>
-<ol>
-<li class="lvl-3">
-<p>这里其实包含了开启mmu，mmu开启时，tbbr0_el1是idmap_pg_dir，tbbr1_el1是init_pg_dir，还是使用的物理地址，所以这个时候的地址翻译由页表idmap_pg_dir来支持。</p>
-</li>
-<li class="lvl-3">
-<p>当完成mmu开启后，就会将.rela.dyn段实现重定位，因为这部分的符号的实际地址为0，需要我们填写为实际的符号地址。</p>
-</li>
-<li class="lvl-3">
-<p>当重定位完成后，会加载__primary_switched的虚拟地址，其地址在内核空间，当执行blr 跳转到__primary_switched的时候，这个时候的地址返回由页表init_pg_dir来支持。</p>
-</li>
-</ol>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">@ SYM_FUNC_START(__enable_mmu)
-&#x2F;*
-符合ARMv8的PE最大支持的物理地址宽度也是48个bit，当然，具体的实现可以自己定义
-（不能超过48个bit），具体的配置可以通过ID_AA64MMFR0_EL1 
-（AArch64 Memory Model Feature Register 0）这个RO寄存器获取
-*&#x2F;
-0xd5d308        mrs    x2, id_aa64mmfr0_el1     
-@ 判断物理地址宽度是否满足最小和最大的要求。
-0xd5d30c        ubfx   x2, x2, #28, #4                                        
-0xd5d310        cmp    x2, #0x0                                               
-0xd5d314        b.lt   0xd5d36c  &#x2F;&#x2F; b.tstop                                   
-0xd5d318        cmp    x2, #0x7                                               
-0xd5d31c        b.gt   0xd5d36c     
-
-&#x2F;&#x2F;update_early_cpu_boot_status
-0xd5d320        mov    x3, #0x0                        &#x2F;&#x2F; #0                  
-0xd5d324        adrp   x2, 0x1728000                                          
-0xd5d328        add    x2, x2, #0x8                                           
-0xd5d32c        str    x3, [x2]                                               
-0xd5d330        dmb    sy                                                     
-0xd5d334        dc     ivac, x2   
-
-&#x2F;&#x2F;加载idmap_pg_dir到ttbr0
-&#x2F;&#x2F;注意，跳转过来时，x1是init_gdir
-0xd5d338        adrp   x2, 0x117e000                                          
-0xd5d33c        mov    x1, x1                                                 
-0xd5d340        mov    x2, x2           
-
-&#x2F;&#x2F;加载两个映射表到tbbr0和1,在el1模式下面
-0xd5d344        msr    ttbr0_el1, x2                                          
-0xd5d348        msr    ttbr1_el1, x1                                          
-0xd5d34c        isb     
-
-&#x2F;&#x2F;打开mmu
-0xd5d350        msr    sctlr_el1, x0                                          
-0xd5d354        isb                                                           
-0xd5d358        ic     iallu                                                  
-0xd5d35c        dsb    nsh                                                    
-0xd5d360        isb                                                           
-0xd5d364        ret  
-@ SYM_FUNC_END(__enable_mmu)
-
-&#x2F;&#x2F;此部分作用为解决符号重定位问题
-&#x2F;&#x2F;readelf -r vmlinux 读取重定位表
-&#x2F;&#x2F;readelf -S vmlinux 读取所有section头
-&#x2F;&#x2F;hexdump -s 0x24000 -n 16 vmlinux 读取重定位表中的第一项的目的地址内容，
-&#x2F;&#x2F;       可以发现为8个0，需要我们来手动填写符号重定位地址
-@ SYM_FUNC_START_LOCAL(__relocate_kernel)
-0xd5d390        ldr    w9, 0xd5d438   &#x2F;&#x2F; offset to reloc table                                                                                                                                    │
-0xd5d394        ldr    w10, 0xd5d43c  &#x2F;&#x2F; size of reloc table  
-&#x2F;&#x2F; default virtual offset                                                                                                                                  │
-0xd5d398        mov    x11, #0xffffffc0ffffffff        &#x2F;&#x2F; #-270582939649                                                                                                  │
-0xd5d39c        movk   x11, #0x800, lsl #16                                                                                                                               │
-0xd5d3a0        movk   x11, #0x0     
-&#x2F;&#x2F; actual virtual offset                                                                                                                                     │
-0xd5d3a4        add    x11, x11, x23   
-&#x2F;&#x2F; x9保存了.rela.dyn区域的链接地址
-&#x2F;&#x2F; x10保存了.rela.dyn区域的结束地址                                                                                                                                   │
-0xd5d3a8        add    x9, x9, x11                                                                                                                                        │
-0xd5d3ac        add    x10, x9, x10                                                                                                                                       │
-0xd5d3b0        cmp    x9, x10                                                                                                                                            │
-0xd5d3b4        b.cs   0xd5d3d4  &#x2F;&#x2F; b.hs, b.nlast 
-&#x2F;&#x2F;获取一项offset和info+flag                                                                                                                        │
-0xd5d3b8        ldp    x12, x13, [x9], #24      
-&#x2F;&#x2F;获取Addend值                                                                                                                          │
-0xd5d3bc        ldur   x14, [x9, #-8]                                                                                                                                     │
-0xd5d3c0        cmp    w13, #0x403                                                                                                                                        │
-0xd5d3c4        b.ne   0xd5d3b0  &#x2F;&#x2F; b.any    
-&#x2F;&#x2F;&#x2F;&#x2F; relocate,这里主要是修正[offset + KASLR offset] &#x3D; KASLR offset + append的值,也就是符号重定位了                                                                                                                             │
-0xd5d3c8        add    x14, x14, x23                                                                                                                                      │
-0xd5d3cc        str    x14, [x12, x23]                                                                                                                                    │
-0xd5d3d0        b      0xd5d3b0                                                                                                                                           │
-0xd5d3d4        ret    
-@ SYM_FUNC_END(__relocate_kernel)
-
-@ SYM_FUNC_START_LOCAL(__primary_switch)
-0xd5d3d8        mov    x19, x0         &#x2F;&#x2F; preserve new SCTLR_EL1 value         
-0xd5d3dc        mrs    x20, sctlr_el1  &#x2F;&#x2F; preserve old SCTLR_EL1 value         
-0xd5d3e0        adrp   x1, 0x181d000   &#x2F;&#x2F; 将init_pg_dir 给x1  
-&#x2F;&#x2F;跳转过去初始化mmu                                                            
-0xd5d3e4        bl     0xd5d308        &#x2F;&#x2F;__enable_mmu        
-&#x2F;&#x2F;将kernel image的.rela.dyn段实现重定位                  
-0xd5d3e8        bl     0xd5d390        &#x2F;&#x2F;__relocate_kernel       
-
-&#x2F;&#x2F;注意ldr指令加载的是__primary_switched的链接地址，
-&#x2F;&#x2F;    注意这里的链接地址已经是虚拟地址了（例子值为：0xffffffc008f902a0）              
-0xd5d3ec        ldr    x8, 0xd5d448    &#x2F;&#x2F;__primary_switched给x8                
-0xd5d3f0        adrp   x0, 0x200000    &#x2F;&#x2F;__PHYS_OFFSET给x0   
-&#x2F;&#x2F;注意这里的跳转指令，这个时候mmu已经生效了，由于目标地址为0xffffffc008f902a0，
-&#x2F;&#x2F;      所以这个时候查询的页表为init_pg_dir                  
-0xd5d3f4        blr    x8  &#x2F;&#x2F;跳转到__primary_switched                          
-0xd5d3f8        isb                                                           
-0xd5d3fc        msr    sctlr_el1, x20                                         
-0xd5d400        isb                                                           
-0xd5d404        bl     0x1190040                                              
-0xd5d408        tlbi   vmalle1                                                
-0xd5d40c        dsb    nsh                                                    
-0xd5d410        isb                                                           
-0xd5d414        msr    sctlr_el1, x19                                         
-0xd5d418        isb                                                           
-0xd5d41c        ic     iallu                                                  
-0xd5d420        dsb    nsh                                                    
-0xd5d424        isb                                                           
-0xd5d428        bl     0xd5d390                                               
-0xd5d42c        ldr    x8, 0xd5d448                                           
-0xd5d430        adrp   x0, 0x200000                                           
-0xd5d434        br     x8        
-@ SYM_FUNC_END(__primary_switch)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  这部分主要是在页表初始化好后，进行el1的一些cpu设置，并准备好mmu开启参数。</p>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">@ 	.pushsection &quot;.idmap.text&quot;, &quot;awx&quot;
-@ SYM_FUNC_START(__cpu_setup)
-&#x2F;&#x2F; Invalidate local TLB
-0x0000000000d5d6f4:	tlbi	vmalle1
-0x0000000000d5d6f8:	dsb	nsh
-
-0x0000000000d5d6fc:	mov	x1, #0x300000              	&#x2F;&#x2F; #3145728
-&#x2F;&#x2F; Enable FP&#x2F;ASIMD
-0x0000000000d5d700:	msr	cpacr_el1, x1
-&#x2F;&#x2F; Reset mdscr_el1 and disable
-0x0000000000d5d704:	mov	x1, #0x1000                	&#x2F;&#x2F; #4096
-&#x2F;&#x2F; access to the DCC from EL0
-0x0000000000d5d708:	msr	mdscr_el1, x1
-&#x2F;&#x2F; Unmask debug exceptions now,
-0x0000000000d5d70c:	isb
-
-
-0x0000000000d5d710:	msr	daifclr, #0x8
-0x0000000000d5d714:	mrs	x1, id_aa64dfr0_el1
-0x0000000000d5d718:	sbfx	x1, x1, #8, #4
-0x0000000000d5d71c:	cmp	x1, #0x1
-0x0000000000d5d720:	b.lt	0xd5d728  &#x2F;&#x2F; b.tstop
-0x0000000000d5d724:	msr	pmuserenr_el0, xzr
-0x0000000000d5d728:	mrs	x1, id_aa64pfr0_el1
-0x0000000000d5d72c:	ubfx	x1, x1, #44, #4
-0x0000000000d5d730:	cbz	x1, 0xd5d738
-0x0000000000d5d734:	msr	s3_3_c13_c2_3, xzr
-0x0000000000d5d738:	mov	x17, #0x400000000           	&#x2F;&#x2F; #17179869184
-0x0000000000d5d73c:	movk	x17, #0x44, lsl #16
-0x0000000000d5d740:	movk	x17, #0xffff
-0x0000000000d5d744:	mov	x16, #0x40000000000000      	&#x2F;&#x2F; #18014398509481984
-0x0000000000d5d748:	movk	x16, #0x30, lsl #32
-0x0000000000d5d74c:	movk	x16, #0xb559, lsl #16
-0x0000000000d5d750:	movk	x16, #0x3519
-0x0000000000d5d754:	mrs	x9, midr_el1
-0x0000000000d5d758:	mov	x5, #0xffffffffffefffff    	&#x2F;&#x2F; #-1048577
-0x0000000000d5d75c:	movk	x5, #0xffff
-0x0000000000d5d760:	and	x9, x9, x5
-0x0000000000d5d764:	mov	x5, #0x460f0000            	&#x2F;&#x2F; #1175388160
-0x0000000000d5d768:	movk	x5, #0x10
-0x0000000000d5d76c:	cmp	x9, x5
-0x0000000000d5d770:	b.ne	0xd5d788  &#x2F;&#x2F; b.any
-0x0000000000d5d774:	mov	x5, #0x60000000000000      	&#x2F;&#x2F; #27021597764222976
-0x0000000000d5d778:	movk	x5, #0x0, lsl #32
-0x0000000000d5d77c:	movk	x5, #0x0, lsl #16
-0x0000000000d5d780:	movk	x5, #0x0
-0x0000000000d5d784:	bic	x16, x16, x5
-0x0000000000d5d788:	adrp	x9, 0x1555000
-0x0000000000d5d78c:	ldr	x9, [x9, #3272]
-0x0000000000d5d790:	bfxil	x16, x9, #0, #6
-0x0000000000d5d794:	mrs	x5, id_aa64mmfr0_el1
-0x0000000000d5d798:	ubfx	x5, x5, #0, #3
-0x0000000000d5d79c:	mov	x6, #0x5                   	&#x2F;&#x2F; #5
-0x0000000000d5d7a0:	cmp	x5, x6
-0x0000000000d5d7a4:	csel	x5, x6, x5, hi  &#x2F;&#x2F; hi &#x3D; pmore
-0x0000000000d5d7a8:	bfi	x16, x5, #32, #3
-
-
-0x0000000000d5d7ac:	mrs	x9, id_aa64mmfr1_el1
-0x0000000000d5d7b0:	and	x9, x9, #0xf
-0x0000000000d5d7b4:	cbz	x9, 0xd5d7bc
-0x0000000000d5d7b8:	orr	x16, x16, #0x8000000000
-
-
-0x0000000000d5d7bc:	msr	mair_el1, x17
-0x0000000000d5d7c0:	msr	tcr_el1, x16
-
-&#x2F;*
-  * Prepare SCTLR, INIT_SCTLR_EL1_MMU_ON 给 x0
-  *&#x2F;
-0x0000000000d5d7c4:	mov	x0, #0x200000000000000     	&#x2F;&#x2F; #144115188075855872
-0x0000000000d5d7c8:	movk	x0, #0x20, lsl #32
-0x0000000000d5d7cc:	movk	x0, #0x34f4, lsl #16
-0x0000000000d5d7d0:	movk	x0, #0xd91d
-
-&#x2F;&#x2F; return to head.S
-0x0000000000d5d7d4:	ret
-0x0000000000d5d7d8:	msr	tpidr_el2, x13
-0x0000000000d5d7dc:	msr	disr_el1, xzr
-@ SYM_FUNC_END(__cpu_setup)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  当我们进入__primary_switched的时候，这个时候用的是内核地址。同时地址翻译是由init_pg_dir来完成。此过程初始化init_task，将</p>
-<pre class="line-numbers language-asm" data-language="asm"><code class="language-asm">@ SYM_FUNC_START_LOCAL(__primary_switched)
-
-&#x2F;&#x2F;将init_task给x4
-0xffffffc008f902a0      adrp   x4, 0xffffffc00934f000 &lt;inet6_offloads+1376&gt;                        
-0xffffffc008f902a4      add    x4, x4, #0xb80   
-
-&#x2F;&#x2F;init_cpu_task                                                   
-0xffffffc008f902a8      msr    sp_el0, x4                                                          
-0xffffffc008f902ac      ldr    x5, [x4, #24]                                                       
-0xffffffc008f902b0      add    sp, x5, #0x4, lsl #12                                               
-0xffffffc008f902b4      sub    sp, sp, #0x150                                                      
-0xffffffc008f902b8      stp    xzr, xzr, [sp, #304]                                                
-0xffffffc008f902bc      add    x29, sp, #0x130                                                     
-0xffffffc008f902c0      adrp   x5, 0xffffffc009349000 &lt;event_hash+616&gt;                             
-0xffffffc008f902c4      add    x5, x5, #0x7f8                                                      
-0xffffffc008f902c8      ldr    w6, [x4, #64]                                                       
-0xffffffc008f902cc      ldr    x5, [x5, x6, lsl #3]                                                
-0xffffffc008f902d0      msr    tpidr_el1, x5          
-
-&#x2F;&#x2F;加载异常向量表地址                                                                             
-0xffffffc008f902d4      adrp   x8, 0xffffffc008010000 &lt;bcm2835_handle_irq&gt;                         
-0xffffffc008f902d8      add    x8, x8, #0x800                                                      
-0xffffffc008f902dc      msr    vbar_el1, x8                                                        
-0xffffffc008f902e0      isb 
-
-&#x2F;&#x2F;将x29,x30放入到sp
-0xffffffc008f902e4      stp    x29, x30, [sp, #-16]!                                               
-0xffffffc008f902e8      mov    x29, sp  
-
-&#x2F;&#x2F; Save FDT pointer                                                                                                        
-0xffffffc008f902ec      adrp   x5, 0xffffffc009001000 &lt;tmp_cmdline.73085+2040&gt;                     
-0xffffffc008f902f0      str    x21, [x5, #920]                      
-
-&#x2F;&#x2F; Save the offset between                                                                              
-0xffffffc008f902f4      adrp   x4, 0xffffffc008b70000 &lt;kimage_vaddr&gt;                                                                              
-0xffffffc008f902f8      ldr    x4, [x4]       
-&#x2F;&#x2F; the kernel virtual and                                                                                                    
-0xffffffc008f902fc      sub    x4, x4, x0                                    
-&#x2F;&#x2F; physical mappings                                                                     
-0xffffffc008f90300      adrp   x5, 0xffffffc008ebb000 &lt;rt_sched_class+192&gt;                                                                        
-0xffffffc008f90304      str    x4, [x5, #3392]       
-
-&#x2F;&#x2F;Clear BSS                                                                                             
-0xffffffc008f90308      adrp   x0, 0xffffffc009529000 &lt;__kvm_nvhe_cur&gt;                                                                            
-0xffffffc008f9030c      add    x0, x0, #0x0                                                                                                       
-0xffffffc008f90310      mov    x1, xzr                                                                                                            
-0xffffffc008f90314      adrp   x2, 0xffffffc00961c000 &lt;gssp_stats+24&gt;                                                                             
-0xffffffc008f90318      add    x2, x2, #0xf8                                                                                                      
-0xffffffc008f9031c      sub    x2, x2, x0                                                                                                         
-0xffffffc008f90320      bl     0xffffffc008664200 &lt;memset&gt;                                                                                        
-0xffffffc008f90324      dsb    ishst    
-
-&#x2F;&#x2F; pass FDT address in x0                                                                                                          
-0xffffffc008f90328      mov    x0, x21    
-&#x2F;&#x2F; Try mapping the FDT early                                                                                                        
-0xffffffc008f9032c      bl     0xffffffc008f946c8 &lt;early_fdt_map&gt;    
-&#x2F;&#x2F; Parse cpu feature overrides                                                                    
-0xffffffc008f90330      bl     0xffffffc008f96354 &lt;init_feature_override&gt;    
-&#x2F;&#x2F;already running randomized?                                                                     
-0xffffffc008f90334      tst    x23, #0xffffffffffe00000                                                                                           
-0xffffffc008f90338      b.ne   0xffffffc008f90350 &lt;__primary_switched+176&gt;  &#x2F;&#x2F; b.any
-&#x2F;&#x2F; parse FDT for KASLR options                                                              
-0xffffffc008f9033c      bl     0xffffffc008f96b80 &lt;kaslr_early_init&gt;  
-&#x2F;&#x2F; KASLR disabled? just proceed          这里直接跳转到 0xffffffc008f90350                                                              
-0xffffffc008f90340      cbz    x0, 0xffffffc008f90350 &lt;__primary_switched+176&gt;  
-&#x2F;&#x2F; record KASLR offset                                                                  
-0xffffffc008f90344      orr    x23, x23, x0  
-&#x2F;&#x2F; we must enable KASLR, return                                                                                                     
-0xffffffc008f90348      ldp    x29, x30, [sp], #16      
-&#x2F;&#x2F; to __primary_switch()                                                                                         
-0xffffffc008f9034c      ret  
-
-&#x2F;&#x2F; Prefer VHE if possible
-0xffffffc008f90350      bl     0xffffffc008021e6c &lt;switch_to_vhe&gt;                                                                                 
-0xffffffc008f90354      ldp    x29, x30, [sp], #16                  
-&#x2F;&#x2F;跳转到kernel_start                                                                              
-0xffffffc008f90358      bl     0xffffffc008f90c40 &lt;start_kernel&gt;                                                                                  
-0xffffffc008f9035c      brk    #0x800                                                                                                             
-0xffffffc008f90360      msr    tpidr_el2, x5  
-@ SYM_FUNC_END(__primary_switched)
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  注意，阅读本文这部分时，需要对照着head.S来看，这样才有一个基本的认识。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  本文得到的基本流程为，上电，保存上电后的基础寄存器，在el2的模式下初始化cpu，保存启动标志，初始化两个页表（注意，这部分是精华，我这部分注释也最多），然后初始化el1模式下的cpu，并准备好开启mmu，最后在__primary_switch里面开启mmu，当mmu开启后，这个时候的地址还是物理地址，所以我们需要一个映射物理地址和虚拟地址相等的页表（idmap_pg_dir），重定位符号表，最后加载__primary_switched的虚拟地址（其虚拟地址在kernel logical memory map中），跳转到执行（此时查表init_pg_dir），然后初始化init_task，最后进入start_kernel。</p>
-<p>  本文也没有尝试去完全注释每句代码，太繁杂了，对于我来说也没有意义，特别是一些特别的初始化，只有以后遇到了才去查询。Linux现代内核太大了，后面可能就要去看个人喜欢的模块，这样才有收获，不要尝试去阅读全部内容，那样太难了。</p>
-<p>  每个人对于这部分的关注可能都是不一样的，如果本文没有写的地方，可以尝试搜索对应的关键字，可以得到更多的信息。</p>
-<h3 id="参考文献">参考文献</h3>
-<div id="refer-anchor-1"></div>
-[1]https://blog.csdn.net/u011728480/article/details/79498816
-<div id="refer-anchor-2"></div>
-[2]https://blog.csdn.net/u011728480/article/details/88420467
-<div id="refer-anchor-3"></div>
-[3]https://blog.csdn.net/u011728480/article/details/88553602
-<div id="refer-anchor-4"></div>
-[4]https://blog.csdn.net/u011728480/article/details/114491022
-<div id="refer-anchor-5"></div>
-[5]https://developer.arm.com/documentation/100933/0100
-<div id="refer-anchor-6"></div>
-[6]https://www.kernel.org/doc/html/latest/arm64/memory.html
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="page-number current">2</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -4331,14 +3810,14 @@ target remote localhost:1234<span aria-hidden="true" class="line-numbers-rows"><
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">296k</span>
+    <span title="站点总字数">297k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">17:56</span>
+    <span title="站点阅读时长">18:01</span>
   </span>
 </div>
 <div class="busuanzi-count">
