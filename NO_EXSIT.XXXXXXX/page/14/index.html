@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">142</span>
+          <span class="site-state-item-count">143</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -259,6 +259,163 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2015/02/09/blog_idx_012/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2015/02/09/blog_idx_012/" class="post-title-link" itemprop="url">undefined reference to vtable for "xxx::xxx" in QT（已解决）</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2015-02-09 15:37:25" itemprop="dateCreated datePublished" datetime="2015-02-09T15:37:25+08:00">2015-02-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:47" itemprop="dateModified" datetime="2024-05-18T19:06:47+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>652</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky
+ * @LastEditTime: 2021-12-20 13:51:09
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=012） 
+&emsp;&emsp;本文发布于  2015-02-09 15:37:25，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=012） 
+-->
+<h6 id="前置说明">前置说明</h6>
+<p>  本文发布于  2015-02-09 15:37:25，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=012）</p>
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="问题解决方法">问题解决方法</h3>
+<hr>
+<p>  近日编译一个项目时，由于在错误状态下不小心编译一次了．当改了代码后（确认代码正确），在进行编译的时候，就会出现undefined reference to vtable for “xxx::xxx” ．</p>
+<p>  看到这个错误，别慌，他不是一个语言级的错误，而是ｑｔ的编译机制引起的．首先，看你的程序中是不是有ｑｔ的不同于ｃ＋＋的特性（一般来说就是有没有Q_OBJECT的宏定义）．如果没有，就按照标准的Ｃ＋＋规则编译，如果有，那么那个部分就会先被生成一个.把标准的.cpp文件(并不替换原来的ｃｐｐ，而是参与编译)．然后在进行标准ｃ＋＋的编译工作．其实就是这个部分引起的错误．而这个部分也叫做元对象编译(MOC)．</p>
+<p>  解决办法：删除build文件夹，切记删除整个文件夹．（这貌似是ｑｔ的一个ｂｕｇ，因为我全部重新编译，清除所有文件后在重新编译都是一样的错误）</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<p>  无</p>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -2251,179 +2408,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2014/07/06/blog_idx_002/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2014/07/06/blog_idx_002/" class="post-title-link" itemprop="url">关于Ubuntu的磁盘空间不足其中的一种问题</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2014-07-06 01:12:48" itemprop="dateCreated datePublished" datetime="2014-07-06T01:12:48+08:00">2014-07-06</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/Ubuntu%E4%BD%BF%E7%94%A8/" itemprop="url" rel="index"><span itemprop="name">Ubuntu使用</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>677</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>2 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky
- * @LastEditTime: 2021-12-17 14:57:40
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=002） 
-&emsp;&emsp;本文发布于 2014-07-06 01:12:48，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=002） 
--->
-<h6 id="前置说明">前置说明</h6>
-<p>  本文发布于 2014-07-06 01:12:48，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=002）</p>
-<h6 id="环境说明">环境说明</h6>
-<p>  使用的是Ｕｂｕｎｔｕ14.04 x64</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  ------  更新于Thu May 13 19:02:30 CST 2021</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="注意：以下的图片是我修好之后的图片，只是说明我是怎样解决问题的。。。">注意：以下的图片是我修好之后的图片，只是说明我是怎样解决问题的。。。</h3>
-<hr>
-<p>  1 博主我最近使用Ｕｂｕｎｔｕ时，经常出现一个大问题。那就是磁盘写入量特别的大，达到了90多ＭＢ/s（我在这里看的数据）<br/></p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_002/io_state.png" alt="io_state"/></center>
-        <!-- <center><font>图一 为选择安装语言</font></center> -->
-    </div>
-</div>  
-<p>  而且，硬盘灯一直狂闪。 <br/><br>
-  我使用磁盘使用分析器(命令：sudo baobab)：看了一下文件分布。。。下图 <br/></p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_002/disk_usage.png" alt="disk_usage"/></center>
-    </div>
-</div>  
-<p>  2 在这里，你可以看到哪个文件的容量比较大，经比较，我发现/var/log/cups文件特别的大，删除后error_log等文件后，还是迅速增加这些文件，经查询发现，可能是ｃｕｐｓ服务捣鬼，到这里，有两个方法：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>＠彻底删除ｌｏｇ文件（简单，粗暴，但是不能够查看各种log 文件）</p>
-</li>
-<li class="lvl-2">
-<p>＠停止ｃｕｐｓ服务,命令：sudo update-rc.d cups remove</p>
-</li>
-</ul>
-<p>  就这样，我的硬盘灯就不在狂闪了。。。。。。</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/13/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/15/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -2448,14 +2432,14 @@ document.addEventListener('DOMContentLoaded', () => {
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">297k</span>
+    <span title="站点总字数">300k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">18:01</span>
+    <span title="站点阅读时长">18:09</span>
   </span>
 </div>
 <div class="busuanzi-count">

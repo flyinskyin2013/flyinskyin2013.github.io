@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">142</span>
+          <span class="site-state-item-count">143</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -259,6 +259,230 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/05/15/blog_idx_062/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/05/15/blog_idx_062/" class="post-title-link" itemprop="url">NVIDIA Jestson TX2 配置cuda以及cudnn的坑 ( JetPack-L4T 、Error: downloading update lock、TX2,TX1,TK1相关资源信息)</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-05-15 15:00:57" itemprop="dateCreated datePublished" datetime="2018-05-15T15:00:57+08:00">2018-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/" itemprop="url" rel="index"><span itemprop="name">DL</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>889</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-23 16:46:17
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=062） 
+&emsp;&emsp;本文发布于 2018-05-15 15:00:57，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=062） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  主机信息 Linux 4.13.0-41-generic #46~16.04.1-Ubuntu SMP Thu May 3 10:06:43 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Jestson-TX2-配置">Jestson TX2 配置</h3>
+<hr>
+<br/>
+<br/>
+<h5 id="JetPack-L4T-资源信息（TX2-TX1-TK1）">JetPack-L4T 资源信息（TX2,TX1,TK1）</h5>
+<p>  JetPack-L4T-3.0</p>
+<p>  资源地址：<a target="_blank" rel="noopener" href="https://download.csdn.net/download/u011728480/10415628">https://download.csdn.net/download/u011728480/10415628</a></p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_062/jetpack.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  JetPack-L4T-3.1</p>
+<p>  资源地址：<a target="_blank" rel="noopener" href="https://download.csdn.net/download/u011728480/10415640">https://download.csdn.net/download/u011728480/10415640</a></p>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_062/jetpack1.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>  JetPack-L4T-3.2，截止发文时，3.2用的依然是3.1的资源信息。</p>
+<br/>
+<br/>
+<h5 id="官方配置流程">官方配置流程</h5>
+<p>  就是使用JetPack-L4T工具按照流程进行相关的配置，即可完成全部安装。</p>
+<br/>
+<br/>
+<h5 id="民间配置流程">民间配置流程</h5>
+<p>  首先下载上面我提供的资源压缩包，解压，然后打开repository.json文件，这里面包含了此版本关于TX2,TX1,TK1的所有资源地址信息。（此文件稍微分析一下即可得到地址）</p>
+<p>  这里我需要的是cuda8.0和cudnn5.1</p>
+<p>  关于TX2，JetPack 3.0 的cuda和cudnn地址分别是：(在repository.json文件)</p>
+<p>  cuda:</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/009/linux-x64/cuda-repo-l4t-8-0-local_8.0.64-1_arm64.deb">http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/009/linux-x64/cuda-repo-l4t-8-0-local_8.0.64-1_arm64.deb</a></p>
+</li>
+</ul>
+<p>  cudnn:</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/009/linux-x64/libcudnn5_5.1.10-1+cuda8.0_arm64.deb">http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/009/linux-x64/libcudnn5_5.1.10-1+cuda8.0_arm64.deb</a></p>
+</li>
+<li class="lvl-2">
+<p><a target="_blank" rel="noopener" href="http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/011/linux-x64/libcudnn5-dev_5.1.10-1+cuda8.0_arm64.deb">http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/011/linux-x64/libcudnn5-dev_5.1.10-1+cuda8.0_arm64.deb</a></p>
+</li>
+</ul>
+<p>  下载以上三个包，然后在tx2上，dpkg 安装这三个包,然后：</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt</span> update
+
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> cuda-toolkit-8-0 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>  最后把/usr/local/cuda/bin/添加到PATH变量</p>
+<p>  这样cuda及cudnn就配置完成。其他相关包可参照如此配置。</p>
+<p>  友情提示：</p>
+<p>    下载以上包时最好使用迅雷或者开代理进行下载，否则可能会出现被墙的可能性。</p>
+<br/>
+<br/>
+<h5 id="Error-downloading-update-lock">Error:  downloading update lock</h5>
+<p>  错误：一直卡downloading update lock  ，最后Error原因：就是大中华防火墙给墙了此信息下载地址（某些电信运营商才会出现，比如我公司移动运营商）</p>
+<p>  解决方案：</p>
+<ol>
+<li class="lvl-4">
+<p>开启代理后，按照官方教程走。</p>
+</li>
+<li class="lvl-3">
+<p>使用我上文提供的信息下载相关资源，按照民间教程进行配置。</p>
+</li>
+</ol>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -3598,409 +3822,6 @@ Func1:
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/01/09/blog_idx_052/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/01/09/blog_idx_052/" class="post-title-link" itemprop="url">Android JNI静态和动态注册 、Java Reflect（C或C++层反射和JAVA层反射）、Java 可变参数（JNI实现）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-01-09 09:13:35" itemprop="dateCreated datePublished" datetime="2018-01-09T09:13:35+08:00">2018-01-09</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/JAVA/" itemprop="url" rel="index"><span itemprop="name">JAVA</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/JAVA/%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">安全</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>1.6k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>6 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky sky@sky-home.com
- * @LastEditTime: 2022-10-23 15:00:22
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=052） 
-&emsp;&emsp;本文发布于 2018-01-09 09:13:35，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=052） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  无</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  由于最近重新接触了部分Android相关的东西，对一些需要混合编程的手段做了整理，同时也对Java中常见的反射技术进行归纳总结。（本文适合知道JNI和反射是什么鬼的人阅读）(可变参数实现在JNI部分的IoctlGpio方法)</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="Java-JNI">Java JNI</h3>
-<hr>
-<p>  Java native interface（java本地调用接口）主要是实现C或者C++和java交互。先来看一张来至于网上的图（如果侵权，请联系我，我会第一时间删除）</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_052/jvm_arch.png" alt="rep_img"/></center>
-    </div>
-</div>   
-<p>  此图说明了一个jvm中（一个进程中）所拥有的资源。而JNI就是用来实现调用本地方法的一种方法。而这些本地方法有两种方式可以被注册到jvm中，分别如下:</p>
-<br/>
-<br/>
-<h5 id="JNI之静态注册">JNI之静态注册</h5>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Operate_Gpio</span> <span class="token punctuation">&#123;</span>
-    <span class="token keyword">public</span> <span class="token keyword">native</span> <span class="token keyword">int</span> <span class="token class-name">IoctlGpio</span><span class="token punctuation">(</span><span class="token keyword">int</span> cmd<span class="token punctuation">,</span> <span class="token class-name">String</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>arg<span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token keyword">public</span> <span class="token keyword">native</span> <span class="token keyword">int</span> <span class="token class-name">IoctlGpio</span><span class="token punctuation">(</span><span class="token keyword">int</span> cmd<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>arg<span class="token punctuation">)</span><span class="token punctuation">;</span>
-    
-	<span class="token comment">//java static code</span>
-	<span class="token keyword">static</span> <span class="token punctuation">&#123;</span>
-        <span class="token class-name">System</span><span class="token punctuation">.</span><span class="token function">loadLibrary</span><span class="token punctuation">(</span><span class="token string">"OperateGpio"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-  <span class="token punctuation">&#125;</span>
-    <span class="token comment">//call IoctlGpio()</span>
-  <span class="token class-name">Operate_Gpio</span> op_gpio <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Operate_Gpio</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token class-name"><span class="token namespace">op_gpio<span class="token punctuation">.</span></span>IoctlGpio</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token class-name"><span class="token namespace">op_gpio<span class="token punctuation">.</span></span>IoctlGpio</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token string">"a"</span><span class="token punctuation">,</span><span class="token string">"b"</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">extern</span> <span class="token string">"C"</span>
-JNIEXPORT jint JNICALL
-<span class="token function">Java_JNI_Operate_1Gpio_IoctlGpio</span><span class="token punctuation">(</span>JNIEnv <span class="token operator">*</span>env<span class="token punctuation">,</span> jobject instance<span class="token punctuation">,</span> jint cmd<span class="token punctuation">,</span>jobjectArray arg<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-
-    jboolean iscopy<span class="token punctuation">;</span>
-
-    <span class="token keyword">switch</span> <span class="token punctuation">(</span>cmd<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token keyword">case</span> <span class="token number">1</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
-            jint <span class="token operator">*</span>arg1 <span class="token operator">=</span> env<span class="token operator">-></span><span class="token function">GetIntArrayElements</span><span class="token punctuation">(</span><span class="token punctuation">(</span>jintArray<span class="token punctuation">)</span> arg<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-            <span class="token function">NativeLog</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> instance<span class="token punctuation">,</span> <span class="token char">'D'</span><span class="token punctuation">,</span> <span class="token string">"Test string arg1"</span><span class="token punctuation">,</span>
-                      <span class="token function">Int_to_String</span><span class="token punctuation">(</span>arg1<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-            <span class="token function">NativeLog</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> instance<span class="token punctuation">,</span> <span class="token char">'D'</span><span class="token punctuation">,</span> <span class="token string">"Test string arg2"</span><span class="token punctuation">,</span>
-                      <span class="token function">Int_to_String</span><span class="token punctuation">(</span>arg1<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-                      env<span class="token operator">-></span><span class="token function">ReleaseIntArrayElements</span><span class="token punctuation">(</span><span class="token punctuation">(</span>jintArray<span class="token punctuation">)</span>arg<span class="token punctuation">,</span> arg1<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-            <span class="token keyword">break</span><span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
-        <span class="token keyword">case</span> <span class="token number">2</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
-            jstring arg3 <span class="token operator">=</span> <span class="token punctuation">(</span>jstring<span class="token punctuation">)</span> env<span class="token operator">-></span><span class="token function">GetObjectArrayElement</span><span class="token punctuation">(</span>arg<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-            jstring arg4 <span class="token operator">=</span> <span class="token punctuation">(</span>jstring<span class="token punctuation">)</span> env<span class="token operator">-></span><span class="token function">GetObjectArrayElement</span><span class="token punctuation">(</span>arg<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-            <span class="token function">NativeLog</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> instance<span class="token punctuation">,</span> <span class="token char">'D'</span><span class="token punctuation">,</span> <span class="token string">"Test string arg3"</span><span class="token punctuation">,</span>
-                      env<span class="token operator">-></span><span class="token function">GetStringUTFChars</span><span class="token punctuation">(</span>arg3<span class="token punctuation">,</span> <span class="token operator">&amp;</span>iscopy<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-            <span class="token function">NativeLog</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> instance<span class="token punctuation">,</span> <span class="token char">'D'</span><span class="token punctuation">,</span> <span class="token string">"Test string arg4"</span><span class="token punctuation">,</span>
-                      env<span class="token operator">-></span><span class="token function">GetStringUTFChars</span><span class="token punctuation">(</span>arg4<span class="token punctuation">,</span> <span class="token operator">&amp;</span>iscopy<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-            <span class="token keyword">break</span><span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
-        <span class="token keyword">default</span><span class="token operator">:</span><span class="token punctuation">&#123;</span>
-            <span class="token keyword">break</span><span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
-
-    <span class="token punctuation">&#125;</span>
-    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
-
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  说明：通过特定的函数命名方式（包名__类名__函数名）（若以上命名中含有_，将会通过在其后加一位数字方式来标识）来注册。当在java层调用System.loadLibrary，jvm会遍历这个so库的所有合法的方法，并放到本地方法栈，以供使用。</p>
-<p>  缺点：</p>
-<ol>
-<li class="lvl-3">
-<p>初次call本地函数时，需要先在jni下去搜索相关的jni函数，然后建立jni函数和native函数关系，导致效率降低</p>
-</li>
-<li class="lvl-3">
-<p>使用规则复杂，不利于开发（不方便）。</p>
-</li>
-</ol>
-<br/>
-<br/>
-<h5 id="JNI之动态注册">JNI之动态注册</h5>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Operate_Gpio</span> <span class="token punctuation">&#123;</span>
-<span class="token keyword">public</span> <span class="token keyword">native</span>  <span class="token keyword">int</span> <span class="token class-name">TestGpio</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token comment">//java static code</span>
-	<span class="token keyword">static</span> <span class="token punctuation">&#123;</span>
-        <span class="token class-name">System</span><span class="token punctuation">.</span><span class="token function">loadLibrary</span><span class="token punctuation">(</span><span class="token string">"OperateGpio"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span>
-
-  <span class="token class-name">Operate_Gpio</span> op_gpio <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Operate_Gpio</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token class-name"><span class="token namespace">op_gpio<span class="token punctuation">.</span></span>TestGpio</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">/**
-* Table of methods associated with a single class.
-*/</span>
-<span class="token comment">/*
- *
- * typedef struct &#123;
-    const char* name;
-    const char* signature;
-    void*       fnPtr;
-&#125; JNINativeMethod;
- * */</span>
-<span class="token comment">// 结构体，分别是java层的函数名称，签名，对应的函数指针</span>
-<span class="token keyword">static</span> JNINativeMethod gMethods<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
-        <span class="token punctuation">&#123;</span> <span class="token string">"TestGpio"</span><span class="token punctuation">,</span> <span class="token string">"()I"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>TestGpio <span class="token punctuation">&#125;</span><span class="token punctuation">,</span><span class="token comment">//绑定</span>
-<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
-<span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">registerNativeMethods</span><span class="token punctuation">(</span>JNIEnv<span class="token operator">*</span> env<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span> className<span class="token punctuation">,</span>
-                                 JNINativeMethod<span class="token operator">*</span> gMethods<span class="token punctuation">,</span> <span class="token keyword">int</span> numMethods<span class="token punctuation">)</span>
-<span class="token punctuation">&#123;</span>
-    jclass clazz<span class="token punctuation">;</span>
-    clazz <span class="token operator">=</span> env<span class="token operator">-></span><span class="token function">FindClass</span><span class="token punctuation">(</span>className<span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token keyword">if</span> <span class="token punctuation">(</span>clazz <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token keyword">return</span> JNI_FALSE<span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-    <span class="token keyword">if</span> <span class="token punctuation">(</span>env<span class="token operator">-></span><span class="token function">RegisterNatives</span><span class="token punctuation">(</span>clazz<span class="token punctuation">,</span> gMethods<span class="token punctuation">,</span> numMethods<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token keyword">return</span> JNI_FALSE<span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-
-    <span class="token keyword">return</span> JNI_TRUE<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
-
-JNIEXPORT jint JNICALL <span class="token function">JNI_OnLoad</span><span class="token punctuation">(</span>JavaVM<span class="token operator">*</span> vm<span class="token punctuation">,</span> <span class="token keyword">void</span><span class="token operator">*</span> reserved<span class="token punctuation">)</span>
-<span class="token punctuation">&#123;</span>
-    JNIEnv<span class="token operator">*</span> env <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
-
-    <span class="token keyword">if</span> <span class="token punctuation">(</span> vm<span class="token operator">-></span><span class="token function">GetEnv</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span>env<span class="token punctuation">,</span> JNI_VERSION_1_4<span class="token punctuation">)</span> <span class="token operator">!=</span> JNI_OK<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-    <span class="token function">assert</span><span class="token punctuation">(</span>env <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">registerNativeMethods</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> JNIREG_CLASS<span class="token punctuation">,</span> gMethods<span class="token punctuation">,</span>
-                               <span class="token keyword">sizeof</span><span class="token punctuation">(</span>gMethods<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>gMethods<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-        <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
-    <span class="token comment">/* success -- return valid version number */</span>
-    <span class="token keyword">return</span> JNI_VERSION_1_4<span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  说明：</p>
-<ol>
-<li class="lvl-3">
-<p>JNINativeMethod保存Java Native函数和JNI函数的对应关系</p>
-</li>
-<li class="lvl-3">
-<p>Java层中调用System.loadLibrary加载so库，并调用JNI_OnLoad开始注册</p>
-</li>
-<li class="lvl-3">
-<p>JNI_OnLoad中调用AndroidRuntime::registerNativeMethods</p>
-</li>
-<li class="lvl-3">
-<p>AndroidRuntime::registerNativeMethods中调用        jniRegisterNativeMethods</p>
-</li>
-</ol>
-<p>  注意：这里有个知识叫做java签名，此签名是指的方法的类型标识，也就是一堆类型简写。（写法：(函数参数列表)返回值）</p>
-<p>  下列是常用的类型总结（资料来于网上，若有侵权，请联系我，我第一时间删除）：</p>
-<pre class="line-numbers language-none"><code class="language-none">&#x2F;*
-
-Java方法签名中特殊字符&#x2F;字母含义
-特殊字符	数据类型	特殊说明
-V	void 	一般用于表示方法的返回值
-Z	boolean	 
-B	byte	 
-C	char	 
-S	short	 
-I	int	 
-J	long	 
-F	float	 
-D	double	 
-[	数组	以[开头，配合其他的特殊字符，表示对应数据类型的数组，几个[表示几维数组
-L全类名;	引用类型	以L开头、;结尾，中间是引用类型的全类名
-
-*&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="Java-Reflect">Java Reflect</h3>
-<hr>
-<p>  程序运行时获取类的属性，也可调用类的方法。可灵活的方便构建出各种复杂的逻辑结构。</p>
-<br/>
-<br/>
-<h5 id="C或者C-层反射">C或者C++层反射</h5>
-<pre class="line-numbers language-c++" data-language="c++"><code class="language-c++">
-int static NativeLog(JNIEnv *env, jobject instance ,char type, std::string tag, std::string msg)&#123;
-
-    jclass clazz &#x3D; env-&gt;FindClass(&quot;android&#x2F;util&#x2F;Log&quot;) ;
-    jmethodID jmth_id;
-    switch (type)&#123;
-
-        case &#39;V&#39;:
-            jmth_id  &#x3D; env-&gt;GetStaticMethodID(clazz, &quot;v&quot;, &quot;(Ljava&#x2F;lang&#x2F;String;Ljava&#x2F;lang&#x2F;String;)I&quot;);
-            break;
-        case &#39;D&#39;:
-            jmth_id  &#x3D; env-&gt;GetStaticMethodID(clazz, &quot;d&quot;, &quot;(Ljava&#x2F;lang&#x2F;String;Ljava&#x2F;lang&#x2F;String;)I&quot;);
-            break;
-        case &#39;I&#39;:
-            jmth_id  &#x3D; env-&gt;GetStaticMethodID(clazz, &quot;i&quot;, &quot;(Ljava&#x2F;lang&#x2F;String;Ljava&#x2F;lang&#x2F;String;)I&quot;);
-            break;
-        case &#39;W&#39;:
-            jmth_id  &#x3D; env-&gt;GetStaticMethodID(clazz, &quot;w&quot;, &quot;(Ljava&#x2F;lang&#x2F;String;Ljava&#x2F;lang&#x2F;String;)I&quot;);
-            break;
-        case &#39;E&#39;:
-            jmth_id  &#x3D; env-&gt;GetStaticMethodID(clazz, &quot;e&quot;, &quot;(Ljava&#x2F;lang&#x2F;String;Ljava&#x2F;lang&#x2F;String;)I&quot;);
-            break;
-        default:
-            break;
-    &#125;
-
-    return env-&gt;CallStaticIntMethod(clazz, jmth_id, env-&gt;NewStringUTF(tag.c_str()), env-&gt;NewStringUTF(msg.c_str()));
-&#125;
-
-extern &quot;C&quot;
-JNIEXPORT jint JNICALL
-Java_JNI_Operate_1Gpio_OpenGpio(JNIEnv * env, jobject obj)&#123;
-    &#x2F;&#x2F;open devices ... ...
-    NativeLog(env, obj, &#39;D&#39;, &quot;Test&quot;, &quot;Reflect test.&quot;);
-    return 0;
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Operate_Gpio</span> <span class="token punctuation">&#123;</span>
-
-    <span class="token keyword">public</span> <span class="token keyword">native</span> <span class="token keyword">int</span> <span class="token class-name">OpenGpio</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-
-    <span class="token comment">// Used to load the 'native-lib' library on application startup.</span>
-    <span class="token keyword">static</span> <span class="token punctuation">&#123;</span>
-        <span class="token class-name">System</span><span class="token punctuation">.</span><span class="token function">loadLibrary</span><span class="token punctuation">(</span><span class="token string">"OperateGpio"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span>
-
-<span class="token class-name">Operate_Gpio</span> op_gpio <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Operate_Gpio</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token class-name"><span class="token namespace">op_gpio<span class="token punctuation">.</span></span>OpenGpio</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<br/>
-<br/>
-<h5 id="JAVA层反射">JAVA层反射</h5>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
-    <span class="token class-name">Class</span> clazz <span class="token operator">=</span> <span class="token class-name">Class</span><span class="token punctuation">.</span><span class="token function">forName</span><span class="token punctuation">(</span><span class="token string">"android.util.Log"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token class-name">Method</span> method <span class="token operator">=</span> clazz<span class="token punctuation">.</span><span class="token function">getDeclaredMethod</span><span class="token punctuation">(</span><span class="token string">"d"</span><span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    method<span class="token punctuation">.</span><span class="token function">invoke</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">,</span><span class="token string">"Test"</span><span class="token punctuation">,</span><span class="token string">"Fuck"</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//调用静态函数</span>
-<span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">ClassNotFoundException</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-    e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">NoSuchMethodException</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-    e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">IllegalAccessException</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-    e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">InvocationTargetException</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-    e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>  所有结果的最终效果如图：</p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_052/ret.png" alt="rep_img"/></center>
-    </div>
-</div>  
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/8/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/10/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -4025,14 +3846,14 @@ Java_JNI_Operate_1Gpio_OpenGpio(JNIEnv * env, jobject obj)&#123;
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">297k</span>
+    <span title="站点总字数">300k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">18:01</span>
+    <span title="站点阅读时长">18:09</span>
   </span>
 </div>
 <div class="busuanzi-count">

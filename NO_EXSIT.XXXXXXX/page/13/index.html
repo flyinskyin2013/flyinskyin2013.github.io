@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">142</span>
+          <span class="site-state-item-count">143</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -259,6 +259,421 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2016/07/04/blog_idx_022/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2016/07/04/blog_idx_022/" class="post-title-link" itemprop="url">Linux socket 摘要(一)</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-04 16:31:31" itemprop="dateCreated datePublished" datetime="2016-07-04T16:31:31+08:00">2016-07-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C-CPP/linux%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">linux开发</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-09-11 10:55:43
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=022） 
+&emsp;&emsp;本文发布于 2016-07-04 16:31:31，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=022） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  无</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  注意：Linux 一切皆文件</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="Linux-网络分层">Linux 网络分层</h3>
+<hr>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_022/network_layer.png" alt="rep_img"/></center>
+    </div>
+</div>    
+<p>注：Linux 网络分层，图片来自于百度图片</p>
+<br/>
+<br/>
+<h5 id="Linux-一个socket程序的执行流（结果就是得到一个fd-让我们能够通过fd去操作socket所创建的一个文件对象）">Linux 一个socket程序的执行流（结果就是得到一个fd,让我们能够通过fd去操作socket所创建的一个文件对象）</h5>
+<p>在用户态下：某程序执行socket(int af, int type, int protocol)</p>
+<p>经过系统调用层的实现</p>
+<p>在内核态下：会跳转到内核态执行sys_socket(),下面看其源码</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token function">SYSCALL_DEFINE3</span><span class="token punctuation">(</span>socket<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">,</span> family<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">,</span> type<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">,</span> protocol<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">int</span> retval<span class="token punctuation">;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">socket</span> <span class="token operator">*</span>sock<span class="token punctuation">;</span>
+	<span class="token keyword">int</span> flags<span class="token punctuation">;</span>
+
+	<span class="token comment">/* Check the SOCK_* constants for consistency.  */</span>
+	<span class="token function">BUILD_BUG_ON</span><span class="token punctuation">(</span>SOCK_CLOEXEC <span class="token operator">!=</span> O_CLOEXEC<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">BUILD_BUG_ON</span><span class="token punctuation">(</span><span class="token punctuation">(</span>SOCK_MAX <span class="token operator">|</span> SOCK_TYPE_MASK<span class="token punctuation">)</span> <span class="token operator">!=</span> SOCK_TYPE_MASK<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">BUILD_BUG_ON</span><span class="token punctuation">(</span>SOCK_CLOEXEC <span class="token operator">&amp;</span> SOCK_TYPE_MASK<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">BUILD_BUG_ON</span><span class="token punctuation">(</span>SOCK_NONBLOCK <span class="token operator">&amp;</span> SOCK_TYPE_MASK<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	flags <span class="token operator">=</span> type <span class="token operator">&amp;</span> <span class="token operator">~</span>SOCK_TYPE_MASK<span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>flags <span class="token operator">&amp;</span> <span class="token operator">~</span><span class="token punctuation">(</span>SOCK_CLOEXEC <span class="token operator">|</span> SOCK_NONBLOCK<span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token operator">-</span>EINVAL<span class="token punctuation">;</span>
+	type <span class="token operator">&amp;=</span> SOCK_TYPE_MASK<span class="token punctuation">;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>SOCK_NONBLOCK <span class="token operator">!=</span> O_NONBLOCK <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>flags <span class="token operator">&amp;</span> SOCK_NONBLOCK<span class="token punctuation">)</span><span class="token punctuation">)</span>
+		flags <span class="token operator">=</span> <span class="token punctuation">(</span>flags <span class="token operator">&amp;</span> <span class="token operator">~</span>SOCK_NONBLOCK<span class="token punctuation">)</span> <span class="token operator">|</span> O_NONBLOCK<span class="token punctuation">;</span>
+
+	retval <span class="token operator">=</span> <span class="token function">sock_create</span><span class="token punctuation">(</span>family<span class="token punctuation">,</span> type<span class="token punctuation">,</span> protocol<span class="token punctuation">,</span> <span class="token operator">&amp;</span>sock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>retval <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span>
+		<span class="token keyword">goto</span> out<span class="token punctuation">;</span>
+
+	retval <span class="token operator">=</span> <span class="token function">sock_map_fd</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> flags <span class="token operator">&amp;</span> <span class="token punctuation">(</span>O_CLOEXEC <span class="token operator">|</span> O_NONBLOCK<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>retval <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span>
+		<span class="token keyword">goto</span> out_release<span class="token punctuation">;</span>
+
+out<span class="token operator">:</span>
+	<span class="token comment">/* It may be already another descriptor 8) Not kernel problem. */</span>
+	<span class="token keyword">return</span> retval<span class="token punctuation">;</span>
+
+out_release<span class="token operator">:</span>
+	<span class="token function">sock_release</span><span class="token punctuation">(</span>sock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">return</span> retval<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>这里我们注意:函数里面执行了两个函数来完成socket的功能</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>sock_create()//创建一个socket</p>
+</li>
+<li class="lvl-2">
+<p>sock_map_fd()//获得一个标号，并返回这个fd</p>
+</li>
+</ul>
+<p>sock_create()源代码:</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">inet_create</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">net</span> <span class="token operator">*</span>net<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">socket</span> <span class="token operator">*</span>sock<span class="token punctuation">,</span> <span class="token keyword">int</span> protocol<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">sock</span> <span class="token operator">*</span>sk<span class="token punctuation">;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">inet_protosw</span> <span class="token operator">*</span>answer<span class="token punctuation">;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">inet_sock</span> <span class="token operator">*</span>inet<span class="token punctuation">;</span>
+	<span class="token keyword">struct</span> <span class="token class-name">proto</span> <span class="token operator">*</span>answer_prot<span class="token punctuation">;</span>
+	<span class="token keyword">unsigned</span> <span class="token keyword">char</span> answer_flags<span class="token punctuation">;</span>
+	<span class="token keyword">char</span> answer_no_check<span class="token punctuation">;</span>
+	<span class="token keyword">int</span> try_loading_module <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> err<span class="token punctuation">;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">unlikely</span><span class="token punctuation">(</span><span class="token operator">!</span>inet_ehash_secret<span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>sock<span class="token operator">-></span>type <span class="token operator">!=</span> SOCK_RAW <span class="token operator">&amp;&amp;</span> sock<span class="token operator">-></span>type <span class="token operator">!=</span> SOCK_DGRAM<span class="token punctuation">)</span>
+			<span class="token function">build_ehash_secret</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	sock<span class="token operator">-></span>state <span class="token operator">=</span> SS_UNCONNECTED<span class="token punctuation">;</span>
+
+	<span class="token comment">/* Look for the requested type/protocol pair. */</span>
+lookup_protocol<span class="token operator">:</span>
+	err <span class="token operator">=</span> <span class="token operator">-</span>ESOCKTNOSUPPORT<span class="token punctuation">;</span>
+	<span class="token function">rcu_read_lock</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">list_for_each_entry_rcu</span><span class="token punctuation">(</span>answer<span class="token punctuation">,</span> <span class="token operator">&amp;</span>inetsw<span class="token punctuation">[</span>sock<span class="token operator">-></span>type<span class="token punctuation">]</span><span class="token punctuation">,</span> list<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+		err <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+		<span class="token comment">/* Check the non-wild match. */</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>protocol <span class="token operator">==</span> answer<span class="token operator">-></span>protocol<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+			<span class="token keyword">if</span> <span class="token punctuation">(</span>protocol <span class="token operator">!=</span> IPPROTO_IP<span class="token punctuation">)</span>
+				<span class="token keyword">break</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+			<span class="token comment">/* Check for the two wild cases. */</span>
+			<span class="token keyword">if</span> <span class="token punctuation">(</span>IPPROTO_IP <span class="token operator">==</span> protocol<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+				protocol <span class="token operator">=</span> answer<span class="token operator">-></span>protocol<span class="token punctuation">;</span>
+				<span class="token keyword">break</span><span class="token punctuation">;</span>
+			<span class="token punctuation">&#125;</span>
+			<span class="token keyword">if</span> <span class="token punctuation">(</span>IPPROTO_IP <span class="token operator">==</span> answer<span class="token operator">-></span>protocol<span class="token punctuation">)</span>
+				<span class="token keyword">break</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+		err <span class="token operator">=</span> <span class="token operator">-</span>EPROTONOSUPPORT<span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">unlikely</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>try_loading_module <span class="token operator">&lt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+			<span class="token function">rcu_read_unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+			<span class="token comment">/*
+			 * Be more specific, e.g. net-pf-2-proto-132-type-1
+			 * (net-pf-PF_INET-proto-IPPROTO_SCTP-type-SOCK_STREAM)
+			 */</span>
+			<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">++</span>try_loading_module <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span>
+				<span class="token function">request_module</span><span class="token punctuation">(</span><span class="token string">"net-pf-%d-proto-%d-type-%d"</span><span class="token punctuation">,</span>
+					       PF_INET<span class="token punctuation">,</span> protocol<span class="token punctuation">,</span> sock<span class="token operator">-></span>type<span class="token punctuation">)</span><span class="token punctuation">;</span>
+			<span class="token comment">/*
+			 * Fall back to generic, e.g. net-pf-2-proto-132
+			 * (net-pf-PF_INET-proto-IPPROTO_SCTP)
+			 */</span>
+			<span class="token keyword">else</span>
+				<span class="token function">request_module</span><span class="token punctuation">(</span><span class="token string">"net-pf-%d-proto-%d"</span><span class="token punctuation">,</span>
+					       PF_INET<span class="token punctuation">,</span> protocol<span class="token punctuation">)</span><span class="token punctuation">;</span>
+			<span class="token keyword">goto</span> lookup_protocol<span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span> <span class="token keyword">else</span>
+			<span class="token keyword">goto</span> out_rcu_unlock<span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+
+	err <span class="token operator">=</span> <span class="token operator">-</span>EPERM<span class="token punctuation">;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>answer<span class="token operator">-></span>capability <span class="token operator">></span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span><span class="token function">capable</span><span class="token punctuation">(</span>answer<span class="token operator">-></span>capability<span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token keyword">goto</span> out_rcu_unlock<span class="token punctuation">;</span>
+
+	err <span class="token operator">=</span> <span class="token operator">-</span>EAFNOSUPPORT<span class="token punctuation">;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">inet_netns_ok</span><span class="token punctuation">(</span>net<span class="token punctuation">,</span> protocol<span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token keyword">goto</span> out_rcu_unlock<span class="token punctuation">;</span>
+
+	sock<span class="token operator">-></span>ops <span class="token operator">=</span> answer<span class="token operator">-></span>ops<span class="token punctuation">;</span>
+	
+	answer_prot <span class="token operator">=</span> answer<span class="token operator">-></span>prot<span class="token punctuation">;</span>
+	answer_no_check <span class="token operator">=</span> answer<span class="token operator">-></span>no_check<span class="token punctuation">;</span>
+	answer_flags <span class="token operator">=</span> answer<span class="token operator">-></span>flags<span class="token punctuation">;</span>
+	<span class="token function">rcu_read_unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">WARN_ON</span><span class="token punctuation">(</span>answer_prot<span class="token operator">-></span>slab <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	err <span class="token operator">=</span> <span class="token operator">-</span>ENOBUFS<span class="token punctuation">;</span>
+
+	sk <span class="token operator">=</span> <span class="token function">sk_alloc</span><span class="token punctuation">(</span>net<span class="token punctuation">,</span> PF_INET<span class="token punctuation">,</span> GFP_KERNEL<span class="token punctuation">,</span> answer_prot<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>sk <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+		<span class="token keyword">goto</span> out<span class="token punctuation">;</span>
+
+	err <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+	sk<span class="token operator">-></span>sk_no_check <span class="token operator">=</span> answer_no_check<span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>INET_PROTOSW_REUSE <span class="token operator">&amp;</span> answer_flags<span class="token punctuation">)</span>
+		sk<span class="token operator">-></span>sk_reuse <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+	inet <span class="token operator">=</span> <span class="token function">inet_sk</span><span class="token punctuation">(</span>sk<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	inet<span class="token operator">-></span>is_icsk <span class="token operator">=</span> <span class="token punctuation">(</span>INET_PROTOSW_ICSK <span class="token operator">&amp;</span> answer_flags<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>SOCK_RAW <span class="token operator">==</span> sock<span class="token operator">-></span>type<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		inet<span class="token operator">-></span>num <span class="token operator">=</span> protocol<span class="token punctuation">;</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>IPPROTO_RAW <span class="token operator">==</span> protocol<span class="token punctuation">)</span>
+			inet<span class="token operator">-></span>hdrincl <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>ipv4_config<span class="token punctuation">.</span>no_pmtu_disc<span class="token punctuation">)</span>
+		inet<span class="token operator">-></span>pmtudisc <span class="token operator">=</span> IP_PMTUDISC_DONT<span class="token punctuation">;</span>
+	<span class="token keyword">else</span>
+		inet<span class="token operator">-></span>pmtudisc <span class="token operator">=</span> IP_PMTUDISC_WANT<span class="token punctuation">;</span>
+
+	inet<span class="token operator">-></span>id <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+	<span class="token function">sock_init_data</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> sk<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	sk<span class="token operator">-></span>sk_destruct	   <span class="token operator">=</span> inet_sock_destruct<span class="token punctuation">;</span>
+	sk<span class="token operator">-></span>sk_protocol	   <span class="token operator">=</span> protocol<span class="token punctuation">;</span>
+
+	sk<span class="token operator">-></span>sk_backlog_rcv <span class="token operator">=</span> sk<span class="token operator">-></span>sk_prot<span class="token operator">-></span>backlog_rcv<span class="token punctuation">;</span>
+
+	inet<span class="token operator">-></span>uc_ttl	<span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+	inet<span class="token operator">-></span>mc_loop	<span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+	inet<span class="token operator">-></span>mc_ttl	<span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+	inet<span class="token operator">-></span>mc_all	<span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+	inet<span class="token operator">-></span>mc_index	<span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	inet<span class="token operator">-></span>mc_list	<span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+
+	<span class="token function">sk_refcnt_debug_inc</span><span class="token punctuation">(</span>sk<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>inet<span class="token operator">-></span>num<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token comment">/* It assumes that any protocol which allows
+		 * the user to assign a number at socket
+		 * creation time automatically
+		 * shares.
+		 */</span>
+		inet<span class="token operator">-></span>sport <span class="token operator">=</span> <span class="token function">htons</span><span class="token punctuation">(</span>inet<span class="token operator">-></span>num<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token comment">/* Add to protocol hash chains. */</span>
+		sk<span class="token operator">-></span>sk_prot<span class="token operator">-></span><span class="token function">hash</span><span class="token punctuation">(</span>sk<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>sk<span class="token operator">-></span>sk_prot<span class="token operator">-></span>init<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+		err <span class="token operator">=</span> sk<span class="token operator">-></span>sk_prot<span class="token operator">-></span><span class="token function">init</span><span class="token punctuation">(</span>sk<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+			<span class="token function">sk_common_release</span><span class="token punctuation">(</span>sk<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+out<span class="token operator">:</span>
+	<span class="token keyword">return</span> err<span class="token punctuation">;</span>
+out_rcu_unlock<span class="token operator">:</span>
+	<span class="token function">rcu_read_unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">goto</span> out<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+
+
+<span class="token keyword">static</span> <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">net_proto_family</span> inet_family_ops <span class="token operator">=</span> <span class="token punctuation">&#123;</span>  
+    <span class="token punctuation">.</span>family <span class="token operator">=</span> PF_INET<span class="token punctuation">,</span>  
+    <span class="token punctuation">.</span>create <span class="token operator">=</span> inet_create<span class="token punctuation">,</span>  
+    <span class="token punctuation">.</span>owner  <span class="token operator">=</span> THIS_MODULE<span class="token punctuation">,</span>  
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>  <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>这里我们只注意:</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>sock_alloc()//创建一个inode(给文件系统管理)，创建一个socket()对象</p>
+</li>
+<li class="lvl-2">
+<p>pf-&gt;create()//若是tcp，则是inet_family_ops中create的值</p>
+</li>
+</ul>
+<p>sock_map_fd()的执行：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>sock_alloc_fd()//获得一个可用的fd</p>
+</li>
+<li class="lvl-2">
+<p>sock_attach_fd()//把fd,file结构体，socket实例连接起来</p>
+</li>
+<li class="lvl-2">
+<p>fd_install()//fd添加到pcb</p>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>对流程的整理：<br>
+socket()</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>sys_socket()</p>
+</li>
+<li class="lvl-2">
+<p>sock_create()//创建一个socket</p>
+</li>
+<li class="lvl-2">
+<p>sock_alloc()//创建一个inode(给文件系统管理)，创建一个socket()对象</p>
+</li>
+<li class="lvl-2">
+<p>pf-&gt;create()//若是tcp，则是inet_family_ops中create的值</p>
+</li>
+<li class="lvl-2">
+<p>sock_map_fd()//获得一个标号，并返回这个fd</p>
+</li>
+</ul>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -2478,163 +2893,6 @@ iptables <span class="token parameter variable">-t</span> nat <span class="token
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2015/02/09/blog_idx_012/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2015/02/09/blog_idx_012/" class="post-title-link" itemprop="url">undefined reference to vtable for "xxx::xxx" in QT（已解决）</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2015-02-09 15:37:25" itemprop="dateCreated datePublished" datetime="2015-02-09T15:37:25+08:00">2015-02-09</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:47" itemprop="dateModified" datetime="2024-05-18T19:06:47+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/C-CPP/" itemprop="url" rel="index"><span itemprop="name">C&CPP</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>652</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>2 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky
- * @LastEditTime: 2021-12-20 13:51:09
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=012） 
-&emsp;&emsp;本文发布于  2015-02-09 15:37:25，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=012） 
--->
-<h6 id="前置说明">前置说明</h6>
-<p>  本文发布于  2015-02-09 15:37:25，现用MarkDown+图床做备份更新。blog原图已从CSDN图片服务器下载。（BlogID=012）</p>
-<h6 id="环境说明">环境说明</h6>
-<p>  无</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  无</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="问题解决方法">问题解决方法</h3>
-<hr>
-<p>  近日编译一个项目时，由于在错误状态下不小心编译一次了．当改了代码后（确认代码正确），在进行编译的时候，就会出现undefined reference to vtable for “xxx::xxx” ．</p>
-<p>  看到这个错误，别慌，他不是一个语言级的错误，而是ｑｔ的编译机制引起的．首先，看你的程序中是不是有ｑｔ的不同于ｃ＋＋的特性（一般来说就是有没有Q_OBJECT的宏定义）．如果没有，就按照标准的Ｃ＋＋规则编译，如果有，那么那个部分就会先被生成一个.把标准的.cpp文件(并不替换原来的ｃｐｐ，而是参与编译)．然后在进行标准ｃ＋＋的编译工作．其实就是这个部分引起的错误．而这个部分也叫做元对象编译(MOC)．</p>
-<p>  解决办法：删除build文件夹，切记删除整个文件夹．（这貌似是ｑｔ的一个ｂｕｇ，因为我全部重新编译，清除所有文件后在重新编译都是一样的错误）</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<p>  无</p>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/12/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/14/">14</a><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/14/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -2659,14 +2917,14 @@ iptables <span class="token parameter variable">-t</span> nat <span class="token
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">297k</span>
+    <span title="站点总字数">300k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">18:01</span>
+    <span title="站点阅读时长">18:09</span>
   </span>
 </div>
 <div class="busuanzi-count">

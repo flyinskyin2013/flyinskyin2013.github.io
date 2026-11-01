@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">142</span>
+          <span class="site-state-item-count">143</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -259,6 +259,191 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/10/11/blog_idx_072/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Sky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Sky's Blogs">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2018/10/11/blog_idx_072/" class="post-title-link" itemprop="url">.gvfs 文件夹 异常</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-10-11 11:45:26" itemprop="dateCreated datePublished" datetime="2018-10-11T11:45:26+08:00">2018-10-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Ubuntu%E4%BD%BF%E7%94%A8/" itemprop="url" rel="index"><span itemprop="name">Ubuntu使用</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Ubuntu%E4%BD%BF%E7%94%A8/%E5%B8%B8%E8%AF%86/" itemprop="url" rel="index"><span itemprop="name">常识</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>795</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <script src="\assets\js\APlayer.min.js"> </script><!--
+ * @Description: 
+ * @Author: Sky
+ * @Date: 2020-08-24 16:37:34
+ * @LastEditors: Sky sky@sky-home.com
+ * @LastEditTime: 2022-10-23 17:55:27
+ * @Github: https://github.com/flyinskyin2013/
+-->
+<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
+<!-- ###### 前置说明
+&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=072） 
+&emsp;&emsp;本文发布于 2018-10-11 11:45:26，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=072） 
+-->
+<h6 id="环境说明">环境说明</h6>
+<p>  system info ：Linux  27-generic #32~14.04.1-Ubuntu SMP Fri Jan 22 15:32:26 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux</p>
+<h3 id="前言">前言</h3>
+<hr>
+<p>  无</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="问题起因">问题起因</h3>
+<hr>
+<p>  忘了留截图了。在用winscp传输文件的过程中，突然我去刷新某目录时，出现一个错误，大概是说无法获取.gvfs 的属性。导致目录显示不完，也就是没有刷新完就停止了。于是我去终端看了一下此文件夹的属性，属性如下：<br>
+d???  ? ?    ?        ?             ? .gvfs/</p>
+<p>  然后我直接懵逼了，因为我真的是第一次看见这个权限和属性，还有这种操作？</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="问题原因">问题原因</h3>
+<hr>
+<p>  然后尝试 rm -rf ， chmod, chown ,lsof, fuser 都报错的报错，不行的不行。于是乎去bd上冲了一波浪，有点眉目了，貌似是FUSE（Filesystem in Userspace）的一个bug。但是有点不全面，于是又去gg上冲了一波浪。然后找到了相关的答案：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>FUSE是在用户态实现了一个文件系统，此文件系统作用是把其他网络文件系统或者其他协议文件系统挂载到用户空间。而且，FUSE由于是自己构建文件系统，我们可以设置此文件必须由创建者访问，排除其他所有用访问，包括root。这就尴尬了。</p>
+</li>
+<li class="lvl-2">
+<p>而gvfs 是GNOME桌面系统的虚拟文件系统，而此虚拟文件系统是用FUSE实现的。gvfs作用就是你在桌面上点击smb、ftp、sftp等链接地址是，会直接挂载相关的文件系统到本地。而.gvfs 就是这些文件系统的挂载点。</p>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="解决方案">解决方案</h3>
+<hr>
+<p>  由于知道了是gvfs 创建的挂载点，那么通过umount 卸载此挂载点即可。然后可对.gvfs 文件夹进行任何操作了。</p>
+<br/>
+<br/>
+<br/>
+<br/>
+<h3 id="后记">后记</h3>
+<hr>
+<p>  无</p>
+<h3 id="参考文献">参考文献</h3>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>无</p>
+</li>
+</ul>
+<br/>
+<br/>
+<div style="margin:50px auto;">
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <hr/>
+        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
+    </div>
+</div>
+<div style="text-align:center">
+    <div style="margin:0 auto;">
+        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
+    </div>
+</div>
+<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
+<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
+<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
+<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -3334,230 +3519,6 @@ string result_name <span class="token operator">=</span> <span class="token stri
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://e-x.top/2018/05/15/blog_idx_062/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Sky">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | Sky's Blogs">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/05/15/blog_idx_062/" class="post-title-link" itemprop="url">NVIDIA Jestson TX2 配置cuda以及cudnn的坑 ( JetPack-L4T 、Error: downloading update lock、TX2,TX1,TK1相关资源信息)</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2018-05-15 15:00:57" itemprop="dateCreated datePublished" datetime="2018-05-15T15:00:57+08:00">2018-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-05-18 19:06:02" itemprop="dateModified" datetime="2024-05-18T19:06:02+08:00">2024-05-18</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/DL/" itemprop="url" rel="index"><span itemprop="name">DL</span></a>
-        </span>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>889</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <script src="\assets\js\APlayer.min.js"> </script><!--
- * @Description: 
- * @Author: Sky
- * @Date: 2020-08-24 16:37:34
- * @LastEditors: Sky sky@sky-home.com
- * @LastEditTime: 2022-10-23 16:46:17
- * @Github: https://github.com/flyinskyin2013/
--->
-<p><font color="red" size="7">PS：要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 这个只是基于《我自己》的理解，</font><br/><font color="red" size="7">如果和你的原则及想法相冲突，请谅解，勿喷。</font><br/></p>
-<!-- ###### 前置说明
-&emsp;&emsp;本文作为本人csdn blog的主站的备份。（BlogID=062） 
-&emsp;&emsp;本文发布于 2018-05-15 15:00:57，现用MarkDown+图床做备份更新。blog原图已丢失，使用csdn所存的图进行更新。（BlogID=062） 
--->
-<h6 id="环境说明">环境说明</h6>
-<p>  主机信息 Linux 4.13.0-41-generic #46~16.04.1-Ubuntu SMP Thu May 3 10:06:43 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux</p>
-<h3 id="前言">前言</h3>
-<hr>
-<p>  无</p>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="Jestson-TX2-配置">Jestson TX2 配置</h3>
-<hr>
-<br/>
-<br/>
-<h5 id="JetPack-L4T-资源信息（TX2-TX1-TK1）">JetPack-L4T 资源信息（TX2,TX1,TK1）</h5>
-<p>  JetPack-L4T-3.0</p>
-<p>  资源地址：<a target="_blank" rel="noopener" href="https://download.csdn.net/download/u011728480/10415628">https://download.csdn.net/download/u011728480/10415628</a></p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_062/jetpack.png" alt="rep_img"/></center>
-    </div>
-</div>    
-<p>  JetPack-L4T-3.1</p>
-<p>  资源地址：<a target="_blank" rel="noopener" href="https://download.csdn.net/download/u011728480/10415640">https://download.csdn.net/download/u011728480/10415640</a></p>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/blog_idx_062/jetpack1.png" alt="rep_img"/></center>
-    </div>
-</div>    
-<p>  JetPack-L4T-3.2，截止发文时，3.2用的依然是3.1的资源信息。</p>
-<br/>
-<br/>
-<h5 id="官方配置流程">官方配置流程</h5>
-<p>  就是使用JetPack-L4T工具按照流程进行相关的配置，即可完成全部安装。</p>
-<br/>
-<br/>
-<h5 id="民间配置流程">民间配置流程</h5>
-<p>  首先下载上面我提供的资源压缩包，解压，然后打开repository.json文件，这里面包含了此版本关于TX2,TX1,TK1的所有资源地址信息。（此文件稍微分析一下即可得到地址）</p>
-<p>  这里我需要的是cuda8.0和cudnn5.1</p>
-<p>  关于TX2，JetPack 3.0 的cuda和cudnn地址分别是：(在repository.json文件)</p>
-<p>  cuda:</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p><a target="_blank" rel="noopener" href="http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/009/linux-x64/cuda-repo-l4t-8-0-local_8.0.64-1_arm64.deb">http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/009/linux-x64/cuda-repo-l4t-8-0-local_8.0.64-1_arm64.deb</a></p>
-</li>
-</ul>
-<p>  cudnn:</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p><a target="_blank" rel="noopener" href="http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/009/linux-x64/libcudnn5_5.1.10-1+cuda8.0_arm64.deb">http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/009/linux-x64/libcudnn5_5.1.10-1+cuda8.0_arm64.deb</a></p>
-</li>
-<li class="lvl-2">
-<p><a target="_blank" rel="noopener" href="http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/011/linux-x64/libcudnn5-dev_5.1.10-1+cuda8.0_arm64.deb">http://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/011/linux-x64/libcudnn5-dev_5.1.10-1+cuda8.0_arm64.deb</a></p>
-</li>
-</ul>
-<p>  下载以上三个包，然后在tx2上，dpkg 安装这三个包,然后：</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt</span> update
-
-<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> cuda-toolkit-8-0 <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
-<p>  最后把/usr/local/cuda/bin/添加到PATH变量</p>
-<p>  这样cuda及cudnn就配置完成。其他相关包可参照如此配置。</p>
-<p>  友情提示：</p>
-<p>    下载以上包时最好使用迅雷或者开代理进行下载，否则可能会出现被墙的可能性。</p>
-<br/>
-<br/>
-<h5 id="Error-downloading-update-lock">Error:  downloading update lock</h5>
-<p>  错误：一直卡downloading update lock  ，最后Error原因：就是大中华防火墙给墙了此信息下载地址（某些电信运营商才会出现，比如我公司移动运营商）</p>
-<p>  解决方案：</p>
-<ol>
-<li class="lvl-4">
-<p>开启代理后，按照官方教程走。</p>
-</li>
-<li class="lvl-3">
-<p>使用我上文提供的信息下载相关资源，按照民间教程进行配置。</p>
-</li>
-</ol>
-<br/>
-<br/>
-<br/>
-<br/>
-<h3 id="后记">后记</h3>
-<hr>
-<p>  无</p>
-<h3 id="参考文献">参考文献</h3>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>无</p>
-</li>
-</ul>
-<br/>
-<br/>
-<div style="margin:50px auto;">
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <hr/>
-        <center><font color = #91e0b0 size = 5>打赏、订阅、收藏、丢香蕉、硬币，请关注公众号（攻城狮的搬砖之路）</font></center>
-    </div>
-</div>
-<div style="text-align:center">
-    <div style="margin:0 auto;">
-        <center><img src="https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg" alt="qrc_img"/></center>
-    </div>
-</div>
-<!-- ![alt 公众号图片](https://flyinskyin2013.github.io/ImageBed0/blogs/qrcode_for_wx_official_account.jpg "公众号图片") -->
-<p><font color="red" size="7">PS: 请尊重原创，不喜勿喷。</font><br/><br>
-<font color="red" size="7">PS: 要转载请注明出处，本人版权所有。</font><br/><br>
-<font color="red" size="7">PS: 有问题请留言，看到后我会第一时间回复。</font><br/></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/NO_EXSIT.XXXXXXX/page/7/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/NO_EXSIT.XXXXXXX/">1</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/NO_EXSIT.XXXXXXX/page/15/">15</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/NO_EXSIT.XXXXXXX/page/9/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -3582,14 +3543,14 @@ string result_name <span class="token operator">=</span> <span class="token stri
       <i class="fa fa-chart-line"></i>
     </span>
       <span>站点总字数：</span>
-    <span title="站点总字数">297k</span>
+    <span title="站点总字数">300k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span>站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">18:01</span>
+    <span title="站点阅读时长">18:09</span>
   </span>
 </div>
 <div class="busuanzi-count">
